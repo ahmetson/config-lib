@@ -58,42 +58,16 @@ func New(parent *log.Logger) (*Config, error) {
 	config.viper = viper.New()
 	config.viper.AutomaticEnv()
 
-	execPath, err := path.GetExecPath()
-	if err != nil {
-		return nil, fmt.Errorf("path.GetExecPath: %w", err)
-	}
-
-	// Use the service config given from the path
-	if arg.Exist(arg.Configuration) {
-		configurationPath, err := arg.Value(arg.Configuration)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get the config path: %w", err)
-		}
-
-		absPath := path.GetPath(execPath, configurationPath)
-
-		dir, fileName := path.SplitServicePath(absPath)
-		config.viper.Set("SERVICE_CONFIG_NAME", fileName)
-		config.viper.Set("SERVICE_CONFIG_PATH", dir)
-	} else {
-		config.viper.SetDefault("SERVICE_CONFIG_NAME", "service")
-		config.viper.SetDefault("SERVICE_CONFIG_PATH", execPath)
-	}
-
-	configName := config.viper.GetString("SERVICE_CONFIG_NAME")
-	configPath := config.viper.GetString("SERVICE_CONFIG_PATH")
-	// load the service config
-	config.viper.SetConfigName(configName)
-	config.viper.SetConfigType("yaml")
-	config.viper.AddConfigPath(configPath)
-
 	return &config, nil
 }
 
-// ReadFile reads the yaml into the interface{} in the engine, then
-// it will unmarshall it into the config.Service.
+// ReadFile reads the config and returns it.
 //
-// If the file doesn't exist, it will skip it without changing the old service
+// In order to read it, call the following:
+//
+//	 config.Engine().SetConfigName(configName)
+//		config.Engine().SetConfigType("yaml") // or json
+//		config.Engine().AddConfigPath(configPath)
 func (config *Config) ReadFile() (interface{}, error) {
 	err := config.viper.ReadInConfig()
 	notFound := false
