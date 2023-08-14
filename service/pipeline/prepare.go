@@ -10,8 +10,8 @@ import (
 	"fmt"
 	"github.com/ahmetson/common-lib/data_type/key_value"
 	"github.com/ahmetson/os-lib/net"
-	"github.com/ahmetson/service-lib/config/service"
-	"github.com/ahmetson/service-lib/config/service/converter"
+	service2 "github.com/ahmetson/service-lib/service"
+	"github.com/ahmetson/service-lib/service/converter"
 	"github.com/ahmetson/service-lib/service/orchestra"
 	"slices"
 )
@@ -52,13 +52,13 @@ func PrepareAddingPipeline(pipelines []*Pipeline, proxies []string, controllers 
 	return nil
 }
 
-func newSourceInstances(config *service.Controller) []service.Instance {
+func newSourceInstances(config *service2.Controller) []service2.Instance {
 	amount := len(config.Instances)
-	instances := make([]service.Instance, 0, amount)
+	instances := make([]service2.Instance, 0, amount)
 
 	for i := 0; i < amount; i++ {
-		instances[i] = service.Instance{
-			ControllerCategory: service.SourceName,
+		instances[i] = service2.Instance{
+			ControllerCategory: service2.SourceName,
 			Id:                 fmt.Sprintf("%s-source", config.Instances[i].Id),
 			Port:               uint64(net.GetFreePort()),
 		}
@@ -67,13 +67,13 @@ func newSourceInstances(config *service.Controller) []service.Instance {
 	return instances
 }
 
-func newDestinationInstances(config *service.Controller) []service.Instance {
+func newDestinationInstances(config *service2.Controller) []service2.Instance {
 	amount := len(config.Instances)
-	instances := make([]service.Instance, 0, amount)
+	instances := make([]service2.Instance, 0, amount)
 
 	for i := 0; i < amount; i++ {
-		instances[i] = service.Instance{
-			ControllerCategory: service.DestinationName,
+		instances[i] = service2.Instance{
+			ControllerCategory: service2.DestinationName,
 			Id:                 fmt.Sprintf("%s-destination", config.Instances[i].Id),
 			Port:               config.Instances[i].Port,
 		}
@@ -84,30 +84,30 @@ func newDestinationInstances(config *service.Controller) []service.Instance {
 
 // returns generated source and destination controllers.
 // the parameters of the destination server derived from config.
-func newProxyControllers(config *service.Controller) []*service.Controller {
+func newProxyControllers(config *service2.Controller) []*service2.Controller {
 	// set the source
-	return []*service.Controller{
+	return []*service2.Controller{
 		{
 			Type:      config.Type,
-			Category:  service.SourceName,
+			Category:  service2.SourceName,
 			Instances: newSourceInstances(config),
 		},
 
 		{
 			Type:      config.Type,
-			Category:  service.DestinationName,
+			Category:  service2.DestinationName,
 			Instances: newDestinationInstances(config),
 		},
 	}
 }
 
 // rewriteDestinations removes the destination controllers. Then, set them based on controllers.
-func rewriteControllers(proxyConfig *service.Service, controllers []*service.Controller) error {
+func rewriteControllers(proxyConfig *service2.Service, controllers []*service2.Controller) error {
 	if len(controllers) == 0 {
 		return fmt.Errorf("no destination controllers")
 	}
 	// two times more, source and destinationService for each server
-	proxyConfig.Controllers = make([]*service.Controller, len(controllers)*2)
+	proxyConfig.Controllers = make([]*service2.Controller, len(controllers)*2)
 	set := 0
 
 	// rewrite the destinations in the dependency
@@ -124,7 +124,7 @@ func rewriteControllers(proxyConfig *service.Service, controllers []*service.Con
 
 // LintControllers updates the ports of the destination to match the service controllers.
 // Return bool is true if ports were updated.
-func LintControllers(proxyDestinations []*service.Controller, serviceControllers []*service.Controller) (bool, error) {
+func LintControllers(proxyDestinations []*service2.Controller, serviceControllers []*service2.Controller) (bool, error) {
 	updated := false
 
 	// The order of the destinationService should match.
@@ -156,11 +156,11 @@ func LintControllers(proxyDestinations []*service.Controller, serviceControllers
 // Another function LintServiceToProxy updates the service config by proxy config.
 //
 // The proxyConfig will have the same number of destinations as controllers in the destinationService
-func LintProxyToService(proxyConfig *service.Service, destinationService *service.Service) (bool, error) {
-	if proxyConfig.Type != service.ProxyType {
+func LintProxyToService(proxyConfig *service2.Service, destinationService *service2.Service) (bool, error) {
+	if proxyConfig.Type != service2.ProxyType {
 		return false, fmt.Errorf("proxyConfig.Type is not proxy")
 	}
-	if destinationService.Type == service.ProxyType {
+	if destinationService.Type == service2.ProxyType {
 		return false, fmt.Errorf("destinationService.Type is proxy. call LintProxyToProxy()")
 	}
 
@@ -169,26 +169,26 @@ func LintProxyToService(proxyConfig *service.Service, destinationService *servic
 
 // LintProxyToProxy returns the updated proxy config against another proxy.
 // Another function LintServiceToProxy updates the service config by proxy config.
-func LintProxyToProxy(proxyConfig *service.Service, destinationService *service.Service) (bool, error) {
-	if proxyConfig.Type != service.ProxyType {
+func LintProxyToProxy(proxyConfig *service2.Service, destinationService *service2.Service) (bool, error) {
+	if proxyConfig.Type != service2.ProxyType {
 		return false, fmt.Errorf("proxyConfig.Type is not proxy")
 	}
-	if destinationService.Type != service.ProxyType {
+	if destinationService.Type != service2.ProxyType {
 		return false, fmt.Errorf("destinationService.Type is not proxy. call LintProxyToService()")
 	}
 
-	sourceControllers, err := destinationService.GetControllers(service.SourceName)
+	sourceControllers, err := destinationService.GetControllers(service2.SourceName)
 	if err != nil {
-		return false, fmt.Errorf("destinationService(%s).GetControllers(%s): %w", destinationService.Id, service.SourceName, err)
+		return false, fmt.Errorf("destinationService(%s).GetControllers(%s): %w", destinationService.Id, service2.SourceName, err)
 	}
 
 	return lintDestinationsToControllers(proxyConfig, sourceControllers)
 }
 
-func lintDestinationsToControllers(proxyConfig *service.Service, controllers []*service.Controller) (bool, error) {
-	proxyDestinations, err := proxyConfig.GetControllers(service.DestinationName)
+func lintDestinationsToControllers(proxyConfig *service2.Service, controllers []*service2.Controller) (bool, error) {
+	proxyDestinations, err := proxyConfig.GetControllers(service2.DestinationName)
 	if err != nil {
-		return false, fmt.Errorf("proxyConfig.GetControllers('%s'): %w", service.DestinationName, err)
+		return false, fmt.Errorf("proxyConfig.GetControllers('%s'): %w", service2.DestinationName, err)
 	}
 
 	controllerAmount := len(controllers)
@@ -214,7 +214,7 @@ func lintDestinationsToControllers(proxyConfig *service.Service, controllers []*
 //
 // Rule for linting:
 // If there is a pipeline with the service, then pipelines will lint through that.
-func LintToControllers(ctx orchestra.Interface, serviceConfig *service.Service, pipelines []*Pipeline) error {
+func LintToControllers(ctx orchestra.Interface, serviceConfig *service2.Service, pipelines []*Pipeline) error {
 	servicePipeline := FindServiceEnd(pipelines)
 	serviceProxyConfig, err := ctx.GetConfig(servicePipeline.Beginning())
 	if err != nil {
@@ -243,7 +243,7 @@ func LintToControllers(ctx orchestra.Interface, serviceConfig *service.Service, 
 	return nil
 }
 
-func lintLastToProxy(ctx orchestra.Interface, serviceConfig *service.Service, pipeline *Pipeline) error {
+func lintLastToProxy(ctx orchestra.Interface, serviceConfig *service2.Service, pipeline *Pipeline) error {
 	// lets lint the server's last head destination to the service server's source or
 	// to the server itself.
 	lastUrl := pipeline.HeadLast()
@@ -274,7 +274,7 @@ func lintLastToProxy(ctx orchestra.Interface, serviceConfig *service.Service, pi
 
 	return nil
 }
-func lintLastToController(ctx orchestra.Interface, serviceConfig *service.Service, pipeline *Pipeline) error {
+func lintLastToController(ctx orchestra.Interface, serviceConfig *service2.Service, pipeline *Pipeline) error {
 	// lets lint the server's last head destination to the service server's source or
 	// to the server itself.
 	lastUrl := pipeline.HeadLast()
@@ -291,9 +291,9 @@ func lintLastToController(ctx orchestra.Interface, serviceConfig *service.Servic
 		return fmt.Errorf("lastConfig(%s).Controllers should have two proxies", lastConfig.Id)
 	}
 
-	destinationConfigs, err := lastConfig.GetControllers(service.DestinationName)
+	destinationConfigs, err := lastConfig.GetControllers(service2.DestinationName)
 	if err != nil {
-		return fmt.Errorf("lastConfig.GetControllers('%s'): %w", service.DestinationName, err)
+		return fmt.Errorf("lastConfig.GetControllers('%s'): %w", service2.DestinationName, err)
 	}
 
 	updated, err := LintControllers(destinationConfigs, controllerConfigs)
@@ -311,7 +311,7 @@ func lintLastToController(ctx orchestra.Interface, serviceConfig *service.Servic
 
 	return nil
 }
-func lintLastToService(ctx orchestra.Interface, config *service.Service, pipeline *Pipeline) error {
+func lintLastToService(ctx orchestra.Interface, config *service2.Service, pipeline *Pipeline) error {
 	// bridge the proxies between the proxies
 	if !pipeline.IsMultiHead() {
 		return nil
@@ -386,7 +386,7 @@ func lintFront(ctx orchestra.Interface, pipeline *Pipeline) error {
 	return nil
 }
 
-func LintToService(ctx orchestra.Interface, config *service.Service, pipeline *Pipeline) error {
+func LintToService(ctx orchestra.Interface, config *service2.Service, pipeline *Pipeline) error {
 	if err := lintLastToService(ctx, config, pipeline); err != nil {
 		return fmt.Errorf("lintLastToService: %w", err)
 	}

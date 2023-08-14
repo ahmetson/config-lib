@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/ahmetson/common-lib/data_type/key_value"
 	"github.com/ahmetson/os-lib/arg"
-	"github.com/ahmetson/service-lib/config/service/pipeline"
+	"github.com/ahmetson/service-lib/service/pipeline"
 	"path"
 )
 
