@@ -8,7 +8,6 @@ package config
 
 import (
 	"fmt"
-	"github.com/ahmetson/config-lib/service"
 	"github.com/ahmetson/log-lib"
 	"github.com/ahmetson/os-lib/arg"
 	"github.com/ahmetson/os-lib/path"
@@ -29,8 +28,7 @@ type Config struct {
 	// If it's passed, then authentication is switched off.
 	Secure       bool
 	logger       *log.Logger // debug purpose only
-	Service      *service.Service
-	handleChange func(*service.Service, error)
+	handleChange func(interface{}, error)
 }
 
 // New creates a global config for the entire application.
@@ -43,7 +41,6 @@ func New(parent *log.Logger) (*Config, error) {
 	config := Config{
 		Name:         parent.Prefix(),
 		logger:       parent.Child("config"),
-		Service:      nil,
 		handleChange: nil,
 	}
 	config.logger.Info("Loading environment files passed as app arguments")
@@ -90,21 +87,14 @@ func New(parent *log.Logger) (*Config, error) {
 	config.viper.SetConfigType("yaml")
 	config.viper.AddConfigPath(configPath)
 
-	serviceConfig, err := config.readFile()
-	if err != nil {
-		config.logger.Fatal("config.readFile", "error", err)
-	} else {
-		config.Service = serviceConfig
-	}
-
 	return &config, nil
 }
 
-// readFile reads the yaml into the interface{} in the engine, then
+// ReadFile reads the yaml into the interface{} in the engine, then
 // it will unmarshall it into the config.Service.
 //
 // If the file doesn't exist, it will skip it without changing the old service
-func (config *Config) readFile() (*service.Service, error) {
+func (config *Config) ReadFile() (interface{}, error) {
 	err := config.viper.ReadInConfig()
 	notFound := false
 	_, notFound = err.(viper.ConfigFileNotFoundError)
@@ -127,12 +117,7 @@ func (config *Config) readFile() (*service.Service, error) {
 		"todo 4", "make sure that services are all of the same kind but of different instance",
 		"todo 5", "make sure that all controllers have the unique name in the config")
 
-	serviceConfig, err := service.UnmarshalService(services)
-	if err != nil {
-		return nil, fmt.Errorf("unmarshalling service config failed: %w", err)
-	}
-
-	return serviceConfig, nil
+	return services[0], nil
 }
 
 func (config *Config) GetServicePath() string {
@@ -153,7 +138,7 @@ func (config *Config) Engine() *viper.Viper {
 // Watch could be called only once. If it's already called, then it will skip it without an error.
 //
 // For production, we could call config.viper.WatchRemoteConfig() for example in etcd.
-func (config *Config) Watch(watchHandle func(*service.Service, error)) error {
+func (config *Config) Watch(watchHandle func(interface{}, error)) error {
 	if config.handleChange != nil {
 		return nil
 	}
@@ -188,7 +173,7 @@ func (config *Config) watchFileCreation() {
 			break
 		}
 		if exists {
-			serviceConfig, err := config.readFile()
+			serviceConfig, err := config.ReadFile()
 			if err != nil {
 				config.handleChange(nil, fmt.Errorf("watchFileCreation: config.readFile: %w", err))
 				break
@@ -229,7 +214,7 @@ func (config *Config) watchChange() {
 	config.logger.Warn("calling watch config")
 	config.viper.WatchConfig()
 	config.viper.OnConfigChange(func(e fsnotify.Event) {
-		newConfig, err := config.readFile()
+		newConfig, err := config.ReadFile()
 		if err != nil {
 			config.handleChange(nil, fmt.Errorf("watchChange: config.readFile: %w", err))
 		} else {
