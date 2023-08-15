@@ -8,6 +8,7 @@ package config
 
 import (
 	"fmt"
+	"github.com/ahmetson/common-lib/data_type/key_value"
 	"github.com/ahmetson/log-lib"
 	"github.com/ahmetson/os-lib/arg"
 	"github.com/ahmetson/os-lib/path"
@@ -68,14 +69,30 @@ func New(parent *log.Logger) (*Config, error) {
 //	 config.Engine().SetConfigName(configName)
 //		config.Engine().SetConfigType("yaml") // or json
 //		config.Engine().AddConfigPath(configPath)
-func (config *Config) ReadFile() (interface{}, error) {
-	err := config.viper.ReadInConfig()
+func (config *Config) Read(value key_value.KeyValue) (interface{}, error) {
+	name, err := value.GetString("name")
+	if err != nil {
+		return nil, fmt.Errorf("value.GetString(`name`): %w", err)
+	}
+	configType, err := value.GetString("type")
+	if err != nil {
+		return nil, fmt.Errorf("value.GetString(`type`): %w", err)
+	}
+	configPath, err := value.GetString("configPath")
+	if err != nil {
+		return nil, fmt.Errorf("value.GetString(`configPath`): %w", err)
+	}
+	config.viper.SetConfigName(name)
+	config.viper.SetConfigType(configType)
+	config.viper.AddConfigPath(configPath)
+
+	err = config.viper.ReadInConfig()
 	notFound := false
 	_, notFound = err.(viper.ConfigFileNotFoundError)
 	if err != nil && !notFound {
 		return nil, fmt.Errorf("read '%s' failed: %w", config.viper.GetString("SERVICE_CONFIG_NAME"), err)
 	} else if notFound {
-		config.logger.Warn("yaml in path not found", "config", config.GetServicePath(), "engine error", err)
+		config.logger.Warn("yaml in configPath not found", "config", config.getServicePath(), "engine error", err)
 		return nil, nil
 	}
 	config.logger.Info("yaml was loaded, let's parse it")
@@ -94,17 +111,19 @@ func (config *Config) ReadFile() (interface{}, error) {
 	return services[0], nil
 }
 
-func (config *Config) GetServicePath() string {
+func (config *Config) getServicePath() string {
 	configName := config.viper.GetString("SERVICE_CONFIG_NAME")
 	configPath := config.viper.GetString("SERVICE_CONFIG_PATH")
 
 	return filepath.Join(configPath, configName+".yml")
 }
 
-// Engine returns the underlying config engine.
-// In our case, it will be Viper.
-func (config *Config) Engine() *viper.Viper {
-	return config.viper
+func (config *Config) getPath() key_value.KeyValue {
+	configName := config.viper.GetString("SERVICE_CONFIG_NAME")
+	configPath := config.viper.GetString("SERVICE_CONFIG_PATH")
+	ext := "yaml"
+
+	return key_value.Empty().Set("name", configName).Set("type", ext).Set("path", configPath)
 }
 
 // Watch tracks the config change in the file.
@@ -117,7 +136,7 @@ func (config *Config) Watch(watchHandle func(interface{}, error)) error {
 		return nil
 	}
 
-	servicePath := config.GetServicePath()
+	servicePath := config.getServicePath()
 
 	exists, err := path.FileExists(servicePath)
 	if err != nil {
@@ -139,7 +158,7 @@ func (config *Config) Watch(watchHandle func(interface{}, error)) error {
 
 // If the file not exists, then watch for its appearance.
 func (config *Config) watchFileCreation() {
-	servicePath := config.GetServicePath()
+	servicePath := config.getServicePath()
 	for {
 		exists, err := path.FileExists(servicePath)
 		if err != nil {
@@ -147,7 +166,7 @@ func (config *Config) watchFileCreation() {
 			break
 		}
 		if exists {
-			serviceConfig, err := config.ReadFile()
+			serviceConfig, err := config.Read(config.getPath())
 			if err != nil {
 				config.handleChange(nil, fmt.Errorf("watchFileCreation: config.readFile: %w", err))
 				break
@@ -164,7 +183,7 @@ func (config *Config) watchFileCreation() {
 
 // If file exists, then watch file deletion.
 func (config *Config) watchFileDeletion() {
-	servicePath := config.GetServicePath()
+	servicePath := config.getServicePath()
 	for {
 		exists, err := path.FileExists(servicePath)
 		if err != nil {
@@ -188,7 +207,7 @@ func (config *Config) watchChange() {
 	config.logger.Warn("calling watch config")
 	config.viper.WatchConfig()
 	config.viper.OnConfigChange(func(e fsnotify.Event) {
-		newConfig, err := config.ReadFile()
+		newConfig, err := config.Read(config.getPath())
 		if err != nil {
 			config.handleChange(nil, fmt.Errorf("watchChange: config.readFile: %w", err))
 		} else {
