@@ -236,6 +236,10 @@ func (config *Config) SetDefault(name string, value interface{}) {
 	config.viper.SetDefault(name, value)
 }
 
+func (config *Config) Set(name string, value interface{}) {
+	config.viper.Set(name, value)
+}
+
 // Exist Checks whether the config variable exists or not
 // If the config exists or its default value exists, then returns true.
 func (config *Config) Exist(name string) bool {

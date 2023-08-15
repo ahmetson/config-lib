@@ -13,6 +13,7 @@ type Interface interface {
 
 	SetDefaults(config DefaultConfig)
 	SetDefault(string, interface{})
+	Set(string, interface{})
 	Exist(string) bool
 	GetString(string) string
 	GetUint64(string) uint64
