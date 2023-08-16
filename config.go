@@ -138,9 +138,9 @@ func (config *Config) Watch(watchHandle func(interface{}, error)) error {
 
 	servicePath := config.getServicePath()
 
-	exists, err := path.FileExists(servicePath)
+	exists, err := path.FileExist(servicePath)
 	if err != nil {
-		return fmt.Errorf("FileExists('%s'): %w", servicePath, err)
+		return fmt.Errorf("FileExist('%s'): %w", servicePath, err)
 	}
 
 	// set it after checking for errors
@@ -160,9 +160,9 @@ func (config *Config) Watch(watchHandle func(interface{}, error)) error {
 func (config *Config) watchFileCreation() {
 	servicePath := config.getServicePath()
 	for {
-		exists, err := path.FileExists(servicePath)
+		exists, err := path.FileExist(servicePath)
 		if err != nil {
-			config.handleChange(nil, fmt.Errorf("watchFileCreation: FileExists: %w", err))
+			config.handleChange(nil, fmt.Errorf("watchFileCreation: FileExist: %w", err))
 			break
 		}
 		if exists {
@@ -185,9 +185,9 @@ func (config *Config) watchFileCreation() {
 func (config *Config) watchFileDeletion() {
 	servicePath := config.getServicePath()
 	for {
-		exists, err := path.FileExists(servicePath)
+		exists, err := path.FileExist(servicePath)
 		if err != nil {
-			config.handleChange(nil, fmt.Errorf("watchFileDeletion: FileExists: %w", err))
+			config.handleChange(nil, fmt.Errorf("watchFileDeletion: FileExist: %w", err))
 			break
 		}
 		if !exists {
