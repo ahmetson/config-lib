@@ -34,7 +34,7 @@ func (suite *TestEnvSuite) SetupTest() {
 		"STRING_KEY=hello world\n" +
 		"NUMBER_KEY=123\n" +
 		"FLOAT_KEY=75.321\n"
-	execPath, err := path.GetExecPath()
+	execPath, err := path.CurrentDir()
 	suite.Require().NoError(err)
 
 	suite.envPath = filepath.Join(execPath, ".test.env")

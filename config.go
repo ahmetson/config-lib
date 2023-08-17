@@ -52,7 +52,7 @@ func New(parent *log.Logger) (*Config, error) {
 		return nil, fmt.Errorf("loading environment variables: %w", err)
 	}
 
-	paths, _ := arg.GetEnvPaths()
+	paths := arg.EnvPaths()
 	config.logger.Info("Starting Viper with environment variables", "loaded files", paths)
 
 	// replace the values with the ones we fetched from environment variables
