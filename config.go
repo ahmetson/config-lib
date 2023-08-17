@@ -1,4 +1,4 @@
-// Package config defines a config engine for the entire app.
+// Package config defines a config engine for the entire app in the dev context.
 //
 // The config features:
 //   - reads the command line arguments for the app such as authentication enabled or not.
