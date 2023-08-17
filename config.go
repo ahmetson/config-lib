@@ -9,8 +9,6 @@ package config
 import (
 	"fmt"
 	"github.com/ahmetson/common-lib/data_type/key_value"
-	"github.com/ahmetson/log-lib"
-	"github.com/ahmetson/os-lib/arg"
 	"github.com/ahmetson/os-lib/path"
 	"github.com/fsnotify/fsnotify"
 	"path/filepath"
@@ -27,31 +25,25 @@ type Config struct {
 	// Passed as --secure command line arg.
 	// If it's passed, then authentication is switched off.
 	Secure       bool
-	logger       *log.Logger // debug purpose only
 	handleChange func(interface{}, error)
 }
 
-// New creates a global config for the entire application.
+// NewDev creates a global config for the entire application.
 //
 // Automatically reads the command line arguments.
 // Loads the environment variables.
 //
 // Logger should be a parent
-func New(parent *log.Logger) (*Config, error) {
+func NewDev() (*Config, error) {
 	config := Config{
-		logger:       parent.Child("config"),
 		handleChange: nil,
 	}
-	config.logger.Info("Loading environment files passed as app arguments")
 
 	// First, we load the environment variables
 	err := env.LoadAnyEnv()
 	if err != nil {
 		return nil, fmt.Errorf("loading environment variables: %w", err)
 	}
-
-	paths := arg.EnvPaths()
-	config.logger.Info("Starting Viper with environment variables", "loaded files", paths)
 
 	// replace the values with the ones we fetched from environment variables
 	config.viper = viper.New()
@@ -90,21 +82,12 @@ func (config *Config) Read(value key_value.KeyValue) (interface{}, error) {
 	if err != nil && !notFound {
 		return nil, fmt.Errorf("read '%s' failed: %w", config.viper.GetString("SERVICE_CONFIG_NAME"), err)
 	} else if notFound {
-		config.logger.Warn("yaml in configPath not found", "config", config.getServicePath(), "engine error", err)
 		return nil, nil
 	}
-	config.logger.Info("yaml was loaded, let's parse it")
 	services, ok := config.viper.Get("services").([]interface{})
 	if !ok {
-		config.logger.Info("services", "Service", services, "raw", config.viper.Get("services"))
 		return nil, fmt.Errorf("config.yml Service should be a list not a one object")
 	}
-
-	config.logger.Info("todo", "todo 1", "make sure that proxy pipeline is correct",
-		"todo 2", "make sure that only one kind of proxies are given",
-		"todo 3", "make sure that only one kind of extensions are given",
-		"todo 4", "make sure that services are all of the same kind but of different instance",
-		"todo 5", "make sure that all controllers have the unique name in the config")
 
 	return services[0], nil
 }
@@ -202,7 +185,6 @@ func (config *Config) watchChange() {
 	go config.watchFileDeletion()
 	// if file not exists, call the file appearance
 
-	config.logger.Warn("calling watch config")
 	config.viper.WatchConfig()
 	config.viper.OnConfigChange(func(e fsnotify.Event) {
 		newConfig, err := config.Read(config.getPath())
@@ -224,7 +206,6 @@ func (config *Config) SetDefaults(defaultConfig DefaultConfig) {
 		if config.viper.IsSet(name) {
 			continue
 		}
-		config.logger.Info("Set default for "+defaultConfig.Title, name, value)
 		config.SetDefault(name, value)
 	}
 }

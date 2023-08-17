@@ -50,7 +50,7 @@ func (suite *TestEnvSuite) SetupTest() {
 	suite.Require().NoError(err, "delete the dump file: "+suite.envPath)
 
 	suite.Require().NoError(err)
-	appConfig, err := New(logger)
+	appConfig, err := NewDev()
 	suite.Require().NoError(err)
 	suite.appConfig = appConfig
 
@@ -60,7 +60,6 @@ func (suite *TestEnvSuite) SetupTest() {
 // suite.
 func (suite *TestEnvSuite) TestRun() {
 	suite.Require().False(suite.appConfig.Secure)
-	suite.Require().NotNil(suite.appConfig.logger)
 
 	suite.Require().False(suite.appConfig.Exist("TURKISH_KEY"))
 	defaultConfig := DefaultConfig{
