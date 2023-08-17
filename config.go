@@ -22,7 +22,6 @@ import (
 
 // Config GetServiceConfig Engine based on viper.Viper
 type Config struct {
-	Name  string       // application name
 	viper *viper.Viper // used to keep default values
 
 	// Passed as --secure command line arg.
@@ -40,7 +39,6 @@ type Config struct {
 // Logger should be a parent
 func New(parent *log.Logger) (*Config, error) {
 	config := Config{
-		Name:         parent.Prefix(),
 		logger:       parent.Child("config"),
 		handleChange: nil,
 	}
