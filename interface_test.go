@@ -50,7 +50,7 @@ func (suite *TestInterfaceSuite) SetupTest() {
 	suite.Require().NoError(err, "delete the dump file: "+suite.envPath)
 
 	suite.Require().NoError(err)
-	appConfig, err := New(logger)
+	appConfig, err := NewDev()
 	suite.Require().NoError(err)
 	suite.appConfig = appConfig
 
@@ -60,18 +60,14 @@ func (suite *TestInterfaceSuite) SetupTest() {
 // suite.
 func (suite *TestInterfaceSuite) TestRun() {
 	suite.Require().False(suite.appConfig.Secure)
-	suite.Require().NotNil(suite.appConfig.logger)
 
 	var confInterface Interface = suite.appConfig
 
 	suite.Require().False(confInterface.Exist("TURKISH_KEY"))
-	defaultConfig := DefaultConfig{
-		Title: "TURKISH_KEYS",
-		Parameters: key_value.Empty().
-			// never will be written since env is already written
-			Set("STRING_KEY", "salam").
-			Set("TURKISH_KEY", "salam"),
-	}
+	defaultConfig := key_value.Empty().
+		// never will be written since env is already written
+		Set("STRING_KEY", "salam").
+		Set("TURKISH_KEY", "salam")
 
 	confInterface.SetDefaults(defaultConfig)
 	suite.Require().True(confInterface.Exist("TURKISH_KEY"))

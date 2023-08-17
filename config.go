@@ -197,8 +197,8 @@ func (config *Config) watchChange() {
 }
 
 // SetDefaults sets the default config parameters.
-func (config *Config) SetDefaults(defaultConfig DefaultConfig) {
-	for name, value := range defaultConfig.Parameters {
+func (config *Config) SetDefaults(params key_value.KeyValue) {
+	for name, value := range params {
 		if value == nil {
 			continue
 		}

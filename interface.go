@@ -11,7 +11,7 @@ type Interface interface {
 	// Watch for the changes
 	Watch(func(interface{}, error)) error
 
-	SetDefaults(config DefaultConfig)
+	SetDefaults(value key_value.KeyValue)
 	SetDefault(string, interface{})
 	Set(string, interface{})
 	Exist(string) bool
