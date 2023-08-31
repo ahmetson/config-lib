@@ -8,10 +8,15 @@ replace github.com/ahmetson/os-lib => D:/sds/os-lib
 
 replace github.com/ahmetson/log-lib => D:/sds/log-lib
 
+replace github.com/ahmetson/handler-lib => D:/sds/handler-lib
+
 require (
+	github.com/ahmetson/client-lib v0.0.0-20230814161235-c87ba71fcc40
 	github.com/ahmetson/common-lib v0.0.0-20230717140750-5e95e61d69c2
+	github.com/ahmetson/handler-lib v0.0.0-20230830171434-f5b93c8d073b
 	github.com/ahmetson/log-lib v0.0.0-20230814152407-68a090e4a798
-	github.com/ahmetson/os-lib v0.0.0-20230814145625-f740000b86ca
+	github.com/ahmetson/os-lib v0.0.0-20230814151458-0e1874b6df31
+	github.com/ahmetson/service-lib v0.0.0-20230815160941-419a8efca946
 	github.com/fsnotify/fsnotify v1.6.0
 	github.com/spf13/viper v1.15.0
 	github.com/stretchr/testify v1.8.2
@@ -49,6 +54,8 @@ require (
 
 require (
 	github.com/joho/godotenv v1.4.0 // indirect
+	github.com/pebbe/zmq4 v1.2.9 // indirect
+	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5 // indirect
 	golang.org/x/sys v0.8.0 // indirect
 	golang.org/x/text v0.9.0 // indirect
 )
