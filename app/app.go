@@ -165,6 +165,33 @@ func setDefault(execPath string, engine engine.Interface) {
 	engine.SetDefault(envConfigPath, execPath)
 }
 
+// Service by id returned from the app configuration.
+// If not found, return nil
+func (a *App) Service(id string) *config.Service {
+	for _, s := range a.Services {
+		if s.Id == id {
+			return s
+		}
+	}
+
+	return nil
+}
+
+// ServiceByUrl returns the first service of an url type.
+func (a *App) ServiceByUrl(url string) *config.Service {
+	for _, s := range a.Services {
+		if s.Url == url {
+			return s
+		}
+	}
+
+	return nil
+}
+
+func (a *App) SetService(s *config.Service) {
+	a.Services = append(a.Services, s)
+}
+
 //
 //// Prepare the services by validating, linting the configurations, as well as setting up the dependencies
 //func Prepare(independent *service.Service) error {
