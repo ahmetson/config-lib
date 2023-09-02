@@ -10,6 +10,8 @@ replace github.com/ahmetson/log-lib => D:/sds/log-lib
 
 replace github.com/ahmetson/handler-lib => D:/sds/handler-lib
 
+replace github.com/ahmetson/client-lib => D:/sds/client-lib
+
 require (
 	github.com/ahmetson/client-lib v0.0.0-20230814161235-c87ba71fcc40
 	github.com/ahmetson/common-lib v0.0.0-20230717140750-5e95e61d69c2
@@ -49,7 +51,7 @@ require (
 	github.com/subosito/gotenv v1.4.2 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
