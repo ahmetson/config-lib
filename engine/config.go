@@ -1,10 +1,10 @@
-// Package config defines a config engine for the entire app in the dev context.
+// Package engine defines a config engine for the entire app in the dev context.
 //
 // The config features:
 //   - reads the command line arguments for the app such as authentication enabled or not.
 //   - automatically loads the environment variables files.
 //   - Allows setting default variables if user didn't define them.
-package config
+package engine
 
 import (
 	"fmt"
@@ -18,8 +18,8 @@ import (
 	"github.com/spf13/viper"
 )
 
-// Config GetServiceConfig Engine based on viper.Viper
-type Config struct {
+// Dev context's configuration engine on viper.Viper
+type Dev struct {
 	viper *viper.Viper // used to keep default values
 
 	// Passed as --secure command line arg.
@@ -28,14 +28,21 @@ type Config struct {
 	handleChange func(interface{}, error)
 }
 
+func AppConfig(configPath string, configName string) key_value.KeyValue {
+	return key_value.Empty().
+		Set("name", configName).
+		Set("configPath", configPath).
+		Set("type", "yml")
+}
+
 // NewDev creates a global config for the entire application.
 //
 // Automatically reads the command line arguments.
 // Loads the environment variables.
 //
 // Logger should be a parent
-func NewDev() (*Config, error) {
-	config := Config{
+func NewDev() (*Dev, error) {
+	config := Dev{
 		handleChange: nil,
 	}
 
@@ -59,7 +66,7 @@ func NewDev() (*Config, error) {
 //	 config.Engine().SetConfigName(configName)
 //		config.Engine().SetConfigType("yaml") // or json
 //		config.Engine().AddConfigPath(configPath)
-func (config *Config) Read(value key_value.KeyValue) (interface{}, error) {
+func (config *Dev) Read(value key_value.KeyValue) (interface{}, error) {
 	name, err := value.GetString("name")
 	if err != nil {
 		return nil, fmt.Errorf("value.GetString(`name`): %w", err)
@@ -89,17 +96,17 @@ func (config *Config) Read(value key_value.KeyValue) (interface{}, error) {
 		return nil, fmt.Errorf("config.yml Service should be a list not a one object")
 	}
 
-	return services[0], nil
+	return services, nil
 }
 
-func (config *Config) getServicePath() string {
+func (config *Dev) getServicePath() string {
 	configName := config.viper.GetString("SERVICE_CONFIG_NAME")
 	configPath := config.viper.GetString("SERVICE_CONFIG_PATH")
 
 	return filepath.Join(configPath, configName+".yml")
 }
 
-func (config *Config) getPath() key_value.KeyValue {
+func (config *Dev) getPath() key_value.KeyValue {
 	configName := config.viper.GetString("SERVICE_CONFIG_NAME")
 	configPath := config.viper.GetString("SERVICE_CONFIG_PATH")
 	ext := "yaml"
@@ -112,7 +119,7 @@ func (config *Config) getPath() key_value.KeyValue {
 // Watch could be called only once. If it's already called, then it will skip it without an error.
 //
 // For production, we could call config.viper.WatchRemoteConfig() for example in etcd.
-func (config *Config) Watch(watchHandle func(interface{}, error)) error {
+func (config *Dev) Watch(watchHandle func(interface{}, error)) error {
 	if config.handleChange != nil {
 		return nil
 	}
@@ -138,7 +145,7 @@ func (config *Config) Watch(watchHandle func(interface{}, error)) error {
 }
 
 // If the file not exists, then watch for its appearance.
-func (config *Config) watchFileCreation() {
+func (config *Dev) watchFileCreation() {
 	servicePath := config.getServicePath()
 	for {
 		exists, err := path.FileExist(servicePath)
@@ -163,7 +170,7 @@ func (config *Config) watchFileCreation() {
 }
 
 // If file exists, then watch file deletion.
-func (config *Config) watchFileDeletion() {
+func (config *Dev) watchFileDeletion() {
 	servicePath := config.getServicePath()
 	for {
 		exists, err := path.FileExist(servicePath)
@@ -181,7 +188,7 @@ func (config *Config) watchFileDeletion() {
 	}
 }
 
-func (config *Config) watchChange() {
+func (config *Dev) watchChange() {
 	go config.watchFileDeletion()
 	// if file not exists, call the file appearance
 
@@ -197,7 +204,7 @@ func (config *Config) watchChange() {
 }
 
 // SetDefaults sets the default config parameters.
-func (config *Config) SetDefaults(params key_value.KeyValue) {
+func (config *Dev) SetDefaults(params key_value.KeyValue) {
 	for name, value := range params {
 		if value == nil {
 			continue
@@ -211,35 +218,35 @@ func (config *Config) SetDefaults(params key_value.KeyValue) {
 }
 
 // SetDefault sets the default config name to the value
-func (config *Config) SetDefault(name string, value interface{}) {
+func (config *Dev) SetDefault(name string, value interface{}) {
 	config.viper.SetDefault(name, value)
 }
 
-func (config *Config) Set(name string, value interface{}) {
+func (config *Dev) Set(name string, value interface{}) {
 	config.viper.Set(name, value)
 }
 
 // Exist Checks whether the config variable exists or not
 // If the config exists or its default value exists, then returns true.
-func (config *Config) Exist(name string) bool {
+func (config *Dev) Exist(name string) bool {
 	value := config.viper.GetString(name)
 	return len(value) > 0
 }
 
 // GetString Returns the config request as a string
-func (config *Config) GetString(name string) string {
+func (config *Dev) GetString(name string) string {
 	value := config.viper.GetString(name)
 	return value
 }
 
 // GetUint64 Returns the config request as an unsigned 64-bit number
-func (config *Config) GetUint64(name string) uint64 {
+func (config *Dev) GetUint64(name string) uint64 {
 	value := config.viper.GetUint64(name)
 	return value
 }
 
 // GetBool Returns the config request as a boolean
-func (config *Config) GetBool(name string) bool {
+func (config *Dev) GetBool(name string) bool {
 	value := config.viper.GetBool(name)
 	return value
 }

@@ -1,4 +1,4 @@
-package config
+package engine
 
 import (
 	"github.com/ahmetson/log-lib"
@@ -14,15 +14,15 @@ import (
 // Define the suite, and absorb the built-in basic suite
 // functionality from testify - including a T() method which
 // returns the current testing orchestra
-type TestInterfaceSuite struct {
+type TestEngineSuite struct {
 	suite.Suite
 	envPath   string
-	appConfig *Config
+	appConfig *Dev
 }
 
 // Make sure that Account is set to five
 // before each test
-func (suite *TestInterfaceSuite) SetupTest() {
+func (suite *TestEngineSuite) SetupTest() {
 	logger, _ := log.New("config_test", false)
 
 	os.Args = append(os.Args, "--plain")
@@ -58,37 +58,34 @@ func (suite *TestInterfaceSuite) SetupTest() {
 
 // All methods that begin with "Test" are run as tests within a
 // suite.
-func (suite *TestInterfaceSuite) TestRun() {
+func (suite *TestEngineSuite) TestRun() {
 	suite.Require().False(suite.appConfig.Secure)
 
-	var confInterface Interface = suite.appConfig
-
-	suite.Require().False(confInterface.Exist("TURKISH_KEY"))
+	suite.Require().False(suite.appConfig.Exist("TURKISH_KEY"))
 	defaultConfig := key_value.Empty().
 		// never will be written since env is already written
 		Set("STRING_KEY", "salam").
 		Set("TURKISH_KEY", "salam")
-
-	confInterface.SetDefaults(defaultConfig)
-	suite.Require().True(confInterface.Exist("TURKISH_KEY"))
-	suite.Require().Equal(confInterface.GetString("TURKISH_KEY"), "salam")
+	suite.appConfig.SetDefaults(defaultConfig)
+	suite.Require().True(suite.appConfig.Exist("TURKISH_KEY"))
+	suite.Require().Equal(suite.appConfig.GetString("TURKISH_KEY"), "salam")
 
 	key := "NOT_FOUND"
 	value := "random_text"
-	suite.Require().False(confInterface.Exist(key))
-	suite.Require().Empty(confInterface.GetString(key))
-	confInterface.SetDefault(key, value)
-	suite.Require().Equal(confInterface.GetString(key), value)
+	suite.Require().False(suite.appConfig.Exist(key))
+	suite.Require().Empty(suite.appConfig.GetString(key))
+	suite.appConfig.SetDefault(key, value)
+	suite.Require().Equal(suite.appConfig.GetString(key), value)
 
-	suite.Require().True(confInterface.Exist("TRUE_KEY"))
-	suite.Require().True(confInterface.GetBool("TRUE_KEY"))
-	suite.Require().True(confInterface.Exist("FALSE_KEY"))
-	suite.Require().False(confInterface.GetBool("FALSE_KEY"))
-	suite.Require().Equal(confInterface.GetString("STRING_KEY"), "hello world")
-	suite.Require().Equal(uint64(123), confInterface.GetUint64("NUMBER_KEY"))
-	suite.Require().True(confInterface.Exist("FLOAT_KEY"))
-	suite.Require().Equal(confInterface.GetString("FLOAT_KEY"), "75.321")
-	suite.Require().Empty(confInterface.GetUint64("FLOAT_KEY"))
+	suite.Require().True(suite.appConfig.Exist("TRUE_KEY"))
+	suite.Require().True(suite.appConfig.GetBool("TRUE_KEY"))
+	suite.Require().True(suite.appConfig.Exist("FALSE_KEY"))
+	suite.Require().False(suite.appConfig.GetBool("FALSE_KEY"))
+	suite.Require().Equal(suite.appConfig.GetString("STRING_KEY"), "hello world")
+	suite.Require().Equal(uint64(123), suite.appConfig.GetUint64("NUMBER_KEY"))
+	suite.Require().True(suite.appConfig.Exist("FLOAT_KEY"))
+	suite.Require().Equal(suite.appConfig.GetString("FLOAT_KEY"), "75.321")
+	suite.Require().Empty(suite.appConfig.GetUint64("FLOAT_KEY"))
 
 	err := os.Remove(suite.envPath)
 	suite.Require().NoError(err, "delete the dump file: "+suite.envPath)
@@ -96,6 +93,6 @@ func (suite *TestInterfaceSuite) TestRun() {
 
 // In order for 'go test' to run this suite, we need to create
 // a normal test function and pass our suite to suite.Run
-func TestInterface(t *testing.T) {
-	suite.Run(t, new(TestInterfaceSuite))
+func TestCommand(t *testing.T) {
+	suite.Run(t, new(TestEngineSuite))
 }
