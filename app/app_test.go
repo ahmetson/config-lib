@@ -42,35 +42,6 @@ func (test *TestAppSuite) SetupTest() {
 
 	test.execPath, err = path.CurrentDir()
 	s().NoError(err)
-
-	//os.Args = append(os.Args, "--plain")
-	//os.Args = append(os.Args, "--security-debug")
-	//os.Args = append(os.Args, "--number-key=5")
-	//
-	//envFile := "TRUE_KEY=true\n" +
-	//	"FALSE_KEY=false\n" +
-	//	"STRING_KEY=hello world\n" +
-	//	"NUMBER_KEY=123\n" +
-	//	"FLOAT_KEY=75.321\n"
-	//execPath, err := path.CurrentDir()
-	//test.Require().NoError(err)
-	//
-	//test.envPath = filepath.Join(execPath, ".test.env")
-	//logger.Info("log", "env path", test.envPath)
-	//
-	//os.Args = append(os.Args, test.envPath)
-	//
-	//file, err := os.Create(test.envPath)
-	//test.Require().NoError(err)
-	//_, err = file.WriteString(envFile)
-	//test.Require().NoError(err, "failed to write the data into: "+test.envPath)
-	//err = file.Close()
-	//test.Require().NoError(err, "delete the dump file: "+test.envPath)
-	//
-	//test.Require().NoError(err)
-	//appConfig, err := NewDev()
-	//test.Require().NoError(err)
-	//test.appConfig = appConfig
 }
 
 func (test *TestAppSuite) createYaml(dir string, name string) {
