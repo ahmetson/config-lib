@@ -130,7 +130,7 @@ func (c *Client) SetService(s *config.Service) error {
 
 	err := c.socket.Submit(&req)
 	if err != nil {
-		return fmt.Errorf("socket.Request('%s'): %w", handler.SetService, err)
+		return fmt.Errorf("socket.Submit('%s'): %w", handler.SetService, err)
 	}
 
 	return nil
