@@ -16,6 +16,22 @@ type Client struct {
 	socket *client.Socket
 }
 
+type Interface interface {
+	Close() error
+	Timeout(duration time.Duration)
+	Attempt(attempt uint8)
+
+	Service(id string) (*config.Service, error)
+	ServiceByUrl(url string) (*config.Service, error)
+	SetService(s *config.Service) error
+	GenerateHandler(handlerType handlerConfig.HandlerType, category string, internal bool) (*handlerConfig.Handler, error)
+
+	Exist(name string) (bool, error)
+	String(name string) (string, error)
+	Uint64(name string) (uint64, error)
+	Bool(name string) (bool, error)
+}
+
 func New() (*Client, error) {
 	configHandler := handler.SocketConfig()
 	socketType := handlerConfig.SocketType(configHandler.Type)
