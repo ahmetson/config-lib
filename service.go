@@ -94,8 +94,7 @@ func RegisterPath(engine Interface) {
 	engine.Set("SERVICE_CONFIG_NAME", fileName)
 	engine.Set("SERVICE_CONFIG_PATH", dir)
 }
-
-func Read(engine Interface) (*Service, error) {
+func Read(engine engine.Interface) (*Service, error) {
 	configName := engine.GetString("SERVICE_CONFIG_NAME")
 	configPath := engine.GetString("SERVICE_CONFIG_PATH")
 	configExt := "yaml"
@@ -131,12 +130,12 @@ func (s *Service) PrepareService() error {
 }
 
 // UnmarshalService decodes the yaml into the config.
-func UnmarshalService(services []interface{}) (*Service, error) {
-	if len(services) == 0 {
+func UnmarshalService(raw interface{}) (*Service, error) {
+	if raw == nil {
 		return nil, nil
 	}
 
-	kv, err := key_value.NewFromInterface(services[0])
+	kv, err := key_value.NewFromInterface(raw)
 	if err != nil {
 		return nil, fmt.Errorf("failed to convert raw config service into map: %w", err)
 	}
