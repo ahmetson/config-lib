@@ -1,5 +1,5 @@
 // Package handler is defining an entry point to interact with
-// the configuration engine.
+// the configuration Engine.
 package handler
 
 import (
@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	Id           = "config" // only one instance of config engine can be in the service
+	Id           = "config" // only one instance of config Engine can be in the service
 	ServiceById  = "service"
 	ServiceByUrl = "service-by-url"
 	SetService   = "set-service"
@@ -27,7 +27,7 @@ const (
 )
 
 type Handler struct {
-	engine  engine.Interface
+	Engine  engine.Interface
 	app     *app.App
 	handler base.Interface
 }
@@ -43,9 +43,9 @@ func New() (*Handler, error) {
 
 	dev, err := engine.NewDev()
 	if err != nil {
-		return nil, fmt.Errorf("engine.NewDev: %w", err)
+		return nil, fmt.Errorf("Engine.NewDev: %w", err)
 	}
-	h.engine = dev
+	h.Engine = dev
 
 	allConfig, err := app.New(dev)
 	if err != nil {
@@ -144,46 +144,46 @@ func (handler *Handler) onExist(req message.Request) message.Reply {
 		return req.Fail(fmt.Sprintf("req.Parameters.GetString('name'): %v", err))
 	}
 
-	exist := handler.engine.Exist(name)
+	exist := handler.Engine.Exist(name)
 
 	param := key_value.Empty().Set("exist", exist)
 	return req.Ok(param)
 }
 
-// onString returns a string parameter from the engine.
+// onString returns a string parameter from the Engine.
 func (handler *Handler) onString(req message.Request) message.Reply {
 	name, err := req.Parameters.GetString("name")
 	if err != nil {
 		return req.Fail(fmt.Sprintf("req.Parameters.GetString('name'): %v", err))
 	}
 
-	value := handler.engine.GetString(name)
+	value := handler.Engine.GetString(name)
 
 	param := key_value.Empty().Set("value", value)
 	return req.Ok(param)
 }
 
-// onUint64 returns a string parameter from the engine.
+// onUint64 returns a string parameter from the Engine.
 func (handler *Handler) onUint64(req message.Request) message.Reply {
 	name, err := req.Parameters.GetString("name")
 	if err != nil {
 		return req.Fail(fmt.Sprintf("req.Parameters.GetString('name'): %v", err))
 	}
 
-	value := handler.engine.GetUint64(name)
+	value := handler.Engine.GetUint64(name)
 
 	param := key_value.Empty().Set("value", value)
 	return req.Ok(param)
 }
 
-// onBool returns a string parameter from the engine.
+// onBool returns a string parameter from the Engine.
 func (handler *Handler) onBool(req message.Request) message.Reply {
 	name, err := req.Parameters.GetString("name")
 	if err != nil {
 		return req.Fail(fmt.Sprintf("req.Parameters.GetString('name'): %v", err))
 	}
 
-	value := handler.engine.GetBool(name)
+	value := handler.Engine.GetBool(name)
 
 	param := key_value.Empty().Set("value", value)
 	return req.Ok(param)

@@ -49,7 +49,7 @@ func (test *TestHandlerSuite) SetupTest() {
 	test.serviceId = "id"
 	test.serviceUrl = "github.com/ahmetson/sample"
 
-	// app engine will load the yaml
+	// app Engine will load the yaml
 	test.createYaml(test.execPath, "app")
 
 	// The config handler
@@ -70,13 +70,13 @@ func (test *TestHandlerSuite) SetupTest() {
 	test.client = socket
 
 	// Make the file
-	test.handler.engine.SetDefault(app.EnvConfigPath, test.execPath)
-	test.handler.engine.SetDefault(app.EnvConfigName, "app")
+	test.handler.Engine.SetDefault(app.EnvConfigPath, test.execPath)
+	test.handler.Engine.SetDefault(app.EnvConfigName, "app")
 
 	// Creating some random config parameters to fetch
-	test.handler.engine.Set("bool", true)
-	test.handler.engine.Set("string", "hello world")
-	test.handler.engine.Set("uint64", uint64(123))
+	test.handler.Engine.Set("bool", true)
+	test.handler.Engine.Set("string", "hello world")
+	test.handler.Engine.Set("uint64", uint64(123))
 }
 
 func (test *TestHandlerSuite) TearDownTest() {
@@ -203,7 +203,7 @@ func (test *TestHandlerSuite) Test_13_onExist() {
 	s().True(exist)
 }
 
-// Test_14_GetParam returns the string, uint or boolean parameters from config engine
+// Test_14_GetParam returns the string, uint or boolean parameters from config Engine
 func (test *TestHandlerSuite) Test_14_GetParam() {
 	s := test.Require
 
