@@ -38,14 +38,12 @@ func (c *Client) Close() error {
 	return nil
 }
 
-func (c *Client) Timeout(duration time.Duration) *Client {
+func (c *Client) Timeout(duration time.Duration) {
 	c.socket.Timeout(duration)
-	return c
 }
 
-func (c *Client) Attempt(attempt uint8) *Client {
+func (c *Client) Attempt(attempt uint8) {
 	c.socket.Attempt(attempt)
-	return c
 }
 
 func (c *Client) Service(id string) (*config.Service, error) {
