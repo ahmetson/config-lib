@@ -26,5 +26,5 @@ func ValidateServiceType(t Type) error {
 }
 
 func (s Type) String() string {
-	return s
+	return string(s)
 }
