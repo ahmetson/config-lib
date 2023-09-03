@@ -3,11 +3,9 @@ package config
 import (
 	"fmt"
 	"github.com/ahmetson/common-lib/data_type/key_value"
+	"github.com/ahmetson/config-lib/engine"
 	"github.com/ahmetson/config-lib/service"
-	"github.com/ahmetson/config-lib/service/pipeline"
 	handlerConfig "github.com/ahmetson/handler-lib/config"
-	"github.com/ahmetson/os-lib/arg"
-	"github.com/ahmetson/os-lib/path"
 	"path/filepath"
 	"strings"
 )
@@ -27,7 +25,7 @@ type Service struct {
 	Controllers []*handlerConfig.Handler
 	Proxies     []*service.Proxy
 	Extensions  []*service.Extension
-	Pipelines   []*pipeline.Pipeline
+	//Pipelines   []*pipeline.Pipeline
 }
 
 type Services []Service
@@ -40,7 +38,7 @@ func Empty(id string, url string, serviceType Type) *Service {
 		Controllers: make([]*handlerConfig.Handler, 0),
 		Proxies:     make([]*service.Proxy, 0),
 		Extensions:  make([]*service.Extension, 0),
-		Pipelines:   make([]*pipeline.Pipeline, 0),
+		//Pipelines:   make([]*pipeline.Pipeline, 0),
 	}
 }
 
@@ -266,9 +264,9 @@ func (s *Service) SetController(controller *handlerConfig.Handler) {
 	s.Controllers = append(s.Controllers, controller)
 }
 
-func (s *Service) SetPipeline(pipeline *pipeline.Pipeline) {
-	s.Pipelines = append(s.Pipelines, pipeline)
-}
+//func (s *Service) SetPipeline(pipeline *pipeline.Pipeline) {
+//s.Pipelines = append(s.Pipelines, pipeline)
+//}
 
 func (s *Service) HasProxy() bool {
 	return len(s.Proxies) > 0
