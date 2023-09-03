@@ -52,7 +52,7 @@ func (test *TestHandlerSuite) SetupTest() {
 	// app Engine will load the yaml
 	test.createYaml(test.execPath, "app")
 
-	// The config handler
+	// The socketConfig handler
 	handler, err := New()
 	s().NoError(err)
 	test.handler = handler
@@ -61,11 +61,11 @@ func (test *TestHandlerSuite) SetupTest() {
 	s().NoError(err)
 	time.Sleep(time.Millisecond * 200) // wait a bit for initialization
 
-	config := SocketConfig()
+	socketConfig := SocketConfig()
 
-	// Client that will send requests to the config handler
+	// Client that will send requests to the socketConfig handler
 	zmqType := handlerConfig.SocketType(test.handler.handler.Type())
-	socket, err := client.NewRaw(zmqType, fmt.Sprintf("inproc://%s", config.Id))
+	socket, err := client.NewRaw(zmqType, fmt.Sprintf("inproc://%s", socketConfig.Id))
 	s().NoError(err)
 	test.client = socket
 
@@ -73,7 +73,7 @@ func (test *TestHandlerSuite) SetupTest() {
 	test.handler.Engine.SetDefault(app.EnvConfigPath, test.execPath)
 	test.handler.Engine.SetDefault(app.EnvConfigName, "app")
 
-	// Creating some random config parameters to fetch
+	// Creating some random socketConfig parameters to fetch
 	test.handler.Engine.Set("bool", true)
 	test.handler.Engine.Set("string", "hello world")
 	test.handler.Engine.Set("uint64", uint64(123))
@@ -203,7 +203,7 @@ func (test *TestHandlerSuite) Test_13_onExist() {
 	s().True(exist)
 }
 
-// Test_14_GetParam returns the string, uint or boolean parameters from config Engine
+// Test_14_GetParam returns the string, uint or boolean parameters from the config Engine
 func (test *TestHandlerSuite) Test_14_GetParam() {
 	s := test.Require
 
@@ -231,6 +231,54 @@ func (test *TestHandlerSuite) Test_14_GetParam() {
 	valueUint64, err := reply.Parameters.GetUint64("value")
 	s().NoError(err)
 	s().NotZero(valueUint64)
+}
+
+// Test_15_GenerateHandler set a new service
+func (test *TestHandlerSuite) Test_15_GenerateHandler() {
+	s := test.Require
+
+	category := "database"
+	handlerType := handlerConfig.ReplierType
+	internal := true
+
+	// Generate the internal socket
+	req := message.Request{Command: GenerateHandler, Parameters: key_value.Empty()}
+	req.Parameters.Set("internal", internal)
+	req.Parameters.Set("category", category)
+	req.Parameters.Set("handler_type", handlerType)
+	rep, err := test.client.Request(&req)
+	s().NoError(err)
+	s().True(rep.IsOK())
+
+	// Validate that data was generated
+	raw, err := rep.Parameters.GetKeyValue("handler")
+	s().NoError(err)
+	var generatedConfig handlerConfig.Handler
+	err = raw.Interface(&generatedConfig)
+	s().NoError(err)
+
+	s().NotEmpty(generatedConfig.Id)
+	s().Equal(category, generatedConfig.Category)
+	s().Equal(handlerType, generatedConfig.Type)
+	s().Zero(generatedConfig.Port)
+
+	// Generate the tcp socket
+	internal = false
+	req.Parameters.Set("internal", internal)
+	rep, err = test.client.Request(&req)
+	s().NoError(err)
+	s().True(rep.IsOK())
+
+	// Validate that data was generated
+	raw, err = rep.Parameters.GetKeyValue("handler")
+	s().NoError(err)
+	err = raw.Interface(&generatedConfig)
+	s().NoError(err)
+
+	s().NotEmpty(generatedConfig.Id)
+	s().Equal(category, generatedConfig.Category)
+	s().Equal(handlerType, generatedConfig.Type)
+	s().NotZero(generatedConfig.Port)
 }
 
 // In order for 'go test' to run this suite, we need to create

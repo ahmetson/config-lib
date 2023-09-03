@@ -16,14 +16,15 @@ import (
 )
 
 const (
-	Id           = "config" // only one instance of config Engine can be in the service
-	ServiceById  = "service"
-	ServiceByUrl = "service-by-url"
-	SetService   = "set-service"
-	ParamExist   = "param-exist"
-	StringParam  = "string-param"
-	Uint64Param  = "uint64-param"
-	BoolParam    = "bool-param"
+	Id              = "config" // only one instance of config Engine can be in the service
+	ServiceById     = "service"
+	ServiceByUrl    = "service-by-url"
+	SetService      = "set-service"
+	ParamExist      = "param-exist"
+	StringParam     = "string-param"
+	Uint64Param     = "uint64-param"
+	BoolParam       = "bool-param"
+	GenerateHandler = "generate-handler"
 )
 
 type Handler struct {
@@ -79,6 +80,9 @@ func New() (*Handler, error) {
 	if err := h.handler.Route(BoolParam, h.onBool); err != nil {
 		return nil, fmt.Errorf("handler.Route(%s): %w", BoolParam, err)
 	}
+	if err := h.handler.Route(GenerateHandler, h.onGenerateHandler); err != nil {
+		return nil, fmt.Errorf("handler.Route(%s): %w", GenerateHandler, err)
+	}
 
 	return h, nil
 }
@@ -117,6 +121,46 @@ func (handler *Handler) onServiceByUrl(req message.Request) message.Reply {
 	}
 
 	params := key_value.Empty().Set("service", s)
+	return req.Ok(params)
+}
+
+// onGenerateHandler generates the controller parameters
+func (handler *Handler) onGenerateHandler(req message.Request) message.Reply {
+	internal, err := req.Parameters.GetBoolean("internal")
+	if err != nil {
+		return req.Fail(fmt.Sprintf("req.Parameters.GetBoolean('internal'): %v", err))
+	}
+
+	handlerTypeStr, err := req.Parameters.GetString("handler_type")
+	if err != nil {
+		return req.Fail(fmt.Sprintf("req.Parameters.GetString('handler_type'): %v", err))
+	}
+
+	handlerType := handlerConfig.HandlerType(handlerTypeStr)
+	if err := handlerConfig.ValidateControllerType(handlerType); err != nil {
+		return req.Fail(fmt.Sprintf("handlerConfig.ValidateControllerType('%s'): %v", handlerTypeStr, err))
+	}
+
+	cat, err := req.Parameters.GetString("category")
+	if err != nil {
+		return req.Fail(fmt.Sprintf("req.Parameters.GetString('category'): %v", err))
+	}
+
+	if len(cat) == 0 {
+		return req.Fail("the 'category' is empty")
+	}
+
+	var generatedConfig *handlerConfig.Handler
+	if internal {
+		generatedConfig = handlerConfig.NewInternalHandler(handlerType, cat)
+	} else {
+		generatedConfig, err = handlerConfig.NewHandler(handlerType, cat)
+		if err != nil {
+			return req.Fail(fmt.Sprintf("handlerConfig.NewHandler(handler_type: '%s', cat: '%s'): %v", handlerTypeStr, cat, err))
+		}
+	}
+
+	params := key_value.Empty().Set("handler", generatedConfig)
 	return req.Ok(params)
 }
 

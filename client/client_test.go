@@ -4,6 +4,7 @@ import (
 	"github.com/ahmetson/config-lib"
 	"github.com/ahmetson/config-lib/app"
 	"github.com/ahmetson/config-lib/handler"
+	handlerConfig "github.com/ahmetson/handler-lib/config"
 	"github.com/ahmetson/log-lib"
 	"github.com/ahmetson/os-lib/path"
 	"gopkg.in/yaml.v3"
@@ -195,6 +196,28 @@ func (test *TestClientSuite) Test_14_GetParam() {
 	valueUint64, err := test.client.Uint64("uint64")
 	s().NoError(err)
 	s().NotZero(valueUint64)
+}
+
+// Test_15_GenerateHandler generate a handler
+func (test *TestClientSuite) Test_15_GenerateHandler() {
+	s := test.Require
+
+	handlerType := handlerConfig.ReplierType
+	category := "database"
+
+	// Generate the internal handler configuration
+	h, err := test.client.GenerateHandler(handlerType, category, true)
+	s().NoError(err)
+	s().Zero(h.Port)
+	s().Equal(handlerType, h.Type)
+	s().Equal(category, h.Category)
+
+	// Generate the tcp handler configuration
+	h, err = test.client.GenerateHandler(handlerType, category, false)
+	s().NoError(err)
+	s().NotZero(h.Port)
+	s().Equal(handlerType, h.Type)
+	s().Equal(category, h.Category)
 }
 
 // In order for 'go test' to run this suite, we need to create

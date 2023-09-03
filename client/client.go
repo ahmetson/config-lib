@@ -106,6 +106,8 @@ func (c *Client) ServiceByUrl(url string) (*config.Service, error) {
 	return &s, nil
 }
 
+// SetService writes the service configuration into the app configuration.
+// todo update the yaml file
 func (c *Client) SetService(s *config.Service) error {
 	req := message.Request{
 		Command:    handler.SetService,
@@ -118,6 +120,39 @@ func (c *Client) SetService(s *config.Service) error {
 	}
 
 	return nil
+}
+
+// GenerateHandler creates a configuration that could be added into the service
+func (c *Client) GenerateHandler(handlerType handlerConfig.HandlerType, category string, internal bool) (*handlerConfig.Handler, error) {
+	req := message.Request{
+		Command: handler.GenerateHandler,
+		Parameters: key_value.Empty().
+			Set("internal", internal).
+			Set("category", category).
+			Set("handler_type", handlerType),
+	}
+
+	rep, err := c.socket.Request(&req)
+	if err != nil {
+		return nil, fmt.Errorf("socket.Request('%s'): %w", handler.SetService, err)
+	}
+
+	if !rep.IsOK() {
+		return nil, fmt.Errorf("replied an error: %s", rep.Message)
+	}
+
+	raw, err := rep.Parameters.GetKeyValue("handler")
+	if err != nil {
+		return nil, fmt.Errorf("rep.Parameters.GetKeyValue('handler'): %v", err)
+	}
+
+	var h handlerConfig.Handler
+	err = raw.Interface(&h)
+	if err != nil {
+		return nil, fmt.Errorf("raw.Interface: %v", err)
+	}
+
+	return &h, nil
 }
 
 // Exist checks whether the given parameter exists in the config
