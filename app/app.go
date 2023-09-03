@@ -15,8 +15,8 @@ import (
 )
 
 const (
-	envConfigName = "CONFIG_NAME"
-	envConfigPath = "CONFIG_PATH"
+	EnvConfigName = "CONFIG_NAME"
+	EnvConfigPath = "CONFIG_PATH"
 )
 
 type App struct {
@@ -140,12 +140,12 @@ func flagExist(execPath string) (key_value.KeyValue, bool, error) {
 //
 // In case if it doesn't exist, it will try to load the default configuration.
 func envExist(configEngine engine.Interface) (key_value.KeyValue, bool, error) {
-	if !configEngine.Exist(envConfigName) || !configEngine.Exist(envConfigPath) {
+	if !configEngine.Exist(EnvConfigName) || !configEngine.Exist(EnvConfigPath) {
 		return nil, false, nil
 	}
 
-	configName := configEngine.GetString(envConfigName)
-	configPath := configEngine.GetString(envConfigPath)
+	configName := configEngine.GetString(EnvConfigName)
+	configPath := configEngine.GetString(EnvConfigPath)
 	absPath := path.AbsDir(configPath, configName+".yml")
 	exists, err := path.FileExist(absPath)
 	if err != nil {
@@ -161,8 +161,8 @@ func envExist(configEngine engine.Interface) (key_value.KeyValue, bool, error) {
 
 // setDefault paths of the local file to load by default
 func setDefault(execPath string, engine engine.Interface) {
-	engine.SetDefault(envConfigName, "app")
-	engine.SetDefault(envConfigPath, execPath)
+	engine.SetDefault(EnvConfigName, "app")
+	engine.SetDefault(EnvConfigPath, execPath)
 }
 
 // Service by id returned from the app configuration.
