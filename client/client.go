@@ -37,7 +37,7 @@ func New() (*Client, error) {
 	configHandler := handler.SocketConfig()
 	socketType := handlerConfig.SocketType(configHandler.Type)
 	c := clientConfig.New("", configHandler.Id, configHandler.Port, socketType).
-		UrlFunc(handlerConfig.ExternalUrlByClient)
+		UrlFunc(clientConfig.Url)
 
 	socket, err := client.New(c)
 	if err != nil {
