@@ -30,6 +30,7 @@ type Interface interface {
 	String(name string) (string, error)
 	Uint64(name string) (uint64, error)
 	Bool(name string) (bool, error)
+	SetDefault(name string, value interface{}) error
 }
 
 func New() (*Client, error) {
@@ -263,4 +264,19 @@ func (c *Client) Bool(name string) (bool, error) {
 	}
 
 	return value, nil
+}
+
+// SetDefault sets the default value
+func (c *Client) SetDefault(name string, value interface{}) error {
+	req := message.Request{
+		Command:    handler.SetDefaultParam,
+		Parameters: key_value.Empty().Set("name", name).Set("value", value),
+	}
+
+	err := c.socket.Submit(&req)
+	if err != nil {
+		return fmt.Errorf("socket.Submit('%s'): %w", handler.ParamExist, err)
+	}
+
+	return nil
 }

@@ -25,6 +25,7 @@ const (
 	Uint64Param     = "uint64-param"
 	BoolParam       = "bool-param"
 	GenerateHandler = "generate-handler"
+	SetDefaultParam = "set-default"
 )
 
 type Handler struct {
@@ -82,6 +83,9 @@ func New() (*Handler, error) {
 	}
 	if err := h.handler.Route(GenerateHandler, h.onGenerateHandler); err != nil {
 		return nil, fmt.Errorf("handler.Route(%s): %w", GenerateHandler, err)
+	}
+	if err := h.handler.Route(SetDefaultParam, h.onSetDefault); err != nil {
+		return nil, fmt.Errorf("handler.Route(%s): %w", SetDefaultParam, err)
 	}
 
 	return h, nil
@@ -191,6 +195,23 @@ func (handler *Handler) onExist(req message.Request) message.Reply {
 	exist := handler.Engine.Exist(name)
 
 	param := key_value.Empty().Set("exist", exist)
+	return req.Ok(param)
+}
+
+// onSetDefault set the default parameter in the Engine.
+func (handler *Handler) onSetDefault(req message.Request) message.Reply {
+	name, err := req.Parameters.GetString("name")
+	if err != nil {
+		return req.Fail(fmt.Sprintf("req.Parameters.GetString('name'): %v", err))
+	}
+	value, ok := req.Parameters["value"]
+	if !ok {
+		return req.Fail("req.Parameters['value'] not found")
+	}
+
+	handler.Engine.SetDefault(name, value)
+
+	param := key_value.Empty()
 	return req.Ok(param)
 }
 
