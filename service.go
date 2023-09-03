@@ -42,58 +42,6 @@ func Empty(id string, url string, serviceType Type) *Service {
 	}
 }
 
-// FileExist checks is there any configuration given
-func FileExist() (bool, error) {
-	execPath, err := path.CurrentDir()
-	if err != nil {
-		return false, fmt.Errorf("path.GetExecPath: %w", err)
-	}
-
-	configPath := ""
-	if arg.FlagExist(ConfigFlag) {
-		configPath = arg.FlagValue(ConfigFlag)
-	} else {
-		configPath = "service.yml"
-	}
-
-	absPath := path.AbsDir(execPath, configPath)
-	exists, err := path.FileExist(absPath)
-	if err != nil {
-		return false, fmt.Errorf("path.FileExists('%s'): %w", absPath, err)
-	}
-
-	return exists, nil
-}
-
-func SetDefault(engine Interface) {
-	execPath, _ := path.CurrentDir()
-	engine.SetDefault("SERVICE_CONFIG_NAME", "service")
-	engine.SetDefault("SERVICE_CONFIG_PATH", execPath)
-}
-
-func GetPath(engine Interface) string {
-	configName := engine.GetString("SERVICE_CONFIG_NAME")
-	configPath := engine.GetString("SERVICE_CONFIG_PATH")
-	configExt := "yaml"
-
-	return filepath.Join(configPath, configName+"."+configExt)
-}
-
-// RegisterPath sets the path to the yaml file
-func RegisterPath(engine Interface) {
-	if !arg.FlagExist(ConfigFlag) {
-		return
-	}
-	execPath, _ := path.CurrentDir()
-
-	configurationPath := arg.FlagValue(ConfigFlag)
-
-	absPath := path.AbsDir(execPath, configurationPath)
-
-	dir, fileName := path.DirAndFileName(absPath)
-	engine.Set("SERVICE_CONFIG_NAME", fileName)
-	engine.Set("SERVICE_CONFIG_PATH", dir)
-}
 func Read(engine engine.Interface) (*Service, error) {
 	configName := engine.GetString("SERVICE_CONFIG_NAME")
 	configPath := engine.GetString("SERVICE_CONFIG_PATH")
