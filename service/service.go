@@ -22,6 +22,7 @@ type Service struct {
 	Type       Type
 	Url        string
 	Id         string
+	Manager    *clientConfig.Client
 	Handlers   []*handlerConfig.Handler
 	Proxies    []*Proxy
 	Extensions []*clientConfig.Client
@@ -29,6 +30,16 @@ type Service struct {
 }
 
 type Services []Service
+
+func ManagerClient(id string, url string) *clientConfig.Client {
+	socketType := handlerConfig.SocketType(handlerConfig.SyncReplierType)
+	return &clientConfig.Client{
+		Id:         id,
+		ServiceUrl: url,
+		Port:       0,
+		TargetType: socketType,
+	}
+}
 
 func Empty(id string, url string, serviceType Type) *Service {
 	return &Service{
@@ -39,6 +50,7 @@ func Empty(id string, url string, serviceType Type) *Service {
 		Proxies:    make([]*Proxy, 0),
 		Extensions: make([]*clientConfig.Client, 0),
 		ProxyOrder: []string{},
+		Manager:    ManagerClient(id, url), // connecting to the service from other parents through dev context
 	}
 }
 
