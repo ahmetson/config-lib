@@ -18,7 +18,6 @@ require (
 	github.com/ahmetson/handler-lib v0.0.0-20230830171434-f5b93c8d073b
 	github.com/ahmetson/log-lib v0.0.0-20230814152407-68a090e4a798
 	github.com/ahmetson/os-lib v0.0.0-20230814151458-0e1874b6df31
-	github.com/ahmetson/service-lib v0.0.0-20230815160941-419a8efca946
 	github.com/fsnotify/fsnotify v1.6.0
 	github.com/spf13/viper v1.15.0
 	github.com/stretchr/testify v1.8.2
