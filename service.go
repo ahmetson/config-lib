@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	clientConfig "github.com/ahmetson/client-lib/config"
 	"github.com/ahmetson/common-lib/data_type/key_value"
 	"github.com/ahmetson/config-lib/engine"
 	"github.com/ahmetson/config-lib/service"
@@ -24,8 +25,8 @@ type Service struct {
 	Id         string
 	Handlers   []*handlerConfig.Handler
 	Proxies    []*service.Proxy
-	Extensions []*service.Extension
-	//Pipelines   []*pipeline.Pipeline
+	Extensions []*clientConfig.Client
+	Order      []string
 }
 
 type Services []Service
@@ -37,8 +38,7 @@ func Empty(id string, url string, serviceType Type) *Service {
 		Url:        url,
 		Handlers:   make([]*handlerConfig.Handler, 0),
 		Proxies:    make([]*service.Proxy, 0),
-		Extensions: make([]*service.Extension, 0),
-		//Pipelines:   make([]*pipeline.Pipeline, 0),
+		Extensions: make([]*clientConfig.Client, 0),
 	}
 }
 
@@ -163,11 +163,11 @@ func (s *Service) FirstHandler() (*handlerConfig.Handler, error) {
 	return handlers, nil
 }
 
-// GetExtension returns the extension config by the url.
+// ExtensionByUrl returns the first occurred extension config by the url.
 // If the extension doesn't exist, then it returns nil
-func (s *Service) GetExtension(url string) *service.Extension {
+func (s *Service) ExtensionByUrl(url string) *clientConfig.Client {
 	for _, e := range s.Extensions {
-		if e.Url == url {
+		if e.ServiceUrl == url {
 			return e
 		}
 	}
@@ -175,10 +175,10 @@ func (s *Service) GetExtension(url string) *service.Extension {
 	return nil
 }
 
-// GetProxy returns the proxy by its url. If it doesn't exist, returns nil
-func (s *Service) GetProxy(url string) *service.Proxy {
+// Proxy returns the proxy by its url. If it doesn't exist, returns nil
+func (s *Service) Proxy(id string) *service.Proxy {
 	for _, p := range s.Proxies {
-		if p.Url == url {
+		if p.Id == id {
 			return p
 		}
 	}
@@ -188,7 +188,7 @@ func (s *Service) GetProxy(url string) *service.Proxy {
 
 // SetProxy will set a new proxy. If it exists, it will overwrite it
 func (s *Service) SetProxy(proxy *service.Proxy) {
-	existing := s.GetProxy(proxy.Url)
+	existing := s.Proxy(proxy.Id)
 	if existing == nil {
 		s.Proxies = append(s.Proxies, proxy)
 	} else {
@@ -197,8 +197,8 @@ func (s *Service) SetProxy(proxy *service.Proxy) {
 }
 
 // SetExtension will set a new extension. If it exists, it will overwrite it
-func (s *Service) SetExtension(extension *service.Extension) {
-	existing := s.GetExtension(extension.Url)
+func (s *Service) SetExtension(extension *clientConfig.Client) {
+	existing := s.ExtensionByUrl(extension.ServiceUrl)
 	if existing == nil {
 		s.Extensions = append(s.Extensions, extension)
 	} else {

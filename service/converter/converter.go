@@ -64,7 +64,7 @@ func findPipelineBeginning(s *config.Service, requiredEnd string) (*service.Prox
 		//	continue
 		//}
 
-		proxy := s.GetProxy(beginning)
+		proxy := s.Proxy(beginning)
 		if proxy == nil {
 			return nil, fmt.Errorf("invalid config. pipeline '%s' beginning not found in proxy list", beginning)
 		}
