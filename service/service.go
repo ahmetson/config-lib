@@ -141,16 +141,16 @@ func (s *Service) ValidateTypes() error {
 	return nil
 }
 
-// Handler returns the handler config by the handler name.
+// HandlerByCategory returns the handler config by the handler category.
 // If the handler doesn't exist, then it returns an error.
-func (s *Service) Handler(name string) (*handlerConfig.Handler, error) {
+func (s *Service) HandlerByCategory(category string) (*handlerConfig.Handler, error) {
 	for _, c := range s.Handlers {
-		if c.Category == name {
+		if c.Category == category {
 			return c, nil
 		}
 	}
 
-	return nil, fmt.Errorf("'%s' handler was not found in '%s' service's config", name, s.Url)
+	return nil, fmt.Errorf("'%s' category of handler was not found in '%s' service's config", category, s.Url)
 }
 
 // HandlersByCategory returns the multiple handlers of the given name.

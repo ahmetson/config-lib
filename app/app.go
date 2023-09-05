@@ -258,9 +258,9 @@ func (a *App) SetService(s *service.Service) {
 //	for category, raw := range independent.Handlers {
 //		c := raw.(handler.Interface)
 //
-//		handlerConfig, err := serviceConfig.Handler(category)
+//		handlerConfig, err := serviceConfig.HandlerByCategory(category)
 //		if err != nil {
-//			return fmt.Errorf("serviceConfig.Handler(%s): %w", category, err)
+//			return fmt.Errorf("serviceConfig.HandlerByCategory(%s): %w", category, err)
 //		}
 //
 //		if handlerConfig.Type != c.HandlerType() {
