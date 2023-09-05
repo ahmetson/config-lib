@@ -27,6 +27,7 @@ const (
 	BoolParam       = "bool-param"
 	GenerateHandler = "generate-handler"
 	SetDefaultParam = "set-default"
+	GenerateService = "generate-service"
 )
 
 type Handler struct {
@@ -90,6 +91,9 @@ func New() (*Handler, error) {
 	}
 	if err := h.handler.Route(ServiceExist, h.onServiceExist); err != nil {
 		return nil, fmt.Errorf("handler.Route(%s): %w", ServiceExist, err)
+	}
+	if err := h.handler.Route(GenerateService, h.onGenerateService); err != nil {
+		return nil, fmt.Errorf("handler.Route(%s): %w", GenerateService, err)
 	}
 
 	return h, nil
@@ -241,6 +245,45 @@ func (handler *Handler) onSetDefault(req message.Request) message.Reply {
 
 	param := key_value.Empty()
 	return req.Ok(param)
+}
+
+// onGenerateService generates the service parameters
+//
+// todo write the service into the yaml
+func (handler *Handler) onGenerateService(req message.Request) message.Reply {
+	id, err := req.Parameters.GetString("id")
+	if err != nil {
+		return req.Fail(fmt.Sprintf("req.Parameters.GetString('id'): %v", err))
+	}
+
+	if handler.app.Service(id) != nil {
+		return req.Fail(fmt.Sprintf("service('%s') exist", id))
+	}
+
+	url, err := req.Parameters.GetString("url")
+	if err != nil {
+		return req.Fail(fmt.Sprintf("req.Parameters.GetString('url'): %v", err))
+	}
+
+	typeStr, err := req.Parameters.GetString("type")
+	if err != nil {
+		return req.Fail(fmt.Sprintf("req.Parameters.GetString('type'): %v", err))
+	}
+
+	serviceType := service.Type(typeStr)
+	if err := service.ValidateServiceType(serviceType); err != nil {
+		return req.Fail(fmt.Sprintf("service.ValidateServiceType('%s'): %v", typeStr, err))
+	}
+
+	generatedService, err := service.Empty(id, url, serviceType)
+	if err != nil {
+		return req.Fail(fmt.Sprintf("service.Empty('%s', '%s', '%s'): %v", id, url, serviceType, err))
+	}
+
+	handler.app.SetService(generatedService)
+
+	params := key_value.Empty().Set("service", generatedService)
+	return req.Ok(params)
 }
 
 // onString returns a string parameter from the Engine.

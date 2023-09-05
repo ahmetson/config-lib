@@ -32,6 +32,8 @@ type Interface interface {
 	Bool(name string) (bool, error)
 	SetDefault(name string, value interface{}) error
 	ServiceExist(id string) (bool, error)
+	ServiceExistByUrl(url string) (bool, error)
+	GenerateService(id string, url string, serviceType service.Type) (*service.Service, error)
 }
 
 func New() (*Client, error) {
@@ -169,6 +171,39 @@ func (c *Client) GenerateHandler(handlerType handlerConfig.HandlerType, category
 	}
 
 	return &h, nil
+}
+
+// GenerateService creates a configuration of a service
+func (c *Client) GenerateService(id string, url string, serviceType service.Type) (*service.Service, error) {
+	req := message.Request{
+		Command: handler.GenerateService,
+		Parameters: key_value.Empty().
+			Set("id", id).
+			Set("url", url).
+			Set("type", serviceType),
+	}
+
+	rep, err := c.socket.Request(&req)
+	if err != nil {
+		return nil, fmt.Errorf("socket.Request('%s'): %w", handler.SetService, err)
+	}
+
+	if !rep.IsOK() {
+		return nil, fmt.Errorf("replied an error: %s", rep.Message)
+	}
+
+	raw, err := rep.Parameters.GetKeyValue("service")
+	if err != nil {
+		return nil, fmt.Errorf("rep.Parameters.GetKeyValue('handler'): %v", err)
+	}
+
+	var s service.Service
+	err = raw.Interface(&s)
+	if err != nil {
+		return nil, fmt.Errorf("raw.Interface: %v", err)
+	}
+
+	return &s, nil
 }
 
 // Exist checks whether the given parameter exists in the config
