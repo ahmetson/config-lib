@@ -26,7 +26,7 @@ type Service struct {
 	Handlers   []*handlerConfig.Handler
 	Proxies    []*service.Proxy
 	Extensions []*clientConfig.Client
-	Order      []string
+	ProxyOrder []string
 }
 
 type Services []Service
@@ -39,6 +39,7 @@ func Empty(id string, url string, serviceType Type) *Service {
 		Handlers:   make([]*handlerConfig.Handler, 0),
 		Proxies:    make([]*service.Proxy, 0),
 		Extensions: make([]*clientConfig.Client, 0),
+		ProxyOrder: []string{},
 	}
 }
 
