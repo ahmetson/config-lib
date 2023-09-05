@@ -47,7 +47,8 @@ func (test *TestAppSuite) SetupTest() {
 func (test *TestAppSuite) createYaml(dir string, name string) {
 	s := test.Require
 
-	sampleService := service.config.Empty("id", "github.com/ahmetson/sample", service.config.IndependentType)
+	sampleService, err := service.Empty("id", "github.com/ahmetson/sample", service.IndependentType)
+	s().NoError(err)
 	kv := key_value.Empty().Set("services", []interface{}{sampleService})
 
 	serviceConfig, err := yaml.Marshal(kv.Map())

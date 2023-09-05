@@ -93,7 +93,8 @@ func (test *TestHandlerSuite) TearDownTest() {
 func (test *TestHandlerSuite) createYaml(dir string, name string) {
 	s := test.Require
 
-	sampleService := service.Empty(test.serviceId, test.serviceUrl, service.IndependentType)
+	sampleService, err := service.Empty(test.serviceId, test.serviceUrl, service.IndependentType)
+	s().NoError(err)
 	kv := key_value.Empty().Set("services", []interface{}{sampleService})
 
 	serviceConfig, err := yaml.Marshal(kv.Map())
@@ -163,12 +164,13 @@ func (test *TestHandlerSuite) Test_11_ServiceByUrl() {
 func (test *TestHandlerSuite) Test_12_SetService() {
 	s := test.Require
 
-	sampleService := service.Empty(test.serviceId+"_2", test.serviceUrl+"_2", service.IndependentType)
+	sampleService, err := service.Empty(test.serviceId+"_2", test.serviceUrl+"_2", service.IndependentType)
+	s().NoError(err)
 
 	// No id parameter was given
 	req := message.Request{Command: SetService, Parameters: key_value.Empty()}
 	req.Parameters.Set("service", sampleService)
-	_, err := test.client.Request(&req)
+	_, err = test.client.Request(&req)
 	s().NoError(err)
 
 	// Validate that service was set in the config
@@ -239,11 +241,10 @@ func (test *TestHandlerSuite) Test_15_GenerateHandler() {
 
 	category := "database"
 	handlerType := handlerConfig.ReplierType
-	internal := true
 
 	// Generate the internal socket
 	req := message.Request{Command: GenerateHandler, Parameters: key_value.Empty()}
-	req.Parameters.Set("internal", internal)
+	req.Parameters.Set("internal", true)
 	req.Parameters.Set("category", category)
 	req.Parameters.Set("handler_type", handlerType)
 	rep, err := test.client.Request(&req)
@@ -263,8 +264,7 @@ func (test *TestHandlerSuite) Test_15_GenerateHandler() {
 	s().Zero(generatedConfig.Port)
 
 	// Generate the tcp socket
-	internal = false
-	req.Parameters.Set("internal", internal)
+	req.Parameters.Set("internal", false)
 	rep, err = test.client.Request(&req)
 	s().NoError(err)
 	s().True(rep.IsOK())
