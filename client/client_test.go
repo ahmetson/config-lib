@@ -1,9 +1,9 @@
 package client
 
 import (
-	"github.com/ahmetson/config-lib"
 	"github.com/ahmetson/config-lib/app"
 	"github.com/ahmetson/config-lib/handler"
+	"github.com/ahmetson/config-lib/service"
 	handlerConfig "github.com/ahmetson/handler-lib/config"
 	"github.com/ahmetson/log-lib"
 	"github.com/ahmetson/os-lib/path"
@@ -88,7 +88,7 @@ func (test *TestClientSuite) TearDownTest() {
 func (test *TestClientSuite) createYaml(dir string, name string) {
 	s := test.Require
 
-	sampleService := config.Empty(test.serviceId, test.serviceUrl, config.IndependentType)
+	sampleService := service.Empty(test.serviceId, test.serviceUrl, service.IndependentType)
 	kv := key_value.Empty().Set("services", []interface{}{sampleService})
 
 	serviceConfig, err := yaml.Marshal(kv.Map())
@@ -151,7 +151,7 @@ func (test *TestClientSuite) Test_11_ServiceByUrl() {
 func (test *TestClientSuite) Test_12_SetService() {
 	s := test.Require
 
-	sampleService := config.Empty(test.serviceId+"_2", test.serviceUrl+"_2", config.IndependentType)
+	sampleService := service.Empty(test.serviceId+"_2", test.serviceUrl+"_2", service.IndependentType)
 
 	// No id parameter was given
 	err := test.client.SetService(sampleService)

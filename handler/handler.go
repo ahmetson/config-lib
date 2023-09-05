@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"github.com/ahmetson/common-lib/data_type/key_value"
 	"github.com/ahmetson/common-lib/message"
-	"github.com/ahmetson/config-lib"
 	"github.com/ahmetson/config-lib/app"
 	"github.com/ahmetson/config-lib/engine"
+	"github.com/ahmetson/config-lib/service"
 	"github.com/ahmetson/handler-lib/base"
 	handlerConfig "github.com/ahmetson/handler-lib/config"
 	"github.com/ahmetson/handler-lib/replier"
@@ -174,7 +174,7 @@ func (handler *Handler) onSetService(req message.Request) message.Reply {
 	if err != nil {
 		return req.Fail(fmt.Sprintf("req.Parameters.GetKetValue('service'): %v", err))
 	}
-	var s config.Service
+	var s service.Service
 	err = raw.Interface(&s)
 	if err != nil {
 		return req.Fail(fmt.Sprintf("raw.Interface: %v", err))

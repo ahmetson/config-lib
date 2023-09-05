@@ -6,8 +6,8 @@ import (
 	clientConfig "github.com/ahmetson/client-lib/config"
 	"github.com/ahmetson/common-lib/data_type/key_value"
 	"github.com/ahmetson/common-lib/message"
-	"github.com/ahmetson/config-lib"
 	"github.com/ahmetson/config-lib/handler"
+	"github.com/ahmetson/config-lib/service"
 	handlerConfig "github.com/ahmetson/handler-lib/config"
 	"time"
 )
@@ -21,9 +21,9 @@ type Interface interface {
 	Timeout(duration time.Duration)
 	Attempt(attempt uint8)
 
-	Service(id string) (*config.Service, error)
-	ServiceByUrl(url string) (*config.Service, error)
-	SetService(s *config.Service) error
+	Service(id string) (*service.Service, error)
+	ServiceByUrl(url string) (*service.Service, error)
+	SetService(s *service.Service) error
 	GenerateHandler(handlerType handlerConfig.HandlerType, category string, internal bool) (*handlerConfig.Handler, error)
 
 	Exist(name string) (bool, error)
@@ -63,7 +63,7 @@ func (c *Client) Attempt(attempt uint8) {
 	c.socket.Attempt(attempt)
 }
 
-func (c *Client) Service(id string) (*config.Service, error) {
+func (c *Client) Service(id string) (*service.Service, error) {
 	req := message.Request{
 		Command:    handler.ServiceById,
 		Parameters: key_value.Empty().Set("id", id),
@@ -83,7 +83,7 @@ func (c *Client) Service(id string) (*config.Service, error) {
 		return nil, fmt.Errorf("rep.Parameters.GetKeyValue('service'): %v", err)
 	}
 
-	var s config.Service
+	var s service.Service
 	err = raw.Interface(&s)
 	if err != nil {
 		return nil, fmt.Errorf("raw.Interface: %v", err)
@@ -92,7 +92,7 @@ func (c *Client) Service(id string) (*config.Service, error) {
 	return &s, nil
 }
 
-func (c *Client) ServiceByUrl(url string) (*config.Service, error) {
+func (c *Client) ServiceByUrl(url string) (*service.Service, error) {
 	req := message.Request{
 		Command:    handler.ServiceByUrl,
 		Parameters: key_value.Empty().Set("url", url),
@@ -112,7 +112,7 @@ func (c *Client) ServiceByUrl(url string) (*config.Service, error) {
 		return nil, fmt.Errorf("rep.Parameters.GetKeyValue('service'): %v", err)
 	}
 
-	var s config.Service
+	var s service.Service
 	err = raw.Interface(&s)
 	if err != nil {
 		return nil, fmt.Errorf("raw.Interface: %v", err)
@@ -123,7 +123,7 @@ func (c *Client) ServiceByUrl(url string) (*config.Service, error) {
 
 // SetService writes the service configuration into the app configuration.
 // todo update the yaml file
-func (c *Client) SetService(s *config.Service) error {
+func (c *Client) SetService(s *service.Service) error {
 	req := message.Request{
 		Command:    handler.SetService,
 		Parameters: key_value.Empty().Set("service", s),

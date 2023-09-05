@@ -1,11 +1,10 @@
-package config
+package service
 
 import (
 	"fmt"
 	clientConfig "github.com/ahmetson/client-lib/config"
 	"github.com/ahmetson/common-lib/data_type/key_value"
 	"github.com/ahmetson/config-lib/engine"
-	"github.com/ahmetson/config-lib/service"
 	handlerConfig "github.com/ahmetson/handler-lib/config"
 	"path/filepath"
 	"strings"
@@ -24,7 +23,7 @@ type Service struct {
 	Url        string
 	Id         string
 	Handlers   []*handlerConfig.Handler
-	Proxies    []*service.Proxy
+	Proxies    []*Proxy
 	Extensions []*clientConfig.Client
 	ProxyOrder []string
 }
@@ -37,7 +36,7 @@ func Empty(id string, url string, serviceType Type) *Service {
 		Id:         id,
 		Url:        url,
 		Handlers:   make([]*handlerConfig.Handler, 0),
-		Proxies:    make([]*service.Proxy, 0),
+		Proxies:    make([]*Proxy, 0),
 		Extensions: make([]*clientConfig.Client, 0),
 		ProxyOrder: []string{},
 	}
@@ -177,7 +176,7 @@ func (s *Service) ExtensionByUrl(url string) *clientConfig.Client {
 }
 
 // Proxy returns the proxy by its url. If it doesn't exist, returns nil
-func (s *Service) Proxy(id string) *service.Proxy {
+func (s *Service) Proxy(id string) *Proxy {
 	for _, p := range s.Proxies {
 		if p.Id == id {
 			return p
@@ -188,7 +187,7 @@ func (s *Service) Proxy(id string) *service.Proxy {
 }
 
 // SetProxy will set a new proxy. If it exists, it will overwrite it
-func (s *Service) SetProxy(proxy *service.Proxy) {
+func (s *Service) SetProxy(proxy *Proxy) {
 	existing := s.Proxy(proxy.Id)
 	if existing == nil {
 		s.Proxies = append(s.Proxies, proxy)

@@ -8,8 +8,8 @@ package app
 import (
 	"fmt"
 	"github.com/ahmetson/common-lib/data_type/key_value"
-	"github.com/ahmetson/config-lib"
 	"github.com/ahmetson/config-lib/engine"
+	"github.com/ahmetson/config-lib/service"
 	"github.com/ahmetson/os-lib/arg"
 	"github.com/ahmetson/os-lib/path"
 )
@@ -20,7 +20,7 @@ const (
 )
 
 type App struct {
-	Services []*config.Service
+	Services []*service.Service
 	Id       string
 	ParentId string
 	Url      string
@@ -37,19 +37,19 @@ type App struct {
 func New(configEngine engine.Interface) (*App, error) {
 	// default app is empty
 	app := &App{
-		Services: make([]*config.Service, 0),
+		Services: make([]*service.Service, 0),
 	}
 
-	if arg.FlagExist(config.IdFlag) {
-		app.Id = arg.FlagValue(config.IdFlag)
+	if arg.FlagExist(service.IdFlag) {
+		app.Id = arg.FlagValue(service.IdFlag)
 	}
 
-	if arg.FlagExist(config.UrlFlag) {
-		app.Url = arg.FlagValue(config.UrlFlag)
+	if arg.FlagExist(service.UrlFlag) {
+		app.Url = arg.FlagValue(service.UrlFlag)
 	}
 
-	if arg.FlagExist(config.ParentFlag) {
-		app.ParentId = arg.FlagValue(config.ParentFlag)
+	if arg.FlagExist(service.ParentFlag) {
+		app.ParentId = arg.FlagValue(service.ParentFlag)
 	}
 
 	execPath, err := path.CurrentDir()
@@ -88,7 +88,7 @@ func New(configEngine engine.Interface) (*App, error) {
 	return app, nil
 }
 
-func read(configParam key_value.KeyValue, configEngine engine.Interface) ([]*config.Service, error) {
+func read(configParam key_value.KeyValue, configEngine engine.Interface) ([]*service.Service, error) {
 	raw, err := configEngine.Read(configParam)
 	if err != nil {
 		return nil, fmt.Errorf("configEngine.Read: %w", err)
@@ -99,9 +99,9 @@ func read(configParam key_value.KeyValue, configEngine engine.Interface) ([]*con
 		return nil, fmt.Errorf("rawServices is invalid: %v", rawServices)
 	}
 
-	services := make([]*config.Service, len(rawServices))
+	services := make([]*service.Service, len(rawServices))
 	for i, rawService := range rawServices {
-		unmarshalled, err := config.UnmarshalService(rawService)
+		unmarshalled, err := service.UnmarshalService(rawService)
 		if err != nil {
 			return nil, fmt.Errorf("config.UnMarshalService(%d): %w", i, err)
 		}
@@ -114,11 +114,11 @@ func read(configParam key_value.KeyValue, configEngine engine.Interface) ([]*con
 // flagExist checks is there any configuration flag.
 // If the configuration flag is set, it checks does it exist in the file system.
 func flagExist(execPath string) (key_value.KeyValue, bool, error) {
-	if !arg.FlagExist(config.ConfigFlag) {
+	if !arg.FlagExist(service.ConfigFlag) {
 		return nil, false, nil
 	}
 
-	configPath := arg.FlagValue(config.ConfigFlag)
+	configPath := arg.FlagValue(service.ConfigFlag)
 
 	absPath := path.AbsDir(execPath, configPath)
 
@@ -167,7 +167,7 @@ func setDefault(execPath string, engine engine.Interface) {
 
 // Service by id returned from the app configuration.
 // If not found, return nil
-func (a *App) Service(id string) *config.Service {
+func (a *App) Service(id string) *service.Service {
 	for _, s := range a.Services {
 		if s.Id == id {
 			return s
@@ -178,7 +178,7 @@ func (a *App) Service(id string) *config.Service {
 }
 
 // ServiceByUrl returns the first service of an url type.
-func (a *App) ServiceByUrl(url string) *config.Service {
+func (a *App) ServiceByUrl(url string) *service.Service {
 	for _, s := range a.Services {
 		if s.Url == url {
 			return s
@@ -188,7 +188,7 @@ func (a *App) ServiceByUrl(url string) *config.Service {
 	return nil
 }
 
-func (a *App) SetService(s *config.Service) {
+func (a *App) SetService(s *service.Service) {
 	a.Services = append(a.Services, s)
 }
 

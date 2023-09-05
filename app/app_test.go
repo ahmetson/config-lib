@@ -2,8 +2,8 @@ package app
 
 import (
 	"fmt"
-	"github.com/ahmetson/config-lib"
 	"github.com/ahmetson/config-lib/engine"
+	"github.com/ahmetson/config-lib/service"
 	"github.com/ahmetson/log-lib"
 	"github.com/ahmetson/os-lib/path"
 	"gopkg.in/yaml.v3"
@@ -47,7 +47,7 @@ func (test *TestAppSuite) SetupTest() {
 func (test *TestAppSuite) createYaml(dir string, name string) {
 	s := test.Require
 
-	sampleService := config.Empty("id", "github.com/ahmetson/sample", config.IndependentType)
+	sampleService := service.config.Empty("id", "github.com/ahmetson/sample", service.config.IndependentType)
 	kv := key_value.Empty().Set("services", []interface{}{sampleService})
 
 	serviceConfig, err := yaml.Marshal(kv.Map())
