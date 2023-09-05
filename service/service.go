@@ -28,17 +28,28 @@ type Service struct {
 
 type Services []Service
 
-func ManagerClient(id string, url string) *clientConfig.Client {
-	socketType := handlerConfig.SocketType(handlerConfig.SyncReplierType)
-	return &clientConfig.Client{
-		Id:         id,
-		ServiceUrl: url,
-		Port:       0,
-		TargetType: socketType,
+func ManagerClient(id string, url string) (*clientConfig.Client, error) {
+	newConfig, err := handlerConfig.NewHandler(handlerConfig.SyncReplierType, id+"_manager")
+	if err != nil {
+		return nil, fmt.Errorf("handlerConfig.NewHandler: %w", err)
 	}
+
+	socketType := handlerConfig.SocketType(handlerConfig.SyncReplierType)
+
+	return &clientConfig.Client{
+		Id:         newConfig.Id,
+		ServiceUrl: url,
+		Port:       newConfig.Port,
+		TargetType: socketType,
+	}, nil
 }
 
-func Empty(id string, url string, serviceType Type) *Service {
+func Empty(id string, url string, serviceType Type) (*Service, error) {
+	managerClient, err := ManagerClient(id, url)
+	if err != nil {
+		return nil, fmt.Errorf("ManagerClient('%s', '%s'): %w", id, url, err)
+	}
+
 	return &Service{
 		Type:       serviceType,
 		Id:         id,
@@ -47,8 +58,8 @@ func Empty(id string, url string, serviceType Type) *Service {
 		Proxies:    make([]*Proxy, 0),
 		Extensions: make([]*clientConfig.Client, 0),
 		ProxyOrder: []string{},
-		Manager:    ManagerClient(id, url), // connecting to the service from other parents through dev context
-	}
+		Manager:    managerClient, // connecting to the service from other parents through dev context
+	}, nil
 }
 
 func Read(engine engine.Interface) (*Service, error) {
