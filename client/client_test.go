@@ -88,7 +88,8 @@ func (test *TestClientSuite) TearDownTest() {
 func (test *TestClientSuite) createYaml(dir string, name string) {
 	s := test.Require
 
-	sampleService := service.Empty(test.serviceId, test.serviceUrl, service.IndependentType)
+	sampleService, err := service.Empty(test.serviceId, test.serviceUrl, service.IndependentType)
+	s().NoError(err)
 	kv := key_value.Empty().Set("services", []interface{}{sampleService})
 
 	serviceConfig, err := yaml.Marshal(kv.Map())
@@ -132,9 +133,9 @@ func (test *TestClientSuite) Test_10_ServiceById() {
 	s().Error(err)
 
 	// Successful request
-	service, err := test.client.Service(test.serviceId)
+	returnedService, err := test.client.Service(test.serviceId)
 	s().NoError(err)
-	s().NotNil(service)
+	s().NotNil(returnedService)
 }
 
 // Test_11_ServiceByUrl fetching service by url
@@ -142,25 +143,26 @@ func (test *TestClientSuite) Test_11_ServiceByUrl() {
 	s := test.Require
 
 	// No id parameter was given
-	service, err := test.client.ServiceByUrl(test.serviceUrl)
+	returnedService, err := test.client.ServiceByUrl(test.serviceUrl)
 	s().NoError(err)
-	s().NotNil(service)
+	s().NotNil(returnedService)
 }
 
 // Test_12_SetService set a new service
 func (test *TestClientSuite) Test_12_SetService() {
 	s := test.Require
 
-	sampleService := service.Empty(test.serviceId+"_2", test.serviceUrl+"_2", service.IndependentType)
+	sampleService, err := service.Empty(test.serviceId+"_2", test.serviceUrl+"_2", service.IndependentType)
+	s().NoError(err)
 
 	// No id parameter was given
-	err := test.client.SetService(sampleService)
+	err = test.client.SetService(sampleService)
 	s().NoError(err)
 
 	// Validate that service was set in the config
-	service, err := test.client.Service(test.serviceId + "_2")
+	returnedService, err := test.client.Service(test.serviceId + "_2")
 	s().NoError(err)
-	s().Equal(sampleService.Url, service.Url)
+	s().Equal(sampleService.Url, returnedService.Url)
 }
 
 // Test_13_onExist check parameter exists or not

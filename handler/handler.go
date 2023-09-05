@@ -19,6 +19,7 @@ const (
 	Id              = "config" // only one instance of config Engine can be in the service
 	ServiceById     = "service"
 	ServiceByUrl    = "service-by-url"
+	ServiceExist    = "service-exist"
 	SetService      = "set-service"
 	ParamExist      = "param-exist"
 	StringParam     = "string-param"
@@ -87,6 +88,9 @@ func New() (*Handler, error) {
 	if err := h.handler.Route(SetDefaultParam, h.onSetDefault); err != nil {
 		return nil, fmt.Errorf("handler.Route(%s): %w", SetDefaultParam, err)
 	}
+	if err := h.handler.Route(ServiceExist, h.onServiceExist); err != nil {
+		return nil, fmt.Errorf("handler.Route(%s): %w", ServiceExist, err)
+	}
 
 	return h, nil
 }
@@ -94,6 +98,30 @@ func New() (*Handler, error) {
 // SocketConfig parameter of the handler
 func SocketConfig() *handlerConfig.Handler {
 	return handlerConfig.NewInternalHandler(handlerConfig.ReplierType, Id)
+}
+
+// onServiceExist checks whether the service exist or not.
+// Either checks by the 'id' or by the 'url' parameter.
+//
+// Returns 'exist' parameter.
+func (handler *Handler) onServiceExist(req message.Request) message.Reply {
+	id, err := req.Parameters.GetString("id")
+	if err == nil {
+		s := handler.app.Service(id)
+		exist := s != nil
+		params := key_value.Empty().Set("exist", exist)
+		return req.Ok(params)
+	}
+
+	url, err := req.Parameters.GetString("url")
+	if err == nil {
+		s := handler.app.ServiceByUrl(url)
+		exist := s != nil
+		params := key_value.Empty().Set("exist", exist)
+		return req.Ok(params)
+	}
+
+	return req.Fail(fmt.Sprintf("need 'id' or 'url' parameter"))
 }
 
 // onService returns a service by service id

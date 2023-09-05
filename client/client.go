@@ -31,6 +31,7 @@ type Interface interface {
 	Uint64(name string) (uint64, error)
 	Bool(name string) (bool, error)
 	SetDefault(name string, value interface{}) error
+	ServiceExist(id string) (bool, error)
 }
 
 func New() (*Client, error) {
@@ -279,4 +280,38 @@ func (c *Client) SetDefault(name string, value interface{}) error {
 	}
 
 	return nil
+}
+
+// ServiceExist checks whether the service exists or not
+func (c *Client) ServiceExist(id string) (bool, error) {
+	return c.serviceExist("id", id)
+}
+
+// ServiceExistByUrl checks whether the service exists or not by its url
+func (c *Client) ServiceExistByUrl(url string) (bool, error) {
+	return c.serviceExist("url", url)
+}
+
+// ServiceExist checks whether the service exists or not by the parameter
+func (c *Client) serviceExist(name string, value string) (bool, error) {
+	req := message.Request{
+		Command:    handler.ServiceExist,
+		Parameters: key_value.Empty().Set(name, value),
+	}
+
+	reply, err := c.socket.Request(&req)
+	if err != nil {
+		return false, fmt.Errorf("socket.Request('%s'): %w", handler.ServiceExist, err)
+	}
+
+	if !reply.IsOK() {
+		return false, fmt.Errorf("reply.Message: %s", reply.Message)
+	}
+
+	exist, err := reply.Parameters.GetBoolean("exist")
+	if err != nil {
+		return false, fmt.Errorf("reply.Parameters.GetBoolean('exist'): %w", err)
+	}
+
+	return exist, nil
 }
