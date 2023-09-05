@@ -195,8 +195,8 @@ func (a *App) SetService(s *config.Service) {
 //
 //// Prepare the services by validating, linting the configurations, as well as setting up the dependencies
 //func Prepare(independent *service.Service) error {
-//	if len(independent.Controllers) == 0 {
-//		return fmt.Errorf("no Controllers. call service.AddController")
+//	if len(independent.Handlers) == 0 {
+//		return fmt.Errorf("no Handlers. call service.AddHandler()")
 //	}
 //
 //	// validate the service itself
@@ -222,7 +222,7 @@ func (a *App) SetService(s *config.Service) {
 //}
 //
 //func createConfiguration(independent *service.Service) error {
-//	independent.Config = config.Empty(independent.Id(), independent.Url(), config.IndependentType)
+//	independent.SocketConfig = config.Empty(independent.Id(), independent.Url(), config.IndependentType)
 //
 //	if err := createHandlerConfiguration(independent); err != nil {
 //		return fmt.Errorf("createHandlerConfiguration: %w", err)
@@ -231,23 +231,21 @@ func (a *App) SetService(s *config.Service) {
 //	return nil
 //}
 //
-//func createHandlerConfiguration(independent *service.Service) error {
-//	// validate the Controllers
-//	for category, controllerInterface := range independent.Controllers {
-//		c := controllerInterface.(handler.Interface)
+//func createHandlerConfiguration(internal bool, independent *config.Service) error {
+//	// validate the Handlers
+//	for category, config := range independent.Handlers {
+//		newConfig := handlerConfig.NewHandler(config.Type, config.Category)
 //
-//		controllerConfig := handlerConfig.NewController(c.ControllerType(), category)
-//
-//		sourceInstance, err := handlerConfig.NewInstance(controllerConfig.Category)
+//		sourceInstance, err := handlerConfig.NewInstance(newConfig.Category)
 //		if err != nil {
 //			return fmt.Errorf("service.NewInstance: %w", err)
 //		}
-//		controllerConfig.Instances = append(controllerConfig.Instances, *sourceInstance)
-//		independent.Config.SetController(controllerConfig)
+//		newConfig.Instances = append(newConfig.Instances, *sourceInstance)
+//		independent.SocketConfig.SetHandler(newConfig)
 //	}
 //	return nil
 //}
-//
+
 //func fillConfiguration(independent *service.Service) error {
 //	exist, err := config.FileExist()
 //	if err != nil {
@@ -265,33 +263,33 @@ func (a *App) SetService(s *config.Service) {
 //		return fmt.Errorf("config.Read: %w", err)
 //	}
 //
-//	if serviceConfig.Id != independent.Config.Id {
-//		return fmt.Errorf("service type is overwritten. expected '%s', not '%s'", independent.Config.Type, serviceConfig.Type)
+//	if serviceConfig.Id != independent.SocketConfig.Id {
+//		return fmt.Errorf("service type is overwritten. expected '%s', not '%s'", independent.SocketConfig.Type, serviceConfig.Type)
 //	}
 //
-//	// validate the Controllers
-//	for category, controllerInterface := range independent.Controllers {
-//		c := controllerInterface.(handler.Interface)
+//	// validate the Handlers
+//	for category, raw := range independent.Handlers {
+//		c := raw.(handler.Interface)
 //
-//		controllerConfig, err := serviceConfig.GetController(category)
+//		handlerConfig, err := serviceConfig.Handler(category)
 //		if err != nil {
-//			return fmt.Errorf("serviceConfig.GetController(%s): %w", category, err)
+//			return fmt.Errorf("serviceConfig.Handler(%s): %w", category, err)
 //		}
 //
-//		if controllerConfig.Type != c.ControllerType() {
-//			return fmt.Errorf("handler expected to be of '%s' type, not '%s'", c.ControllerType(), controllerConfig.Type)
+//		if handlerConfig.Type != c.HandlerType() {
+//			return fmt.Errorf("handler expected to be of '%s' type, not '%s'", c.HandlerType(), handlerConfig.Type)
 //		}
 //
-//		if len(controllerConfig.Instances) == 0 {
+//		if len(handlerConfig.Instances) == 0 {
 //			return fmt.Errorf("missing %s handler instances", category)
 //		}
 //
-//		if controllerConfig.Instances[0].Port == 0 {
+//		if handlerConfig.Instances[0].Port == 0 {
 //			return fmt.Errorf("the port should not be 0 in the source")
 //		}
 //	}
 //
-//	independent.Config = serviceConfig
+//	independent.SocketConfig = serviceConfig
 //
 //	return nil
 //}

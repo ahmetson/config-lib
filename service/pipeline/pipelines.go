@@ -1,11 +1,11 @@
 package pipeline
 
-func FindControllerEnds(allPipelines []*Pipeline) []*Pipeline {
+func FindHandlerEnds(allPipelines []*Pipeline) []*Pipeline {
 	pipelines := make([]*Pipeline, 0, len(allPipelines))
 	count := 0
 
 	for _, pipeline := range allPipelines {
-		if pipeline.End.IsController() {
+		if pipeline.End.IsHandler() {
 			pipelines[count] = pipeline
 			count++
 		}
@@ -16,7 +16,7 @@ func FindControllerEnds(allPipelines []*Pipeline) []*Pipeline {
 
 func FindServiceEnd(allPipelines []*Pipeline) *Pipeline {
 	for _, pipeline := range allPipelines {
-		if !pipeline.End.IsController() {
+		if !pipeline.End.IsHandler() {
 			return pipeline
 		}
 	}

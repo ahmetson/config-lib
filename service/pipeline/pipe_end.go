@@ -5,8 +5,8 @@ type PipeEnd struct {
 	Url string
 }
 
-// NewControllerPipeEnd creates a pipe end with the given name as the handler
-func NewControllerPipeEnd(end string) *PipeEnd {
+// NewHandlerEnd creates a pipe end with the given name as the handler
+func NewHandlerEnd(end string) *PipeEnd {
 	return &PipeEnd{
 		Url: "",
 		Id:  end,
@@ -14,10 +14,10 @@ func NewControllerPipeEnd(end string) *PipeEnd {
 }
 
 func NewThisServicePipeEnd() *PipeEnd {
-	return NewControllerPipeEnd("")
+	return NewHandlerEnd("")
 }
 
-func (end *PipeEnd) IsController() bool {
+func (end *PipeEnd) IsHandler() bool {
 	return len(end.Id) > 0
 }
 

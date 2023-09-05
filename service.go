@@ -19,12 +19,12 @@ const (
 
 // Service type defined in the config
 type Service struct {
-	Type        Type
-	Url         string
-	Id          string
-	Controllers []*handlerConfig.Handler
-	Proxies     []*service.Proxy
-	Extensions  []*service.Extension
+	Type       Type
+	Url        string
+	Id         string
+	Handlers   []*handlerConfig.Handler
+	Proxies    []*service.Proxy
+	Extensions []*service.Extension
 	//Pipelines   []*pipeline.Pipeline
 }
 
@@ -32,12 +32,12 @@ type Services []Service
 
 func Empty(id string, url string, serviceType Type) *Service {
 	return &Service{
-		Type:        serviceType,
-		Id:          id,
-		Url:         url,
-		Controllers: make([]*handlerConfig.Handler, 0),
-		Proxies:     make([]*service.Proxy, 0),
-		Extensions:  make([]*service.Extension, 0),
+		Type:       serviceType,
+		Id:         id,
+		Url:        url,
+		Handlers:   make([]*handlerConfig.Handler, 0),
+		Proxies:    make([]*service.Proxy, 0),
+		Extensions: make([]*service.Extension, 0),
 		//Pipelines:   make([]*pipeline.Pipeline, 0),
 	}
 }
@@ -112,19 +112,19 @@ func (s *Service) ValidateTypes() error {
 		return fmt.Errorf("identity.ValidateServiceType: %v", err)
 	}
 
-	for _, c := range s.Controllers {
-		if err := handlerConfig.ValidateControllerType(c.Type); err != nil {
-			return fmt.Errorf("handler.ValidateControllerType: %v", err)
+	for _, c := range s.Handlers {
+		if err := handlerConfig.IsValid(c.Type); err != nil {
+			return fmt.Errorf("handlerConfig.IsValid: %v", err)
 		}
 	}
 
 	return nil
 }
 
-// GetController returns the handler config by the handler name.
+// Handler returns the handler config by the handler name.
 // If the handler doesn't exist, then it returns an error.
-func (s *Service) GetController(name string) (*handlerConfig.Handler, error) {
-	for _, c := range s.Controllers {
+func (s *Service) Handler(name string) (*handlerConfig.Handler, error) {
+	for _, c := range s.Handlers {
 		if c.Category == name {
 			return c, nil
 		}
@@ -133,34 +133,34 @@ func (s *Service) GetController(name string) (*handlerConfig.Handler, error) {
 	return nil, fmt.Errorf("'%s' handler was not found in '%s' service's config", name, s.Url)
 }
 
-// GetControllers returns the multiple controllers of the given name.
-// If the controllers don't exist, then it returns an error
-func (s *Service) GetControllers(name string) ([]*handlerConfig.Handler, error) {
-	controllers := make([]*handlerConfig.Handler, 0, len(s.Controllers))
+// HandlersByCategory returns the multiple handlers of the given name.
+// If the handlers don't exist, then it returns an error
+func (s *Service) HandlersByCategory(name string) ([]*handlerConfig.Handler, error) {
+	handlers := make([]*handlerConfig.Handler, 0, len(s.Handlers))
 	count := 0
 
-	for _, c := range s.Controllers {
+	for _, c := range s.Handlers {
 		if c.Category == name {
-			controllers[count] = c
+			handlers[count] = c
 			count++
 		}
 	}
 
-	if len(controllers) == 0 {
-		return nil, fmt.Errorf("no '%s' controlelr config", name)
+	if len(handlers) == 0 {
+		return nil, fmt.Errorf("no '%s' handlers config", name)
 	}
-	return controllers, nil
+	return handlers, nil
 }
 
-// GetFirstController returns the handler without requiring its name.
-// If the service doesn't have controllers, then it will return an error.
-func (s *Service) GetFirstController() (*handlerConfig.Handler, error) {
-	if len(s.Controllers) == 0 {
-		return nil, fmt.Errorf("service '%s' doesn't have any controllers in yaml file", s.Url)
+// FirstHandler returns the handler without requiring its name.
+// If the service doesn't have handlers, then it will return an error.
+func (s *Service) FirstHandler() (*handlerConfig.Handler, error) {
+	if len(s.Handlers) == 0 {
+		return nil, fmt.Errorf("service '%s' doesn't have any handlers in yaml file", s.Url)
 	}
 
-	controller := s.Controllers[0]
-	return controller, nil
+	handlers := s.Handlers[0]
+	return handlers, nil
 }
 
 // GetExtension returns the extension config by the url.
@@ -206,9 +206,9 @@ func (s *Service) SetExtension(extension *service.Extension) {
 	}
 }
 
-// SetController adds a new handler. If the handler by the same name exists, it will add a new copy.
-func (s *Service) SetController(controller *handlerConfig.Handler) {
-	s.Controllers = append(s.Controllers, controller)
+// SetHandler adds a new handler. If the handler by the same name exists, it will add a new copy.
+func (s *Service) SetHandler(handler *handlerConfig.Handler) {
+	s.Handlers = append(s.Handlers, handler)
 }
 
 //func (s *Service) SetPipeline(pipeline *pipeline.Pipeline) {

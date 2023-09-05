@@ -3,7 +3,7 @@ package converter
 import (
 	"fmt"
 	clientConfig "github.com/ahmetson/client-lib/config"
-	"github.com/ahmetson/service-lib/config"
+	"github.com/ahmetson/config-lib"
 	"github.com/ahmetson/service-lib/config/service"
 )
 
@@ -16,21 +16,21 @@ func ServiceToProxy(s *config.Service) (service.Proxy, error) {
 		return service.Proxy{}, fmt.Errorf("only proxy type of service can be converted")
 	}
 
-	controllerConfig, err := s.GetController(service.SourceName)
+	sourceConfig, err := s.Handler(service.SourceName)
 	if err != nil {
-		return service.Proxy{}, fmt.Errorf("no source controllerConfig: %w", err)
+		return service.Proxy{}, fmt.Errorf("no source sourceConfig: %w", err)
 	}
 
-	if len(controllerConfig.Instances) == 0 {
+	if len(sourceConfig.Instances) == 0 {
 		return service.Proxy{}, fmt.Errorf("no source instances")
 	}
 
 	instance := clientConfig.Client{
-		Id: controllerConfig.Category + " instance 01",
+		Id: sourceConfig.Category + " instance 01",
 	}
 
 	if len(s.Proxies) == 0 {
-		instance.Port = controllerConfig.Instances[0].Port
+		instance.Port = sourceConfig.Instances[0].Port
 	} else {
 		beginning, err := findPipelineBeginning(s, service.SourceName)
 		if err != nil {
@@ -82,22 +82,22 @@ func ServiceToExtension(s *config.Service) (service.Extension, error) {
 		return service.Extension{}, fmt.Errorf("only proxy type of service can be converted")
 	}
 
-	controllerConfig, err := s.GetFirstController()
+	firstHandler, err := s.FirstHandler()
 	if err != nil {
-		return service.Extension{}, fmt.Errorf("no controllerConfig: %w", err)
+		return service.Extension{}, fmt.Errorf("no firstHandler: %w", err)
 	}
 
-	if len(controllerConfig.Instances) == 0 {
+	if len(firstHandler.Instances) == 0 {
 		return service.Extension{}, fmt.Errorf("no handler instances")
 	}
 
 	converted := service.Extension{
 		Url: s.Url,
-		Id:  controllerConfig.Category + " instance 01",
+		Id:  firstHandler.Category + " instance 01",
 	}
 
 	if !s.HasProxy() {
-		converted.Port = controllerConfig.Instances[0].Port
+		converted.Port = firstHandler.Instances[0].Port
 	} else {
 		beginning, err := findPipelineBeginning(s, service.SourceName)
 		if err != nil {

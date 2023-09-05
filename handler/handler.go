@@ -128,7 +128,7 @@ func (handler *Handler) onServiceByUrl(req message.Request) message.Reply {
 	return req.Ok(params)
 }
 
-// onGenerateHandler generates the controller parameters
+// onGenerateHandler generates the handler parameters
 func (handler *Handler) onGenerateHandler(req message.Request) message.Reply {
 	internal, err := req.Parameters.GetBoolean("internal")
 	if err != nil {
@@ -141,8 +141,8 @@ func (handler *Handler) onGenerateHandler(req message.Request) message.Reply {
 	}
 
 	handlerType := handlerConfig.HandlerType(handlerTypeStr)
-	if err := handlerConfig.ValidateControllerType(handlerType); err != nil {
-		return req.Fail(fmt.Sprintf("handlerConfig.ValidateControllerType('%s'): %v", handlerTypeStr, err))
+	if err := handlerConfig.IsValid(handlerType); err != nil {
+		return req.Fail(fmt.Sprintf("handlerConfig.IsValid('%s'): %v", handlerTypeStr, err))
 	}
 
 	cat, err := req.Parameters.GetString("category")
