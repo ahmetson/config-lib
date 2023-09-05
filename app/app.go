@@ -21,9 +21,6 @@ const (
 
 type App struct {
 	Services []*service.Service
-	Id       string
-	ParentId string
-	Url      string
 }
 
 // New App configuration.
@@ -40,18 +37,6 @@ func New(configEngine engine.Interface) (*App, error) {
 		Services: make([]*service.Service, 0),
 	}
 
-	if arg.FlagExist(service.IdFlag) {
-		app.Id = arg.FlagValue(service.IdFlag)
-	}
-
-	if arg.FlagExist(service.UrlFlag) {
-		app.Url = arg.FlagValue(service.UrlFlag)
-	}
-
-	if arg.FlagExist(service.ParentFlag) {
-		app.ParentId = arg.FlagValue(service.ParentFlag)
-	}
-
 	execPath, err := path.CurrentDir()
 	if err != nil {
 		return nil, fmt.Errorf("path.CurrentDir: %w", err)
@@ -62,6 +47,7 @@ func New(configEngine engine.Interface) (*App, error) {
 		return nil, fmt.Errorf("flagExist: %w", err)
 	}
 
+	// Load the configuration by flag parameter
 	if exist {
 		services, err := read(configParam, configEngine)
 		if err != nil {
@@ -77,6 +63,7 @@ func New(configEngine engine.Interface) (*App, error) {
 		return nil, fmt.Errorf("envExist: %w", err)
 	}
 
+	// Load the configuration by environment parameter
 	if exist {
 		services, err := read(configParam, configEngine)
 		if err != nil {
