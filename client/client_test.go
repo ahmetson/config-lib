@@ -56,7 +56,7 @@ func (test *TestClientSuite) SetupTest() {
 	test.handler = h
 
 	go func() {
-		err := test.handler.Run()
+		err := test.handler.Start()
 		s().NoError(err)
 	}()
 	time.Sleep(time.Millisecond * 200) // wait a bit for initialization

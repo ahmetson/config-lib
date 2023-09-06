@@ -57,10 +57,7 @@ func (test *TestHandlerSuite) SetupTest() {
 	s().NoError(err)
 	test.handler = handler
 
-	go func() {
-		err := test.handler.Run()
-		s().NoError(err)
-	}()
+	s().NoError(test.handler.Start())
 	time.Sleep(time.Millisecond * 200) // wait a bit for initialization
 
 	socketConfig := SocketConfig()
