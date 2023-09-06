@@ -325,8 +325,8 @@ func (handler *Handler) onBool(req message.Request) message.Reply {
 	return req.Ok(param)
 }
 
-func (handler *Handler) Start() error {
-	return handler.handler.Start()
+func (handler *Handler) Run() error {
+	return handler.handler.Run()
 }
 
 func (handler *Handler) Close() error {
