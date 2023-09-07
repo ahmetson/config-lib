@@ -11,6 +11,7 @@ import (
 	"github.com/ahmetson/config-lib/service"
 	"github.com/ahmetson/handler-lib/base"
 	handlerConfig "github.com/ahmetson/handler-lib/config"
+	"github.com/ahmetson/handler-lib/manager_client"
 	"github.com/ahmetson/handler-lib/replier"
 	"github.com/ahmetson/log-lib"
 )
@@ -331,9 +332,14 @@ func (handler *Handler) onBool(req message.Request) message.Reply {
 
 // onClose receives a close signal to close the handler and underlying engine.
 func (handler *Handler) onClose(req message.Request) message.Reply {
-	err := handler.handler.Close()
+
+	managerClient, err := manager_client.New(SocketConfig())
 	if err != nil {
 		return req.Fail(fmt.Sprintf("handler.Close: %v", err))
+	}
+	err = managerClient.Close()
+	if err != nil {
+		return req.Fail(fmt.Sprintf("managerClient.Close: %v", err))
 	}
 
 	param := key_value.Empty()
@@ -341,9 +347,11 @@ func (handler *Handler) onClose(req message.Request) message.Reply {
 }
 
 func (handler *Handler) Start() error {
-	return handler.handler.Start()
-}
 
-func (handler *Handler) Close() error {
-	return handler.handler.Close()
+	err := handler.handler.Start()
+	if err != nil {
+		return fmt.Errorf("handler.Start: %w", err)
+	}
+
+	return nil
 }
