@@ -79,8 +79,9 @@ func (test *TestClientSuite) SetupTest() {
 func (test *TestClientSuite) TearDownTest() {
 	s := test.Require
 
-	s().NoError(test.handler.Close())
-	s().NoError(test.client.Close())
+	if test.client != nil {
+		s().NoError(test.client.Close())
+	}
 
 	time.Sleep(time.Millisecond * 200) // wait a bit for closing threads
 
@@ -222,6 +223,19 @@ func (test *TestClientSuite) Test_15_GenerateHandler() {
 	s().NotZero(h.Port)
 	s().Equal(handlerType, h.Type)
 	s().Equal(category, h.Category)
+}
+
+// Test_16_Close close a handler
+func (test *TestClientSuite) Test_16_Close() {
+	s := test.Require
+
+	// Close the handler
+	err := test.client.Close()
+	s().NoError(err)
+
+	// Closed already, so the test suite doesn't have to close them.
+	test.handler = nil
+	test.client = nil
 }
 
 // In order for 'go test' to run this suite, we need to create

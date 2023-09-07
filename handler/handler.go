@@ -28,6 +28,7 @@ const (
 	GenerateHandler = "generate-handler"
 	SetDefaultParam = "set-default"
 	GenerateService = "generate-service"
+	Close           = "close"
 )
 
 type Handler struct {
@@ -94,6 +95,9 @@ func New() (*Handler, error) {
 	}
 	if err := h.handler.Route(GenerateService, h.onGenerateService); err != nil {
 		return nil, fmt.Errorf("handler.Route(%s): %w", GenerateService, err)
+	}
+	if err := h.handler.Route(Close, h.onClose); err != nil {
+		return nil, fmt.Errorf("handler.Route(%s): %w", Close, err)
 	}
 
 	return h, nil
@@ -322,6 +326,17 @@ func (handler *Handler) onBool(req message.Request) message.Reply {
 	value := handler.Engine.GetBool(name)
 
 	param := key_value.Empty().Set("value", value)
+	return req.Ok(param)
+}
+
+// onClose receives a close signal to close the handler and underlying engine.
+func (handler *Handler) onClose(req message.Request) message.Reply {
+	err := handler.handler.Close()
+	if err != nil {
+		return req.Fail(fmt.Sprintf("handler.Close: %v", err))
+	}
+
+	param := key_value.Empty()
 	return req.Ok(param)
 }
 

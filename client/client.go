@@ -50,7 +50,18 @@ func New() (*Client, error) {
 	return &Client{socket: socket}, nil
 }
 
+// Close the config handler and client.
 func (c *Client) Close() error {
+	req := message.Request{
+		Command:    handler.Close,
+		Parameters: key_value.Empty(),
+	}
+
+	err := c.socket.Submit(&req)
+	if err != nil {
+		return fmt.Errorf("socket.Submit('%s'): %w", handler.Close, err)
+	}
+
 	if c.socket != nil {
 		return c.socket.Close()
 	}
