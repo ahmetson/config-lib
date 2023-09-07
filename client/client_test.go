@@ -55,10 +55,7 @@ func (test *TestClientSuite) SetupTest() {
 	s().NoError(err)
 	test.handler = h
 
-	go func() {
-		err := test.handler.Start()
-		s().NoError(err)
-	}()
+	s().NoError(test.handler.Start())
 	time.Sleep(time.Millisecond * 200) // wait a bit for initialization
 
 	// Client that will send requests to the config handler
