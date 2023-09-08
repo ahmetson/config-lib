@@ -12,6 +12,9 @@ import (
 	"github.com/ahmetson/config-lib/service"
 	"github.com/ahmetson/os-lib/arg"
 	"github.com/ahmetson/os-lib/path"
+	"gopkg.in/yaml.v3"
+	"os"
+	"path/filepath"
 )
 
 const (
@@ -20,7 +23,10 @@ const (
 )
 
 type App struct {
-	Services []*service.Service
+	Services   []*service.Service
+	fileParams key_value.KeyValue
+	filePath   string
+	engine     engine.Interface
 }
 
 // New App configuration.
@@ -35,6 +41,7 @@ func New(configEngine engine.Interface) (*App, error) {
 	// default app is empty
 	app := &App{
 		Services: make([]*service.Service, 0),
+		engine:   configEngine,
 	}
 
 	execPath, err := path.CurrentDir()
@@ -42,14 +49,15 @@ func New(configEngine engine.Interface) (*App, error) {
 		return nil, fmt.Errorf("path.CurrentDir: %w", err)
 	}
 
-	configParam, exist, err := flagExist(execPath)
+	flagPath, fileExist, err := flagExist(execPath)
 	if err != nil {
 		return nil, fmt.Errorf("flagExist: %w", err)
 	}
 
 	// Load the configuration by flag parameter
-	if exist {
-		services, err := read(configParam, configEngine)
+	if fileExist {
+		app.fileParams = flagPath
+		services, err := read(flagPath, configEngine)
 		if err != nil {
 			return nil, fmt.Errorf("configEngine.Read: %w", err)
 		}
@@ -58,18 +66,36 @@ func New(configEngine engine.Interface) (*App, error) {
 	}
 
 	setDefault(execPath, configEngine)
-	configParam, exist, err = envExist(configEngine)
+	envPath, fileExist, err := envExist(configEngine)
 	if err != nil {
 		return nil, fmt.Errorf("envExist: %w", err)
 	}
 
 	// Load the configuration by environment parameter
-	if exist {
-		services, err := read(configParam, configEngine)
+	if fileExist {
+		app.fileParams = envPath
+		services, err := read(envPath, configEngine)
 		if err != nil {
 			return nil, fmt.Errorf("configEngine.Read: %w", err)
 		}
 		app.Services = services
+		return app, nil
+	}
+
+	// File doesn't exist, let's write it.
+	// Priority is the flag path.
+	// If the user didn't pass the flags, then use an environment path.
+	// The environment path will not be nil, since it will use the default path.
+	app.fileParams = flagPath
+	if flagPath == nil {
+		app.fileParams = envPath
+	}
+
+	if err := app.preparePath(); err != nil {
+		return nil, fmt.Errorf("app.preparePath: %w", err)
+	}
+	if err := app.write(); err != nil {
+		return nil, fmt.Errorf("app.write: %w", err)
 	}
 
 	return app, nil
@@ -119,7 +145,7 @@ func flagExist(execPath string) (key_value.KeyValue, bool, error) {
 	}
 
 	dir, fileName := path.DirAndFileName(configPath)
-	return engine.AppConfig(dir, fileName), true, nil
+	return engine.YamlPathParam(dir, fileName), true, nil
 }
 
 // envExist checks is there any configuration file path from env.
@@ -143,7 +169,7 @@ func envExist(configEngine engine.Interface) (key_value.KeyValue, bool, error) {
 		return nil, false, nil
 	}
 
-	return engine.AppConfig(configPath, configName), true, nil
+	return engine.YamlPathParam(configPath, configName), true, nil
 }
 
 // setDefault paths of the local file to load by default
@@ -175,11 +201,81 @@ func (a *App) ServiceByUrl(url string) *service.Service {
 	return nil
 }
 
-func (a *App) SetService(s *service.Service) {
+// SetService sets a new service into the configuration.
+// After setting, the app will write it to the file.
+func (a *App) SetService(s *service.Service) error {
 	a.Services = append(a.Services, s)
+
+	if err := a.write(); err != nil {
+		return fmt.Errorf("app.write: %w", err)
+	}
+
+	return nil
 }
 
-//
+func (a *App) createYaml() key_value.KeyValue {
+	var services = a.Services
+	kv := key_value.Empty()
+	kv.Set("services", services)
+
+	return kv
+}
+
+func (a *App) preparePath() error {
+	if a.fileParams == nil {
+		return fmt.Errorf("a.fileParams nil")
+	}
+	name, err := a.fileParams.GetString("name")
+	if err != nil {
+		return fmt.Errorf("a.fileParams.GetString('name'): %w", err)
+	}
+	dirPath, err := a.fileParams.GetString("configPath")
+	if err != nil {
+		return fmt.Errorf("a.fileParams.GetString('configPath'): %w", err)
+	}
+
+	dirExist, err := path.DirExist(dirPath)
+	if err != nil {
+		return fmt.Errorf("path.DirExist('%s'): %w", dirPath, err)
+	}
+	if !dirExist {
+		err = path.MakeDir(dirPath)
+		if err != nil {
+			return fmt.Errorf("path.MakeDir('%s'): %w", dirPath, err)
+		}
+	}
+	a.filePath = filepath.Join(dirPath, name+".yml")
+
+	return nil
+}
+
+// Writes the service as the yaml on the given path.
+// If the path doesn't contain the file extension, it will through an error
+func (a *App) write() error {
+	kv := a.createYaml()
+
+	appConfig, err := yaml.Marshal(kv.Map())
+	if err != nil {
+		return fmt.Errorf("yaml.Marshal: %w", err)
+	}
+	a.engine.Set("services", a.Services)
+
+	f, _ := os.OpenFile(a.filePath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+	_, err = f.Write(appConfig)
+	closeErr := f.Close()
+	if closeErr != nil {
+		if err != nil {
+			return fmt.Errorf("%v: file.Close: %w", err, closeErr)
+		} else {
+			return fmt.Errorf("file.Close: %w", closeErr)
+		}
+	} else if err != nil {
+		return fmt.Errorf("file.Write: %w", err)
+	}
+
+	return nil
+}
+
 //// Prepare the services by validating, linting the configurations, as well as setting up the dependencies
 //func Prepare(independent *service.Service) error {
 //	if len(independent.Handlers) == 0 {

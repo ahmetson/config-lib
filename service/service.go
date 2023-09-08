@@ -240,14 +240,6 @@ func (s *Service) HasProxy() bool {
 	return len(s.Proxies) > 0
 }
 
-func CreateYaml(configs ...*Service) key_value.KeyValue {
-	var services = configs
-	kv := key_value.Empty()
-	kv.Set("Services", services)
-
-	return kv
-}
-
 // validateServicePath returns an error if the path is not a valid .yml link
 func validateServicePath(path string) error {
 	if len(path) < 5 || len(filepath.Base(path)) < 5 {
@@ -260,35 +252,6 @@ func validateServicePath(path string) error {
 
 	return nil
 }
-
-//// WriteService writes the service as the yaml on the given path.
-//// If the path doesn't contain the file extension, it will through an error
-//func (ctx *Context) SetConfig(url string, service *config.Service) error {
-//	path := ctx.ConfigurationPath(url)
-//
-//	if err := validateServicePath(path); err != nil {
-//		return fmt.Errorf("validateServicePath: %w", err)
-//	}
-//
-//	kv := CreateYaml(service)
-//
-//	serviceConfig, err := yaml.Marshal(kv.Map())
-//	if err != nil {
-//		return fmt.Errorf("failed to marshall config.Service: %w", err)
-//	}
-//
-//	f, _ := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
-//	_, err = f.Write(serviceConfig)
-//	closeErr := f.Close()
-//	if err != nil {
-//		return fmt.Errorf("failed to write service into the given path: %w", err)
-//	} else if closeErr != nil {
-//		return fmt.Errorf("failed to close the file descriptor: %w", closeErr)
-//	} else {
-//		return nil
-//	}
-//}
-//
 
 //
 //// GetConfig on the given path.

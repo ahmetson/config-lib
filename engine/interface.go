@@ -8,6 +8,7 @@ import (
 type Interface interface {
 	// Read the specific configuration on a remote file and add it into itself
 	Read(key_value.KeyValue) (interface{}, error)
+
 	// Watch for the changes
 	Watch(func(interface{}, error)) error
 

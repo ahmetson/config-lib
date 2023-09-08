@@ -217,7 +217,10 @@ func (handler *Handler) onSetService(req message.Request) message.Reply {
 		return req.Fail(fmt.Sprintf("raw.Interface: %v", err))
 	}
 
-	handler.app.SetService(&s)
+	err = handler.app.SetService(&s)
+	if err != nil {
+		return req.Fail(fmt.Sprintf("app.SetService: %v", err))
+	}
 
 	return req.Ok(key_value.Empty())
 }

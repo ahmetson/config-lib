@@ -28,13 +28,6 @@ type Dev struct {
 	handleChange func(interface{}, error)
 }
 
-func AppConfig(configPath string, configName string) key_value.KeyValue {
-	return key_value.Empty().
-		Set("name", configName).
-		Set("configPath", configPath).
-		Set("type", "yml")
-}
-
 // NewDev creates a global config for the entire application.
 //
 // Automatically reads the command line arguments.
@@ -57,6 +50,14 @@ func NewDev() (*Dev, error) {
 	config.viper.AutomaticEnv()
 
 	return &config, nil
+}
+
+// YamlPathParam creates a file parameter.
+func YamlPathParam(configPath string, configName string) key_value.KeyValue {
+	return key_value.Empty().
+		Set("name", configName).
+		Set("configPath", configPath).
+		Set("type", "yaml")
 }
 
 // ReadFile reads the config and returns it.
