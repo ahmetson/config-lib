@@ -62,6 +62,10 @@ func New(configEngine engine.Interface) (*App, error) {
 			return nil, fmt.Errorf("configEngine.Read: %w", err)
 		}
 		app.Services = services
+		if err := app.preparePath(); err != nil {
+			return nil, fmt.Errorf("app.preparePath: %w", err)
+		}
+
 		return app, nil
 	}
 
@@ -79,6 +83,9 @@ func New(configEngine engine.Interface) (*App, error) {
 			return nil, fmt.Errorf("configEngine.Read: %w", err)
 		}
 		app.Services = services
+		if err := app.preparePath(); err != nil {
+			return nil, fmt.Errorf("app.preparePath: %w", err)
+		}
 		return app, nil
 	}
 
