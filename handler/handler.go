@@ -285,8 +285,6 @@ func (handler *Handler) onGenerateService(req message.Request) message.Reply {
 		return req.Fail(fmt.Sprintf("service.Empty('%s', '%s', '%s'): %v", id, url, serviceType, err))
 	}
 
-	handler.app.SetService(generatedService)
-
 	params := key_value.Empty().Set("service", generatedService)
 	return req.Ok(params)
 }
