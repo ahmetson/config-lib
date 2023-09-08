@@ -6,8 +6,6 @@ import (
 	"github.com/ahmetson/common-lib/data_type/key_value"
 	"github.com/ahmetson/config-lib/engine"
 	handlerConfig "github.com/ahmetson/handler-lib/config"
-	"path/filepath"
-	"strings"
 )
 
 const (
@@ -239,71 +237,3 @@ func (s *Service) SetHandler(handler *handlerConfig.Handler) {
 func (s *Service) HasProxy() bool {
 	return len(s.Proxies) > 0
 }
-
-// validateServicePath returns an error if the path is not a valid .yml link
-func validateServicePath(path string) error {
-	if len(path) < 5 || len(filepath.Base(path)) < 5 {
-		return fmt.Errorf("path is too short")
-	}
-	_, found := strings.CutSuffix(path, ".yml")
-	if !found {
-		return fmt.Errorf("the path should end with '.yml'")
-	}
-
-	return nil
-}
-
-//
-//// GetConfig on the given path.
-//// If a path is not obsolete, then it should be relative to the executable.
-//// The path should have the .yml extension
-//func (ctx *Context) GetConfig(url string) (*config.Service, error) {
-//	path := ctx.ConfigurationPath(url)
-//
-//	if err := validateServicePath(path); err != nil {
-//		return nil, fmt.Errorf("validateServicePath: %w", err)
-//	}
-//
-//	bytes, err := os.ReadFile(path)
-//	if err != nil {
-//		return nil, fmt.Errorf("os.ReadFile of %s: %w", path, err)
-//	}
-//
-//	yamlConfig := createYaml()
-//	kv := yamlConfig.Map()
-//	err = yaml.Unmarshal(bytes, &kv)
-//
-//	if err != nil {
-//		return nil, fmt.Errorf("yaml.Unmarshal of %s: %w", path, err)
-//	}
-//
-//	fmt.Println("service", kv)
-//
-//	yamlConfig = key_value.NewDev(kv)
-//	if err := yamlConfig.Exist("Services"); err != nil {
-//		return nil, fmt.Errorf("no services in yaml: %w", err)
-//	}
-//
-//	services, err := yamlConfig.GetKeyValueList("Services")
-//	if err != nil {
-//		return nil, fmt.Errorf("failed to get services as key value list: %w", err)
-//	}
-//
-//	if len(services) == 0 {
-//		return nil, fmt.Errorf("no services in the config")
-//	}
-//
-//	var serviceConfig config.Service
-//	err = services[0].Interface(&serviceConfig)
-//	if err != nil {
-//		return nil, fmt.Errorf("convert key value to Service: %w", err)
-//	}
-//
-//	err = serviceConfig.PrepareService()
-//	if err != nil {
-//		return nil, fmt.Errorf("prepareService: %w", err)
-//	}
-//
-//	return &serviceConfig, nil
-//}
-//
