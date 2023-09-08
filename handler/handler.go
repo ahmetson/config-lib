@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	Id              = "config" // only one instance of config Engine can be in the service
+	Id              = "handler" // only one instance of config Engine can be in the service
 	ServiceById     = "service"
 	ServiceByUrl    = "service-by-url"
 	ServiceExist    = "service-exist"
