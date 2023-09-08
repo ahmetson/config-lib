@@ -90,6 +90,9 @@ func New(configEngine engine.Interface) (*App, error) {
 	if flagPath == nil {
 		app.fileParams = envPath
 	}
+	if envPath == nil {
+		return nil, fmt.Errorf("envPath is nil")
+	}
 
 	if err := app.preparePath(); err != nil {
 		return nil, fmt.Errorf("app.preparePath: %w", err)
