@@ -154,7 +154,7 @@ func flagExist(execPath string) (key_value.KeyValue, bool, error) {
 		return nil, false, fmt.Errorf("file (%s) not found", absPath)
 	}
 
-	dir, fileName := path.DirAndFileName(configPath)
+	dir, fileName := path.DirAndFileName(absPath)
 	return engine.YamlPathParam(dir, fileName), true, nil
 }
 
