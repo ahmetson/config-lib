@@ -119,7 +119,7 @@ func read(configParam key_value.KeyValue, configEngine engine.Interface) ([]*ser
 
 	rawServices, ok := raw.([]interface{})
 	if !ok {
-		return nil, fmt.Errorf("rawServices is invalid: %v", rawServices)
+		return nil, fmt.Errorf("rawServices is invalid: %v", raw)
 	}
 
 	services := make([]*service.Service, len(rawServices))
