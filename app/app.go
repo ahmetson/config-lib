@@ -211,7 +211,17 @@ func (a *App) ServiceByUrl(url string) *service.Service {
 // SetService sets a new service into the configuration.
 // After setting, the app will write it to the file.
 func (a *App) SetService(s *service.Service) error {
-	a.Services = append(a.Services, s)
+	found := false
+	for i, old := range a.Services {
+		if old.Id == s.Id {
+			found = true
+			a.Services[i] = s
+			break
+		}
+	}
+	if !found {
+		a.Services = append(a.Services, s)
+	}
 
 	if err := a.write(); err != nil {
 		return fmt.Errorf("app.write: %w", err)
