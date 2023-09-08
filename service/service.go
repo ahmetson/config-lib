@@ -11,7 +11,8 @@ import (
 )
 
 const (
-	ConfigFlag = "config"
+	ManagerCategory = "manager"
+	ConfigFlag      = "config"
 )
 
 // Service type defined in the config
@@ -29,7 +30,7 @@ type Service struct {
 type Services []Service
 
 func ManagerClient(id string, url string) (*clientConfig.Client, error) {
-	newConfig, err := handlerConfig.NewHandler(handlerConfig.SyncReplierType, id+"_manager")
+	newConfig, err := handlerConfig.NewHandler(handlerConfig.SyncReplierType, ManagerCategory)
 	if err != nil {
 		return nil, fmt.Errorf("handlerConfig.NewHandler: %w", err)
 	}
