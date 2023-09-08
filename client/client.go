@@ -143,9 +143,13 @@ func (c *Client) SetService(s *service.Service) error {
 		Parameters: key_value.Empty().Set("service", s),
 	}
 
-	err := c.socket.Submit(&req)
+	reply, err := c.socket.Request(&req)
 	if err != nil {
 		return fmt.Errorf("socket.Submit('%s'): %w", handler.SetService, err)
+	}
+
+	if !reply.IsOK() {
+		return fmt.Errorf("reply.Message: %s", reply.Message)
 	}
 
 	return nil
