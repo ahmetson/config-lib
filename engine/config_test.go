@@ -1,7 +1,6 @@
 package engine
 
 import (
-	"github.com/ahmetson/log-lib"
 	"github.com/ahmetson/os-lib/path"
 	"os"
 	"path/filepath"
@@ -23,8 +22,6 @@ type TestEngineSuite struct {
 // Make sure that Account is set to five
 // before each test
 func (suite *TestEngineSuite) SetupTest() {
-	logger, _ := log.New("config_test", false)
-
 	os.Args = append(os.Args, "--plain")
 	os.Args = append(os.Args, "--security-debug")
 	os.Args = append(os.Args, "--number-key=5")
@@ -38,7 +35,6 @@ func (suite *TestEngineSuite) SetupTest() {
 	suite.Require().NoError(err)
 
 	suite.envPath = filepath.Join(execPath, ".test.env")
-	logger.Info("log", "env path", suite.envPath)
 
 	os.Args = append(os.Args, suite.envPath)
 
@@ -93,6 +89,6 @@ func (suite *TestEngineSuite) TestRun() {
 
 // In order for 'go test' to run this suite, we need to create
 // a normal test function and pass our suite to suite.Run
-func TestCommand(t *testing.T) {
+func TestEngine(t *testing.T) {
 	suite.Run(t, new(TestEngineSuite))
 }

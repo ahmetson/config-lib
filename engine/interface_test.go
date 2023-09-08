@@ -1,7 +1,6 @@
 package engine
 
 import (
-	"github.com/ahmetson/log-lib"
 	"github.com/ahmetson/os-lib/path"
 	"os"
 	"path/filepath"
@@ -23,8 +22,6 @@ type TestEngineInterfaceSuite struct {
 // Make sure that Account is set to five
 // before each test
 func (suite *TestEngineInterfaceSuite) SetupTest() {
-	logger, _ := log.New("config_test", false)
-
 	os.Args = append(os.Args, "--plain")
 	os.Args = append(os.Args, "--security-debug")
 	os.Args = append(os.Args, "--number-key=5")
@@ -38,7 +35,6 @@ func (suite *TestEngineInterfaceSuite) SetupTest() {
 	suite.Require().NoError(err)
 
 	suite.envPath = filepath.Join(execPath, ".test.env")
-	logger.Info("log", "env path", suite.envPath)
 
 	os.Args = append(os.Args, suite.envPath)
 
