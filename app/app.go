@@ -267,7 +267,11 @@ func (a *App) write() error {
 	}
 	a.engine.Set("services", a.Services)
 
-	f, _ := os.OpenFile(a.filePath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+	f, err := os.OpenFile(a.filePath, os.O_WRONLY|os.O_CREATE, 0600)
+	if err != nil {
+		return fmt.Errorf("os.OpenFile('%s'): %w", a.filePath, err)
+	}
+
 	_, err = f.Write(appConfig)
 	closeErr := f.Close()
 	if closeErr != nil {
