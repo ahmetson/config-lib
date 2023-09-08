@@ -99,9 +99,10 @@ func (test *TestAppSuite) Test_11_envExist() {
 	s := test.Require
 
 	// no data was set, so it must return a false
-	_, exist, err := envExist(test.engine)
+	envPath, exist, err := envExist(test.engine)
 	s().NoError(err)
 	s().False(exist)
+	s().Nil(envPath)
 
 	// Create a new default file
 	setDefault(test.execPath, test.engine)
@@ -116,6 +117,7 @@ func (test *TestAppSuite) Test_11_envExist() {
 	params, exist, err := envExist(test.engine)
 	s().NoError(err)
 	s().True(exist)
+	s().NotNil(params)
 	loadedName, err := params.GetString("name")
 	s().NoError(err)
 	s().Equal(configName, loadedName)
@@ -125,7 +127,7 @@ func (test *TestAppSuite) Test_11_envExist() {
 
 	// trying to create a custom file
 	configPath = test.execPath
-	configName = "sample_file"
+	configName = "sampleFile"
 	test.engine.Set(EnvConfigName, configName)
 	test.engine.Set(EnvConfigPath, configPath)
 	test.createYaml(configPath, configName)
@@ -137,7 +139,7 @@ func (test *TestAppSuite) Test_11_envExist() {
 	s().NoError(err)
 	s().Equal(configName, loadedName)
 
-	// clean out
+	// clean out the files
 	test.deleteYaml(configPath, configName)
 }
 

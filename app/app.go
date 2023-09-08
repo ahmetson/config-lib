@@ -168,11 +168,8 @@ func envExist(configEngine engine.Interface) (key_value.KeyValue, bool, error) {
 		return nil, false, fmt.Errorf("path.FileExists('%s'): %w", absPath, err)
 	}
 
-	if !exists {
-		return nil, false, nil
-	}
-
-	return engine.YamlPathParam(configPath, configName), true, nil
+	envPath := engine.YamlPathParam(configPath, configName)
+	return envPath, exists, nil
 }
 
 // setDefault paths of the local file to load by default
