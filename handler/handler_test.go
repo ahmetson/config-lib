@@ -7,6 +7,7 @@ import (
 	"github.com/ahmetson/config-lib/app"
 	"github.com/ahmetson/config-lib/service"
 	handlerConfig "github.com/ahmetson/handler-lib/config"
+	"github.com/ahmetson/handler-lib/manager_client"
 	"github.com/ahmetson/log-lib"
 	"github.com/ahmetson/os-lib/path"
 	"gopkg.in/yaml.v3"
