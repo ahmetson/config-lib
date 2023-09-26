@@ -17,7 +17,6 @@ require (
 	github.com/charmbracelet/lipgloss v0.8.0 // indirect
 	github.com/charmbracelet/log v0.2.4 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/ethereum/go-ethereum v1.12.2 // indirect
 	github.com/go-logfmt/logfmt v0.6.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
@@ -45,14 +44,11 @@ require (
 
 require (
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
-	github.com/btcsuite/btcd/btcec/v2 v2.3.2 // indirect
-	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.2.0 // indirect
 	github.com/google/uuid v1.3.1 // indirect
-	github.com/holiman/uint256 v1.2.3 // indirect
 	github.com/joho/godotenv v1.4.0 // indirect
 	github.com/pebbe/zmq4 v1.2.10 // indirect
 	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5 // indirect
-	golang.org/x/crypto v0.13.0 // indirect
+	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	golang.org/x/sys v0.12.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
 )
