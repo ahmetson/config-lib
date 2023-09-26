@@ -15,14 +15,14 @@ const (
 
 // Service type defined in the config
 type Service struct {
-	Type        Type
-	Url         string
-	Id          string
-	Manager     *clientConfig.Client
-	Handlers    []*handlerConfig.Handler
-	Proxies     []*Proxy
-	ProxyChains []*ProxyChain
-	Extensions  []*clientConfig.Client
+	Type        Type                     `json:"type" yaml:"type"`
+	Url         string                   `json:"url" yaml:"url"`
+	Id          string                   `json:"id" yaml:"id"`
+	Manager     *clientConfig.Client     `json:"manager" yaml:"manager"`
+	Handlers    []*handlerConfig.Handler `json:"handlers" yaml:"handlers"`
+	Proxies     []*Proxy                 `json:"proxies" yaml:"proxies"`
+	ProxyChains []*ProxyChain            `json:"proxy_chains" yaml:"proxy_chains"`
+	Extensions  []*clientConfig.Client   `json:"extensions" yaml:"extensions"`
 }
 
 type Services []Service

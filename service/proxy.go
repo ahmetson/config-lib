@@ -31,9 +31,9 @@ const (
 //
 // If two endpoints lint to the same route,
 type Proxy struct {
-	Id       string    `json:"id"`
-	Url      string    `json:"url"`           // in the beginning, use this to initialize the proxy automatically.
-	Endpoint *Endpoint `json:"end,omitempty"` // only shown for a proxy
+	Id       string    `json:"id" yaml:"id"`
+	Url      string    `json:"url" yaml:"url"`                     // in the beginning, use this to initialize the proxy automatically.
+	Endpoint *Endpoint `json:"end,omitempty" yaml:"end,omitempty"` // only shown for a proxy
 }
 
 // Endpoint of the proxy pipe
@@ -45,8 +45,8 @@ type Endpoint struct {
 }
 
 type ProxyChain struct {
-	Endpoint *Endpoint `json:"endpoint"`
-	Proxies  []*Proxy  `json:"proxies"`
+	Endpoint *Endpoint `json:"endpoint" yaml:"endpoint"`
+	Proxies  []*Proxy  `json:"proxies" yaml:"proxies"`
 }
 
 func NewProxy(id string, url string) *Proxy {
