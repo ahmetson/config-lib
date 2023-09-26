@@ -11,7 +11,6 @@ import (
 	"github.com/ahmetson/config-lib/service"
 	"github.com/ahmetson/handler-lib/base"
 	handlerConfig "github.com/ahmetson/handler-lib/config"
-	"github.com/ahmetson/handler-lib/manager_client"
 	"github.com/ahmetson/handler-lib/replier"
 	"github.com/ahmetson/log-lib"
 )
@@ -29,7 +28,6 @@ const (
 	GenerateHandler = "generate-handler"
 	SetDefaultParam = "set-default"
 	GenerateService = "generate-service"
-	Close           = "close"
 )
 
 type Handler struct {
@@ -96,9 +94,6 @@ func New() (*Handler, error) {
 	}
 	if err := h.handler.Route(GenerateService, h.onGenerateService); err != nil {
 		return nil, fmt.Errorf("handler.Route(%s): %w", GenerateService, err)
-	}
-	if err := h.handler.Route(Close, h.onClose); err != nil {
-		return nil, fmt.Errorf("handler.Route(%s): %w", Close, err)
 	}
 
 	return h, nil
@@ -328,22 +323,6 @@ func (handler *Handler) onBool(req message.RequestInterface) message.ReplyInterf
 	value := handler.Engine.GetBool(name)
 
 	param := key_value.New().Set("value", value)
-	return req.Ok(param)
-}
-
-// onClose receives a close signal to close the handler and underlying engine.
-func (handler *Handler) onClose(req message.RequestInterface) message.ReplyInterface {
-
-	managerClient, err := manager_client.New(SocketConfig())
-	if err != nil {
-		return req.Fail(fmt.Sprintf("handler.Close: %v", err))
-	}
-	err = managerClient.Close()
-	if err != nil {
-		return req.Fail(fmt.Sprintf("managerClient.Close: %v", err))
-	}
-
-	param := key_value.Empty()
 	return req.Ok(param)
 }
 

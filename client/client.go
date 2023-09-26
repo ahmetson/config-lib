@@ -9,6 +9,7 @@ import (
 	"github.com/ahmetson/config-lib/handler"
 	"github.com/ahmetson/config-lib/service"
 	handlerConfig "github.com/ahmetson/handler-lib/config"
+	"github.com/ahmetson/handler-lib/manager_client"
 	"time"
 )
 
@@ -52,16 +53,16 @@ func New() (*Client, error) {
 
 // Close the config handler and client.
 func (c *Client) Close() error {
-	req := message.Request{
-		Command:    handler.Close,
-		Parameters: key_value.New(),
-	}
-
-	err := c.socket.Submit(&req)
+	managerClient, err := manager_client.New(handler.SocketConfig())
 	if err != nil {
-		return fmt.Errorf("socket.Submit('%s'): %w", handler.Close, err)
+		return fmt.Errorf("manager_client.New: %w", err)
+	}
+	err = managerClient.Close()
+	if err != nil {
+		return fmt.Errorf("managerClient.Close: %w", err)
 	}
 
+	// the internal engine is closing too soon.
 	if c.socket != nil {
 		return c.socket.Close()
 	}

@@ -82,8 +82,11 @@ func (test *TestHandlerSuite) SetupTest() {
 func (test *TestHandlerSuite) TearDownTest() {
 	s := test.Require
 
-	reply := test.handler.onClose(message.NewEmptyReq())
-	s().True(reply.IsOK())
+	managerClient, err := manager_client.New(SocketConfig())
+	s().NoError(err)
+	err = managerClient.Close()
+	s().NoError(err)
+
 	s().NoError(test.client.Close())
 
 	time.Sleep(time.Millisecond * 200) // wait a bit for closing threads
