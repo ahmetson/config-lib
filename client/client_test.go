@@ -4,7 +4,6 @@ import (
 	"github.com/ahmetson/config-lib/app"
 	"github.com/ahmetson/config-lib/handler"
 	"github.com/ahmetson/config-lib/service"
-	handlerConfig "github.com/ahmetson/handler-lib/config"
 	"github.com/ahmetson/log-lib"
 	"github.com/ahmetson/os-lib/path"
 	"gopkg.in/yaml.v3"
@@ -78,9 +77,8 @@ func (test *TestClientSuite) TearDownTest() {
 
 	if test.client != nil {
 		s().NoError(test.client.Close())
+		time.Sleep(time.Millisecond * 200) // wait a bit for closing threads
 	}
-
-	time.Sleep(time.Millisecond * 200) // wait a bit for closing threads
 
 	test.deleteYaml(test.execPath, "app")
 }
@@ -90,7 +88,7 @@ func (test *TestClientSuite) createYaml(dir string, name string) {
 
 	sampleService, err := service.Empty(test.serviceId, test.serviceUrl, service.IndependentType)
 	s().NoError(err)
-	kv := key_value.Empty().Set("services", []interface{}{sampleService})
+	kv := key_value.New().Set("services", []interface{}{sampleService})
 
 	serviceConfig, err := yaml.Marshal(kv.Map())
 	s().NoError(err)

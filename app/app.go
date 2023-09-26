@@ -119,7 +119,7 @@ func read(configParam key_value.KeyValue, configEngine engine.Interface) ([]*ser
 
 	rawServices, ok := raw.([]interface{})
 	if !ok {
-		return nil, fmt.Errorf("rawServices is invalid: %v", raw)
+		return nil, fmt.Errorf("raw is invalid: %v", raw)
 	}
 
 	services := make([]*service.Service, len(rawServices))
@@ -232,7 +232,7 @@ func (a *App) SetService(s *service.Service) error {
 
 func (a *App) createYaml() key_value.KeyValue {
 	var services = a.Services
-	kv := key_value.Empty()
+	kv := key_value.New()
 	kv.Set("services", services)
 
 	return kv
@@ -242,11 +242,11 @@ func (a *App) preparePath() error {
 	if a.fileParams == nil {
 		return fmt.Errorf("a.fileParams nil")
 	}
-	name, err := a.fileParams.GetString("name")
+	name, err := a.fileParams.StringValue("name")
 	if err != nil {
 		return fmt.Errorf("a.fileParams.GetString('name'): %w", err)
 	}
-	dirPath, err := a.fileParams.GetString("configPath")
+	dirPath, err := a.fileParams.StringValue("configPath")
 	if err != nil {
 		return fmt.Errorf("a.fileParams.GetString('configPath'): %w", err)
 	}

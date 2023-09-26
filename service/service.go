@@ -15,19 +15,19 @@ const (
 
 // Service type defined in the config
 type Service struct {
-	Type       Type
-	Url        string
-	Id         string
-	Manager    *clientConfig.Client
-	Handlers   []*handlerConfig.Handler
-	Proxies    []*Proxy
-	Extensions []*clientConfig.Client
-	ProxyOrder []string
+	Type        Type
+	Url         string
+	Id          string
+	Manager     *clientConfig.Client
+	Handlers    []*handlerConfig.Handler
+	Proxies     []*Proxy
+	ProxyChains []*ProxyChain
+	Extensions  []*clientConfig.Client
 }
 
 type Services []Service
 
-func ManagerClient(id string, url string) (*clientConfig.Client, error) {
+func ManagerClient(_ string, url string) (*clientConfig.Client, error) {
 	newConfig, err := handlerConfig.NewHandler(handlerConfig.SyncReplierType, ManagerCategory)
 	if err != nil {
 		return nil, fmt.Errorf("handlerConfig.NewHandler: %w", err)
@@ -50,14 +50,14 @@ func Empty(id string, url string, serviceType Type) (*Service, error) {
 	}
 
 	return &Service{
-		Type:       serviceType,
-		Id:         id,
-		Url:        url,
-		Handlers:   make([]*handlerConfig.Handler, 0),
-		Proxies:    make([]*Proxy, 0),
-		Extensions: make([]*clientConfig.Client, 0),
-		ProxyOrder: []string{},
-		Manager:    managerClient, // connecting to the service from other parents through dev context
+		Type:        serviceType,
+		Id:          id,
+		Url:         url,
+		Handlers:    make([]*handlerConfig.Handler, 0),
+		Proxies:     make([]*Proxy, 0),
+		ProxyChains: make([]*ProxyChain, 0),
+		Extensions:  make([]*clientConfig.Client, 0),
+		Manager:     managerClient, // connecting to the service from other parents through dev context
 	}, nil
 }
 
@@ -66,7 +66,7 @@ func Read(engine engine.Interface) (*Service, error) {
 	configPath := engine.GetString("SERVICE_CONFIG_PATH")
 	configExt := "yaml"
 
-	value := key_value.Empty().Set("name", configName).
+	value := key_value.New().Set("name", configName).
 		Set("type", configExt).
 		Set("configPath", configPath)
 

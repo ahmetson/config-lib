@@ -63,7 +63,7 @@ func (test *TestHandlerSuite) SetupTest() {
 	socketConfig := SocketConfig()
 
 	// Client that will send requests to the socketConfig handler
-	zmqType := handlerConfig.SocketType(test.handler.handler.Type())
+	zmqType := handlerConfig.SocketType(socketConfig.Type)
 	socket, err := client.NewRaw(zmqType, fmt.Sprintf("inproc://%s", socketConfig.Id))
 	s().NoError(err)
 	test.client = socket
@@ -81,7 +81,7 @@ func (test *TestHandlerSuite) SetupTest() {
 func (test *TestHandlerSuite) TearDownTest() {
 	s := test.Require
 
-	reply := test.handler.onClose(message.Request{})
+	reply := test.handler.onClose(message.NewEmptyReq())
 	s().True(reply.IsOK())
 	s().NoError(test.client.Close())
 
@@ -95,7 +95,7 @@ func (test *TestHandlerSuite) createYaml(dir string, name string) {
 
 	sampleService, err := service.Empty(test.serviceId, test.serviceUrl, service.IndependentType)
 	s().NoError(err)
-	kv := key_value.Empty().Set("services", []interface{}{sampleService})
+	kv := key_value.New().Set("services", []interface{}{sampleService})
 
 	serviceConfig, err := yaml.Marshal(kv.Map())
 	s().NoError(err)
@@ -130,7 +130,7 @@ func (test *TestHandlerSuite) Test_10_ServiceById() {
 	s := test.Require
 
 	// No id parameter was given
-	req := message.Request{Command: ServiceById, Parameters: key_value.Empty()}
+	req := message.Request{Command: ServiceById, Parameters: key_value.New()}
 	rep, err := test.client.Request(&req)
 	s().NoError(err)
 	s().False(rep.IsOK())
@@ -153,7 +153,7 @@ func (test *TestHandlerSuite) Test_11_ServiceByUrl() {
 	s := test.Require
 
 	// No id parameter was given
-	req := message.Request{Command: ServiceByUrl, Parameters: key_value.Empty()}
+	req := message.Request{Command: ServiceByUrl, Parameters: key_value.New()}
 	req.Parameters.Set("url", test.serviceUrl)
 	rep, err := test.client.Request(&req)
 	s().NoError(err)
@@ -168,7 +168,7 @@ func (test *TestHandlerSuite) Test_12_SetService() {
 	s().NoError(err)
 
 	// No id parameter was given
-	req := message.Request{Command: SetService, Parameters: key_value.Empty()}
+	req := message.Request{Command: SetService, Parameters: key_value.New()}
 	req.Parameters.Set("service", sampleService)
 	_, err = test.client.Request(&req)
 	s().NoError(err)
@@ -188,11 +188,11 @@ func (test *TestHandlerSuite) Test_13_onExist() {
 	param := "not_exist"
 
 	// No id parameter was given
-	req := message.Request{Command: ParamExist, Parameters: key_value.Empty()}
+	req := message.Request{Command: ParamExist, Parameters: key_value.New()}
 	req.Parameters.Set("name", param)
 	reply, err := test.client.Request(&req)
 	s().NoError(err)
-	exist, err := reply.Parameters.GetBoolean("exist")
+	exist, err := reply.ReplyParameters().BoolValue("exist")
 	s().NoError(err)
 	s().False(exist)
 
@@ -200,7 +200,7 @@ func (test *TestHandlerSuite) Test_13_onExist() {
 	req.Parameters.Set("name", "bool")
 	reply, err = test.client.Request(&req)
 	s().NoError(err)
-	exist, err = reply.Parameters.GetBoolean("exist")
+	exist, err = reply.ReplyParameters().BoolValue("exist")
 	s().NoError(err)
 	s().True(exist)
 }
@@ -210,11 +210,11 @@ func (test *TestHandlerSuite) Test_14_GetParam() {
 	s := test.Require
 
 	// No id parameter was given
-	req := message.Request{Command: BoolParam, Parameters: key_value.Empty()}
+	req := message.Request{Command: BoolParam, Parameters: key_value.New()}
 	req.Parameters.Set("name", "bool")
 	reply, err := test.client.Request(&req)
 	s().NoError(err)
-	value, err := reply.Parameters.GetBoolean("value")
+	value, err := reply.ReplyParameters().BoolValue("value")
 	s().NoError(err)
 	s().True(value)
 
@@ -222,7 +222,7 @@ func (test *TestHandlerSuite) Test_14_GetParam() {
 	req.Parameters.Set("name", "string")
 	reply, err = test.client.Request(&req)
 	s().NoError(err)
-	valueStr, err := reply.Parameters.GetString("value")
+	valueStr, err := reply.ReplyParameters().StringValue("value")
 	s().NoError(err)
 	s().NotEmpty(valueStr)
 
@@ -230,7 +230,7 @@ func (test *TestHandlerSuite) Test_14_GetParam() {
 	req.Parameters.Set("name", "uint64")
 	reply, err = test.client.Request(&req)
 	s().NoError(err)
-	valueUint64, err := reply.Parameters.GetUint64("value")
+	valueUint64, err := reply.ReplyParameters().Uint64Value("value")
 	s().NoError(err)
 	s().NotZero(valueUint64)
 }
@@ -243,7 +243,7 @@ func (test *TestHandlerSuite) Test_15_GenerateHandler() {
 	handlerType := handlerConfig.ReplierType
 
 	// Generate the internal socket
-	req := message.Request{Command: GenerateHandler, Parameters: key_value.Empty()}
+	req := message.Request{Command: GenerateHandler, Parameters: key_value.New()}
 	req.Parameters.Set("internal", true)
 	req.Parameters.Set("category", category)
 	req.Parameters.Set("handler_type", handlerType)
@@ -252,7 +252,7 @@ func (test *TestHandlerSuite) Test_15_GenerateHandler() {
 	s().True(rep.IsOK())
 
 	// Validate that data was generated
-	raw, err := rep.Parameters.GetKeyValue("handler")
+	raw, err := rep.ReplyParameters().NestedValue("handler")
 	s().NoError(err)
 	var generatedConfig handlerConfig.Handler
 	err = raw.Interface(&generatedConfig)
@@ -270,7 +270,7 @@ func (test *TestHandlerSuite) Test_15_GenerateHandler() {
 	s().True(rep.IsOK())
 
 	// Validate that data was generated
-	raw, err = rep.Parameters.GetKeyValue("handler")
+	raw, err = rep.ReplyParameters().NestedValue("handler")
 	s().NoError(err)
 	err = raw.Interface(&generatedConfig)
 	s().NoError(err)

@@ -54,7 +54,7 @@ func NewDev() (*Dev, error) {
 
 // YamlPathParam creates a file parameter.
 func YamlPathParam(configPath string, configName string) key_value.KeyValue {
-	return key_value.Empty().
+	return key_value.New().
 		Set("name", configName).
 		Set("configPath", configPath).
 		Set("type", "yaml")
@@ -68,15 +68,15 @@ func YamlPathParam(configPath string, configName string) key_value.KeyValue {
 //		config.Engine().SetConfigType("yaml") // or json
 //		config.Engine().AddConfigPath(configPath)
 func (config *Dev) Read(value key_value.KeyValue) (interface{}, error) {
-	name, err := value.GetString("name")
+	name, err := value.StringValue("name")
 	if err != nil {
 		return nil, fmt.Errorf("value.GetString(`name`): %w", err)
 	}
-	configType, err := value.GetString("type")
+	configType, err := value.StringValue("type")
 	if err != nil {
 		return nil, fmt.Errorf("value.GetString(`type`): %w", err)
 	}
-	configPath, err := value.GetString("configPath")
+	configPath, err := value.StringValue("configPath")
 	if err != nil {
 		return nil, fmt.Errorf("value.GetString(`configPath`): %w", err)
 	}
@@ -112,7 +112,7 @@ func (config *Dev) getPath() key_value.KeyValue {
 	configPath := config.viper.GetString("SERVICE_CONFIG_PATH")
 	ext := "yaml"
 
-	return key_value.Empty().Set("name", configName).Set("type", ext).Set("path", configPath)
+	return key_value.New().Set("name", configName).Set("type", ext).Set("path", configPath)
 }
 
 // Watch tracks the config change in the file.

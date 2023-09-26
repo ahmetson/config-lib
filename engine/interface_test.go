@@ -60,7 +60,7 @@ func (suite *TestEngineInterfaceSuite) TestRun() {
 	var confInterface Interface = suite.appConfig
 
 	suite.Require().False(confInterface.Exist("TURKISH_KEY"))
-	defaultConfig := key_value.Empty().
+	defaultConfig := key_value.New().
 		// never will be written since env is already written
 		Set("STRING_KEY", "salam").
 		Set("TURKISH_KEY", "salam")

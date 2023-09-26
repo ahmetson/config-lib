@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	Id              = "handler" // only one instance of config Engine can be in the service
+	Id              = "dev_config_handler" // only one instance of config Engine can be in the service
 	ServiceById     = "service"
 	ServiceByUrl    = "service-by-url"
 	ServiceExist    = "service-exist"
@@ -113,20 +113,20 @@ func SocketConfig() *handlerConfig.Handler {
 // Either checks by the 'id' or by the 'url' parameter.
 //
 // Returns 'exist' parameter.
-func (handler *Handler) onServiceExist(req message.Request) message.Reply {
-	id, err := req.Parameters.GetString("id")
+func (handler *Handler) onServiceExist(req message.RequestInterface) message.ReplyInterface {
+	id, err := req.RouteParameters().StringValue("id")
 	if err == nil {
 		s := handler.app.Service(id)
 		exist := s != nil
-		params := key_value.Empty().Set("exist", exist)
+		params := key_value.New().Set("exist", exist)
 		return req.Ok(params)
 	}
 
-	url, err := req.Parameters.GetString("url")
+	url, err := req.RouteParameters().StringValue("url")
 	if err == nil {
 		s := handler.app.ServiceByUrl(url)
 		exist := s != nil
-		params := key_value.Empty().Set("exist", exist)
+		params := key_value.New().Set("exist", exist)
 		return req.Ok(params)
 	}
 
@@ -134,8 +134,8 @@ func (handler *Handler) onServiceExist(req message.Request) message.Reply {
 }
 
 // onService returns a service by service id
-func (handler *Handler) onService(req message.Request) message.Reply {
-	id, err := req.Parameters.GetString("id")
+func (handler *Handler) onService(req message.RequestInterface) message.ReplyInterface {
+	id, err := req.RouteParameters().StringValue("id")
 	if err != nil {
 		return req.Fail(fmt.Sprintf("req.Parameters.GetString('id'): %v", err))
 	}
@@ -145,13 +145,13 @@ func (handler *Handler) onService(req message.Request) message.Reply {
 		return req.Fail(fmt.Sprintf("service('%s') not found", id))
 	}
 
-	params := key_value.Empty().Set("service", s)
+	params := key_value.New().Set("service", s)
 	return req.Ok(params)
 }
 
 // onServiceByUrl returns a first occurred service by its url
-func (handler *Handler) onServiceByUrl(req message.Request) message.Reply {
-	url, err := req.Parameters.GetString("url")
+func (handler *Handler) onServiceByUrl(req message.RequestInterface) message.ReplyInterface {
+	url, err := req.RouteParameters().StringValue("url")
 	if err != nil {
 		return req.Fail(fmt.Sprintf("req.Parameters.GetString('url'): %v", err))
 	}
@@ -161,18 +161,18 @@ func (handler *Handler) onServiceByUrl(req message.Request) message.Reply {
 		return req.Fail(fmt.Sprintf("serviceByUrl('%s') not found", url))
 	}
 
-	params := key_value.Empty().Set("service", s)
+	params := key_value.New().Set("service", s)
 	return req.Ok(params)
 }
 
 // onGenerateHandler generates the handler parameters
-func (handler *Handler) onGenerateHandler(req message.Request) message.Reply {
-	internal, err := req.Parameters.GetBoolean("internal")
+func (handler *Handler) onGenerateHandler(req message.RequestInterface) message.ReplyInterface {
+	internal, err := req.RouteParameters().BoolValue("internal")
 	if err != nil {
 		return req.Fail(fmt.Sprintf("req.Parameters.GetBoolean('internal'): %v", err))
 	}
 
-	handlerTypeStr, err := req.Parameters.GetString("handler_type")
+	handlerTypeStr, err := req.RouteParameters().StringValue("handler_type")
 	if err != nil {
 		return req.Fail(fmt.Sprintf("req.Parameters.GetString('handler_type'): %v", err))
 	}
@@ -182,7 +182,7 @@ func (handler *Handler) onGenerateHandler(req message.Request) message.Reply {
 		return req.Fail(fmt.Sprintf("handlerConfig.IsValid('%s'): %v", handlerTypeStr, err))
 	}
 
-	cat, err := req.Parameters.GetString("category")
+	cat, err := req.RouteParameters().StringValue("category")
 	if err != nil {
 		return req.Fail(fmt.Sprintf("req.Parameters.GetString('category'): %v", err))
 	}
@@ -201,13 +201,13 @@ func (handler *Handler) onGenerateHandler(req message.Request) message.Reply {
 		}
 	}
 
-	params := key_value.Empty().Set("handler", generatedConfig)
+	params := key_value.New().Set("handler", generatedConfig)
 	return req.Ok(params)
 }
 
 // onServiceByUrl updates the service parameters.
-func (handler *Handler) onSetService(req message.Request) message.Reply {
-	raw, err := req.Parameters.GetKeyValue("service")
+func (handler *Handler) onSetService(req message.RequestInterface) message.ReplyInterface {
+	raw, err := req.RouteParameters().NestedValue("service")
 	if err != nil {
 		return req.Fail(fmt.Sprintf("req.Parameters.GetKetValue('service'): %v", err))
 	}
@@ -222,44 +222,44 @@ func (handler *Handler) onSetService(req message.Request) message.Reply {
 		return req.Fail(fmt.Sprintf("app.SetService: %v", err))
 	}
 
-	return req.Ok(key_value.Empty())
+	return req.Ok(key_value.New())
 }
 
 // onExist checks is the given 'name' exists in the configuration.
-func (handler *Handler) onExist(req message.Request) message.Reply {
-	name, err := req.Parameters.GetString("name")
+func (handler *Handler) onExist(req message.RequestInterface) message.ReplyInterface {
+	name, err := req.RouteParameters().StringValue("name")
 	if err != nil {
 		return req.Fail(fmt.Sprintf("req.Parameters.GetString('name'): %v", err))
 	}
 
 	exist := handler.Engine.Exist(name)
 
-	param := key_value.Empty().Set("exist", exist)
+	param := key_value.New().Set("exist", exist)
 	return req.Ok(param)
 }
 
 // onSetDefault set the default parameter in the Engine.
-func (handler *Handler) onSetDefault(req message.Request) message.Reply {
-	name, err := req.Parameters.GetString("name")
+func (handler *Handler) onSetDefault(req message.RequestInterface) message.ReplyInterface {
+	name, err := req.RouteParameters().StringValue("name")
 	if err != nil {
 		return req.Fail(fmt.Sprintf("req.Parameters.GetString('name'): %v", err))
 	}
-	value, ok := req.Parameters["value"]
+	value, ok := req.RouteParameters()["value"]
 	if !ok {
 		return req.Fail("req.Parameters['value'] not found")
 	}
 
 	handler.Engine.SetDefault(name, value)
 
-	param := key_value.Empty()
+	param := key_value.New()
 	return req.Ok(param)
 }
 
 // onGenerateService generates the service parameters
 //
 // todo write the service into the yaml
-func (handler *Handler) onGenerateService(req message.Request) message.Reply {
-	id, err := req.Parameters.GetString("id")
+func (handler *Handler) onGenerateService(req message.RequestInterface) message.ReplyInterface {
+	id, err := req.RouteParameters().StringValue("id")
 	if err != nil {
 		return req.Fail(fmt.Sprintf("req.Parameters.GetString('id'): %v", err))
 	}
@@ -268,12 +268,12 @@ func (handler *Handler) onGenerateService(req message.Request) message.Reply {
 		return req.Fail(fmt.Sprintf("service('%s') exist", id))
 	}
 
-	url, err := req.Parameters.GetString("url")
+	url, err := req.RouteParameters().StringValue("url")
 	if err != nil {
 		return req.Fail(fmt.Sprintf("req.Parameters.GetString('url'): %v", err))
 	}
 
-	typeStr, err := req.Parameters.GetString("type")
+	typeStr, err := req.RouteParameters().StringValue("type")
 	if err != nil {
 		return req.Fail(fmt.Sprintf("req.Parameters.GetString('type'): %v", err))
 	}
@@ -288,51 +288,51 @@ func (handler *Handler) onGenerateService(req message.Request) message.Reply {
 		return req.Fail(fmt.Sprintf("service.Empty('%s', '%s', '%s'): %v", id, url, serviceType, err))
 	}
 
-	params := key_value.Empty().Set("service", generatedService)
+	params := key_value.New().Set("service", generatedService)
 	return req.Ok(params)
 }
 
 // onString returns a string parameter from the Engine.
-func (handler *Handler) onString(req message.Request) message.Reply {
-	name, err := req.Parameters.GetString("name")
+func (handler *Handler) onString(req message.RequestInterface) message.ReplyInterface {
+	name, err := req.RouteParameters().StringValue("name")
 	if err != nil {
 		return req.Fail(fmt.Sprintf("req.Parameters.GetString('name'): %v", err))
 	}
 
 	value := handler.Engine.GetString(name)
 
-	param := key_value.Empty().Set("value", value)
+	param := key_value.New().Set("value", value)
 	return req.Ok(param)
 }
 
 // onUint64 returns a string parameter from the Engine.
-func (handler *Handler) onUint64(req message.Request) message.Reply {
-	name, err := req.Parameters.GetString("name")
+func (handler *Handler) onUint64(req message.RequestInterface) message.ReplyInterface {
+	name, err := req.RouteParameters().StringValue("name")
 	if err != nil {
 		return req.Fail(fmt.Sprintf("req.Parameters.GetString('name'): %v", err))
 	}
 
 	value := handler.Engine.GetUint64(name)
 
-	param := key_value.Empty().Set("value", value)
+	param := key_value.New().Set("value", value)
 	return req.Ok(param)
 }
 
 // onBool returns a string parameter from the Engine.
-func (handler *Handler) onBool(req message.Request) message.Reply {
-	name, err := req.Parameters.GetString("name")
+func (handler *Handler) onBool(req message.RequestInterface) message.ReplyInterface {
+	name, err := req.RouteParameters().StringValue("name")
 	if err != nil {
 		return req.Fail(fmt.Sprintf("req.Parameters.GetString('name'): %v", err))
 	}
 
 	value := handler.Engine.GetBool(name)
 
-	param := key_value.Empty().Set("value", value)
+	param := key_value.New().Set("value", value)
 	return req.Ok(param)
 }
 
 // onClose receives a close signal to close the handler and underlying engine.
-func (handler *Handler) onClose(req message.Request) message.Reply {
+func (handler *Handler) onClose(req message.RequestInterface) message.ReplyInterface {
 
 	managerClient, err := manager_client.New(SocketConfig())
 	if err != nil {

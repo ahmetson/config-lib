@@ -49,7 +49,7 @@ func (test *TestAppSuite) createYaml(dir string, name string) {
 
 	sampleService, err := service.Empty("id", "github.com/ahmetson/sample", service.IndependentType)
 	s().NoError(err)
-	kv := key_value.Empty().Set("services", []interface{}{sampleService})
+	kv := key_value.New().Set("services", []interface{}{sampleService})
 
 	serviceConfig, err := yaml.Marshal(kv.Map())
 	s().NoError(err)
@@ -118,7 +118,7 @@ func (test *TestAppSuite) Test_11_envExist() {
 	s().NoError(err)
 	s().True(exist)
 	s().NotNil(params)
-	loadedName, err := params.GetString("name")
+	loadedName, err := params.StringValue("name")
 	s().NoError(err)
 	s().Equal(configName, loadedName)
 
@@ -135,7 +135,7 @@ func (test *TestAppSuite) Test_11_envExist() {
 	params, exist, err = envExist(test.engine)
 	s().NoError(err)
 	s().True(exist)
-	loadedName, err = params.GetString("name")
+	loadedName, err = params.StringValue("name")
 	s().NoError(err)
 	s().Equal(configName, loadedName)
 
@@ -168,7 +168,7 @@ func (test *TestAppSuite) Test_12_flagExist() {
 	params, exist, err := flagExist(test.execPath)
 	s().NoError(err)
 	s().True(exist)
-	loadedName, err := params.GetString("name")
+	loadedName, err := params.StringValue("name")
 	s().NoError(err)
 	s().Equal(configName, loadedName)
 

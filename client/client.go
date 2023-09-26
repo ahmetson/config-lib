@@ -54,7 +54,7 @@ func New() (*Client, error) {
 func (c *Client) Close() error {
 	req := message.Request{
 		Command:    handler.Close,
-		Parameters: key_value.Empty(),
+		Parameters: key_value.New(),
 	}
 
 	err := c.socket.Submit(&req)
@@ -80,7 +80,7 @@ func (c *Client) Attempt(attempt uint8) {
 func (c *Client) Service(id string) (*service.Service, error) {
 	req := message.Request{
 		Command:    handler.ServiceById,
-		Parameters: key_value.Empty().Set("id", id),
+		Parameters: key_value.New().Set("id", id),
 	}
 
 	rep, err := c.socket.Request(&req)
@@ -89,10 +89,10 @@ func (c *Client) Service(id string) (*service.Service, error) {
 	}
 
 	if !rep.IsOK() {
-		return nil, fmt.Errorf("replied an error: %s", rep.Message)
+		return nil, fmt.Errorf("replied an error: %s", rep.ErrorMessage())
 	}
 
-	raw, err := rep.Parameters.GetKeyValue("service")
+	raw, err := rep.ReplyParameters().NestedValue("service")
 	if err != nil {
 		return nil, fmt.Errorf("rep.Parameters.GetKeyValue('service'): %v", err)
 	}
@@ -109,7 +109,7 @@ func (c *Client) Service(id string) (*service.Service, error) {
 func (c *Client) ServiceByUrl(url string) (*service.Service, error) {
 	req := message.Request{
 		Command:    handler.ServiceByUrl,
-		Parameters: key_value.Empty().Set("url", url),
+		Parameters: key_value.New().Set("url", url),
 	}
 
 	rep, err := c.socket.Request(&req)
@@ -118,10 +118,10 @@ func (c *Client) ServiceByUrl(url string) (*service.Service, error) {
 	}
 
 	if !rep.IsOK() {
-		return nil, fmt.Errorf("replied an error: %s", rep.Message)
+		return nil, fmt.Errorf("replied an error: %s", rep.ErrorMessage())
 	}
 
-	raw, err := rep.Parameters.GetKeyValue("service")
+	raw, err := rep.ReplyParameters().NestedValue("service")
 	if err != nil {
 		return nil, fmt.Errorf("rep.Parameters.GetKeyValue('service'): %v", err)
 	}
@@ -140,7 +140,7 @@ func (c *Client) ServiceByUrl(url string) (*service.Service, error) {
 func (c *Client) SetService(s *service.Service) error {
 	req := message.Request{
 		Command:    handler.SetService,
-		Parameters: key_value.Empty().Set("service", s),
+		Parameters: key_value.New().Set("service", s),
 	}
 
 	reply, err := c.socket.Request(&req)
@@ -149,7 +149,7 @@ func (c *Client) SetService(s *service.Service) error {
 	}
 
 	if !reply.IsOK() {
-		return fmt.Errorf("reply.Message: %s", reply.Message)
+		return fmt.Errorf("reply.Message: %s", reply.ErrorMessage())
 	}
 
 	return nil
@@ -159,7 +159,7 @@ func (c *Client) SetService(s *service.Service) error {
 func (c *Client) GenerateHandler(handlerType handlerConfig.HandlerType, category string, internal bool) (*handlerConfig.Handler, error) {
 	req := message.Request{
 		Command: handler.GenerateHandler,
-		Parameters: key_value.Empty().
+		Parameters: key_value.New().
 			Set("internal", internal).
 			Set("category", category).
 			Set("handler_type", handlerType),
@@ -171,10 +171,10 @@ func (c *Client) GenerateHandler(handlerType handlerConfig.HandlerType, category
 	}
 
 	if !rep.IsOK() {
-		return nil, fmt.Errorf("replied an error: %s", rep.Message)
+		return nil, fmt.Errorf("replied an error: %s", rep.ErrorMessage())
 	}
 
-	raw, err := rep.Parameters.GetKeyValue("handler")
+	raw, err := rep.ReplyParameters().NestedValue("handler")
 	if err != nil {
 		return nil, fmt.Errorf("rep.Parameters.GetKeyValue('handler'): %v", err)
 	}
@@ -192,7 +192,7 @@ func (c *Client) GenerateHandler(handlerType handlerConfig.HandlerType, category
 func (c *Client) GenerateService(id string, url string, serviceType service.Type) (*service.Service, error) {
 	req := message.Request{
 		Command: handler.GenerateService,
-		Parameters: key_value.Empty().
+		Parameters: key_value.New().
 			Set("id", id).
 			Set("url", url).
 			Set("type", serviceType),
@@ -204,10 +204,10 @@ func (c *Client) GenerateService(id string, url string, serviceType service.Type
 	}
 
 	if !rep.IsOK() {
-		return nil, fmt.Errorf("replied an error: %s", rep.Message)
+		return nil, fmt.Errorf("replied an error: %s", rep.ErrorMessage())
 	}
 
-	raw, err := rep.Parameters.GetKeyValue("service")
+	raw, err := rep.ReplyParameters().NestedValue("service")
 	if err != nil {
 		return nil, fmt.Errorf("rep.Parameters.GetKeyValue('handler'): %v", err)
 	}
@@ -225,7 +225,7 @@ func (c *Client) GenerateService(id string, url string, serviceType service.Type
 func (c *Client) Exist(name string) (bool, error) {
 	req := message.Request{
 		Command:    handler.ParamExist,
-		Parameters: key_value.Empty().Set("name", name),
+		Parameters: key_value.New().Set("name", name),
 	}
 
 	rep, err := c.socket.Request(&req)
@@ -234,10 +234,10 @@ func (c *Client) Exist(name string) (bool, error) {
 	}
 
 	if !rep.IsOK() {
-		return false, fmt.Errorf("replied an error: %s", rep.Message)
+		return false, fmt.Errorf("replied an error: %s", rep.ErrorMessage())
 	}
 
-	exist, err := rep.Parameters.GetBoolean("exist")
+	exist, err := rep.ReplyParameters().BoolValue("exist")
 	if err != nil {
 		return false, fmt.Errorf("rep.Parameters.GetKeyValue('service'): %v", err)
 	}
@@ -249,7 +249,7 @@ func (c *Client) Exist(name string) (bool, error) {
 func (c *Client) String(name string) (string, error) {
 	req := message.Request{
 		Command:    handler.StringParam,
-		Parameters: key_value.Empty().Set("name", name),
+		Parameters: key_value.New().Set("name", name),
 	}
 
 	rep, err := c.socket.Request(&req)
@@ -258,10 +258,10 @@ func (c *Client) String(name string) (string, error) {
 	}
 
 	if !rep.IsOK() {
-		return "", fmt.Errorf("replied an error: %s", rep.Message)
+		return "", fmt.Errorf("replied an error: %s", rep.ErrorMessage())
 	}
 
-	value, err := rep.Parameters.GetString("value")
+	value, err := rep.ReplyParameters().StringValue("value")
 	if err != nil {
 		return "", fmt.Errorf("rep.Parameters.GetString('value'): %v", err)
 	}
@@ -273,7 +273,7 @@ func (c *Client) String(name string) (string, error) {
 func (c *Client) Uint64(name string) (uint64, error) {
 	req := message.Request{
 		Command:    handler.Uint64Param,
-		Parameters: key_value.Empty().Set("name", name),
+		Parameters: key_value.New().Set("name", name),
 	}
 
 	rep, err := c.socket.Request(&req)
@@ -282,10 +282,10 @@ func (c *Client) Uint64(name string) (uint64, error) {
 	}
 
 	if !rep.IsOK() {
-		return 0, fmt.Errorf("replied an error: %s", rep.Message)
+		return 0, fmt.Errorf("replied an error: %s", rep.ErrorMessage())
 	}
 
-	value, err := rep.Parameters.GetUint64("value")
+	value, err := rep.ReplyParameters().Uint64Value("value")
 	if err != nil {
 		return 0, fmt.Errorf("rep.Parameters.GetUint64('value'): %v", err)
 	}
@@ -297,7 +297,7 @@ func (c *Client) Uint64(name string) (uint64, error) {
 func (c *Client) Bool(name string) (bool, error) {
 	req := message.Request{
 		Command:    handler.BoolParam,
-		Parameters: key_value.Empty().Set("name", name),
+		Parameters: key_value.New().Set("name", name),
 	}
 
 	rep, err := c.socket.Request(&req)
@@ -306,10 +306,10 @@ func (c *Client) Bool(name string) (bool, error) {
 	}
 
 	if !rep.IsOK() {
-		return false, fmt.Errorf("replied an error: %s", rep.Message)
+		return false, fmt.Errorf("replied an error: %s", rep.ErrorMessage())
 	}
 
-	value, err := rep.Parameters.GetBoolean("value")
+	value, err := rep.ReplyParameters().BoolValue("value")
 	if err != nil {
 		return false, fmt.Errorf("rep.Parameters.GetBoolean('value'): %v", err)
 	}
@@ -321,7 +321,7 @@ func (c *Client) Bool(name string) (bool, error) {
 func (c *Client) SetDefault(name string, value interface{}) error {
 	req := message.Request{
 		Command:    handler.SetDefaultParam,
-		Parameters: key_value.Empty().Set("name", name).Set("value", value),
+		Parameters: key_value.New().Set("name", name).Set("value", value),
 	}
 
 	err := c.socket.Submit(&req)
@@ -346,7 +346,7 @@ func (c *Client) ServiceExistByUrl(url string) (bool, error) {
 func (c *Client) serviceExist(name string, value string) (bool, error) {
 	req := message.Request{
 		Command:    handler.ServiceExist,
-		Parameters: key_value.Empty().Set(name, value),
+		Parameters: key_value.New().Set(name, value),
 	}
 
 	reply, err := c.socket.Request(&req)
@@ -355,10 +355,10 @@ func (c *Client) serviceExist(name string, value string) (bool, error) {
 	}
 
 	if !reply.IsOK() {
-		return false, fmt.Errorf("reply.Message: %s", reply.Message)
+		return false, fmt.Errorf("reply.Message: %s", reply.ErrorMessage())
 	}
 
-	exist, err := reply.Parameters.GetBoolean("exist")
+	exist, err := reply.ReplyParameters().BoolValue("exist")
 	if err != nil {
 		return false, fmt.Errorf("reply.Parameters.GetBoolean('exist'): %w", err)
 	}
