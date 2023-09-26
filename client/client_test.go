@@ -30,6 +30,37 @@ type TestClientSuite struct {
 	serviceUrl string
 }
 
+// It will load the default yaml created by the file
+func (test *TestClientSuite) setupHandler() {
+	s := test.Require
+
+	// The config handler
+	h, err := handler.New()
+	s().NoError(err)
+	test.handler = h
+
+	s().NoError(test.handler.Start())
+	time.Sleep(time.Millisecond * 200) // wait a bit for initialization
+
+	// Make the file
+	test.handler.Engine.SetDefault(app.EnvConfigPath, test.execPath)
+	test.handler.Engine.SetDefault(app.EnvConfigName, "app")
+
+	// Creating some random config parameters to fetch
+	test.handler.Engine.Set("bool", true)
+	test.handler.Engine.Set("string", "hello world")
+	test.handler.Engine.Set("uint64", uint64(123))
+}
+
+func (test *TestClientSuite) setupClient() {
+	s := test.Require
+
+	// Client that will send requests to the config handler
+	c, err := New()
+	s().NoError(err)
+	test.client = c
+}
+
 // Make sure that Account is set to five
 // before each test
 func (test *TestClientSuite) SetupTest() {
