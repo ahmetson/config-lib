@@ -4,6 +4,7 @@ import (
 	"github.com/ahmetson/config-lib/app"
 	"github.com/ahmetson/config-lib/handler"
 	"github.com/ahmetson/config-lib/service"
+	handlerConfig "github.com/ahmetson/handler-lib/config"
 	"github.com/ahmetson/log-lib"
 	"github.com/ahmetson/os-lib/path"
 	"gopkg.in/yaml.v3"
