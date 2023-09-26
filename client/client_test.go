@@ -81,27 +81,8 @@ func (test *TestClientSuite) SetupTest() {
 	// app engine will load the yaml
 	test.createYaml(test.execPath, "app")
 
-	// The config handler
-	h, err := handler.New()
-	s().NoError(err)
-	test.handler = h
-
-	s().NoError(test.handler.Start())
-	time.Sleep(time.Millisecond * 200) // wait a bit for initialization
-
-	// Client that will send requests to the config handler
-	c, err := New()
-	s().NoError(err)
-	test.client = c
-
-	// Make the file
-	test.handler.Engine.SetDefault(app.EnvConfigPath, test.execPath)
-	test.handler.Engine.SetDefault(app.EnvConfigName, "app")
-
-	// Creating some random config parameters to fetch
-	test.handler.Engine.Set("bool", true)
-	test.handler.Engine.Set("string", "hello world")
-	test.handler.Engine.Set("uint64", uint64(123))
+	test.setupHandler()
+	test.setupClient()
 }
 
 func (test *TestClientSuite) TearDownTest() {
@@ -263,6 +244,50 @@ func (test *TestClientSuite) Test_16_Close() {
 	// Closed already, so the test suite doesn't have to close them.
 	test.handler = nil
 	test.client = nil
+}
+
+// Test_17_GenerateService tests generating the services.
+func (test *TestClientSuite) Test_17_GenerateService() {
+	s := test.Require
+
+	id := "generated_service"
+	url := "github.com/ahmetson/generated-service"
+
+	// generating service in the handler created with SetupTest
+	generatedService, err := test.client.GenerateService(id, url, service.IndependentType)
+	s().NoError(err)
+	s().NotNil(generatedService)
+
+	err = test.client.SetService(generatedService)
+	s().NoError(err)
+
+	fetchedService, err := test.client.Service(id)
+	test.logger.Info("service was returned", "fetched service", fetchedService, "generated service", generatedService, "error", err)
+	s().NoError(err)
+	s().NotNil(fetchedService)
+
+	// The second attempt to generate the service must fail since id already used
+	_, err = test.client.GenerateService(id, url, service.IndependentType)
+	s().Error(err)
+
+	// Close the handler
+	err = test.client.Close()
+	s().NoError(err)
+	time.Sleep(time.Millisecond * 100)
+
+	// any update of the service, parameter updates the yaml.
+	// let's reset it as well
+	test.deleteYaml(test.execPath, "app")
+	test.createYaml(test.execPath, "app")
+
+	// start again
+	test.setupHandler()
+	time.Sleep(time.Millisecond * 100)
+	test.setupClient()
+	time.Sleep(time.Millisecond * 100)
+
+	_, err = test.client.GenerateService(id, url, service.IndependentType)
+	s().NoError(err)
 }
 
 // In order for 'go test' to run this suite, we need to create
