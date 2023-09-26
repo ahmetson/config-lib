@@ -58,7 +58,7 @@ func (suite *TestEngineSuite) TestRun() {
 	suite.Require().False(suite.appConfig.Secure)
 
 	suite.Require().False(suite.appConfig.Exist("TURKISH_KEY"))
-	defaultConfig := key_value.Empty().
+	defaultConfig := key_value.New().
 		// never will be written since env is already written
 		Set("STRING_KEY", "salam").
 		Set("TURKISH_KEY", "salam")
