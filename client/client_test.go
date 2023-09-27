@@ -262,7 +262,6 @@ func (test *TestClientSuite) Test_17_GenerateService() {
 	s().NoError(err)
 
 	fetchedService, err := test.client.Service(id)
-	test.logger.Info("service was returned", "fetched service", fetchedService, "generated service", generatedService, "error", err)
 	s().NoError(err)
 	s().NotNil(fetchedService)
 
