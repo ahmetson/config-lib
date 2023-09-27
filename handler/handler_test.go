@@ -3,9 +3,9 @@ package handler
 import (
 	"fmt"
 	"github.com/ahmetson/client-lib"
-	"github.com/ahmetson/common-lib/message"
 	"github.com/ahmetson/config-lib/app"
 	"github.com/ahmetson/config-lib/service"
+	"github.com/ahmetson/datatype-lib/message"
 	handlerConfig "github.com/ahmetson/handler-lib/config"
 	"github.com/ahmetson/handler-lib/manager_client"
 	"github.com/ahmetson/log-lib"
@@ -16,7 +16,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ahmetson/common-lib/data_type/key_value"
+	"github.com/ahmetson/datatype-lib/data_type/key_value"
 	"github.com/stretchr/testify/suite"
 )
 

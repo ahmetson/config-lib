@@ -7,9 +7,9 @@ package app
 
 import (
 	"fmt"
-	"github.com/ahmetson/common-lib/data_type/key_value"
 	"github.com/ahmetson/config-lib/engine"
 	"github.com/ahmetson/config-lib/service"
+	"github.com/ahmetson/datatype-lib/data_type/key_value"
 	"github.com/ahmetson/os-lib/arg"
 	"github.com/ahmetson/os-lib/path"
 	"gopkg.in/yaml.v3"

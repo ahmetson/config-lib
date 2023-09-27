@@ -1,7 +1,7 @@
 package engine
 
 import (
-	"github.com/ahmetson/common-lib/data_type/key_value"
+	"github.com/ahmetson/datatype-lib/data_type/key_value"
 )
 
 // An Interface GetServiceConfig Engine based on viper.Viper

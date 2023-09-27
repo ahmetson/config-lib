@@ -13,7 +13,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ahmetson/common-lib/data_type/key_value"
+	"github.com/ahmetson/datatype-lib/data_type/key_value"
 	"github.com/stretchr/testify/suite"
 )
 
