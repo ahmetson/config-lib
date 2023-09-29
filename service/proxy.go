@@ -163,18 +163,27 @@ func NewServiceDestination(params ...interface{}) *Rule {
 // IsService returns true for the service destination.
 // The rule is a service destination if Urls are given, but not Categories and Commands.
 func (unit *Rule) IsService() bool {
+	if unit == nil {
+		return false
+	}
 	return len(unit.Categories) == 0 && len(unit.Commands) == 0 && len(unit.Urls) > 0
 }
 
 // IsHandler returns true for the handler destination.
 // The rule is a handler destination if Urls and Categories are given, but not Commands.
 func (unit *Rule) IsHandler() bool {
+	if unit == nil {
+		return false
+	}
 	return len(unit.Urls) > 0 && len(unit.Categories) > 0 && len(unit.Commands) == 0
 }
 
 // IsRoute returns true if for the route destination.
 // The rule is a route destination if Urls, Categories and Commands are given
 func (unit *Rule) IsRoute() bool {
+	if unit == nil {
+		return false
+	}
 	return len(unit.Urls) > 0 && len(unit.Categories) > 0 && len(unit.Commands) > 0
 }
 
@@ -183,7 +192,7 @@ func (unit *Rule) IsRoute() bool {
 //
 // The empty rule is not a valid rule.
 func (unit *Rule) IsValid() bool {
-	return !unit.IsEmpty() && !unit.IsEmptyCommands() &&
+	return unit != nil && !unit.IsEmpty() && !unit.IsEmptyCommands() &&
 		(unit.IsService() || unit.IsHandler() || unit.IsRoute())
 }
 
@@ -191,13 +200,17 @@ func (unit *Rule) IsValid() bool {
 //
 // One way to create an empty parameter is to call NewServiceDestination() without any argument.
 func (unit *Rule) IsEmpty() bool {
-	return len(unit.Urls)+
+	return unit != nil && (len(unit.Urls)+
 		len(unit.Categories)+
-		len(unit.Commands) == 0
+		len(unit.Commands) == 0)
 }
 
 // IsEmptyCommands returns true if all Commands are in the ExcludedCommands
 func (unit *Rule) IsEmptyCommands() bool {
+	if unit == nil {
+		return false
+	}
+
 	if len(unit.ExcludedCommands) == 0 || len(unit.Categories) == 0 {
 		return false
 	}
@@ -215,6 +228,10 @@ func (unit *Rule) IsEmptyCommands() bool {
 
 // ExcludeCommands adds the list of commands as an exception for proxies
 func (unit *Rule) ExcludeCommands(commands ...string) *Rule {
+	if unit == nil {
+		return unit
+	}
+
 	for _, command := range commands {
 		if slices.Contains(unit.ExcludedCommands, command) {
 			continue
@@ -234,6 +251,9 @@ func IsEqualRule(first *Rule, second *Rule) bool {
 
 // IsValid returns true if all fields are set
 func (proxy *Proxy) IsValid() bool {
+	if proxy == nil {
+		return false
+	}
 	return len(proxy.Url) > 0 && len(proxy.Id) > 0 && len(proxy.Category) > 0
 }
 
