@@ -22,9 +22,9 @@ type Rule struct {
 }
 
 type Unit struct {
-	Url      string `json:"url"`      // Service url
-	Category string `json:"category"` // Handler category
-	Command  string `json:"command"`  // Route command
+	ServiceId string `json:"service_id"` // Service id
+	HandlerId string `json:"handler_id"` // Handler id
+	Command   string `json:"command"`    // Route command
 }
 
 type ProxyChain struct {
