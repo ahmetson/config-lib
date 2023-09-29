@@ -4,8 +4,8 @@ package handler
 
 import (
 	"fmt"
-	"github.com/ahmetson/config-lib/app"
 	"github.com/ahmetson/config-lib/engine"
+	"github.com/ahmetson/config-lib/engine/app"
 	"github.com/ahmetson/config-lib/service"
 	"github.com/ahmetson/datatype-lib/data_type/key_value"
 	"github.com/ahmetson/datatype-lib/message"
@@ -31,7 +31,7 @@ const (
 )
 
 type Handler struct {
-	Engine  engine.Interface
+	Engine  engine.Interface // todo make it private, for now it's used in the tests of other packages
 	app     *app.App
 	handler base.Interface
 }

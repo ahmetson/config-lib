@@ -1,7 +1,7 @@
 package client
 
 import (
-	"github.com/ahmetson/config-lib/app"
+	"github.com/ahmetson/config-lib/engine/app"
 	"github.com/ahmetson/config-lib/handler"
 	"github.com/ahmetson/config-lib/service"
 	handlerConfig "github.com/ahmetson/handler-lib/config"
