@@ -37,7 +37,7 @@ type App struct {
 // - if, environment variable exists, then load it.
 // - if, a flag exists, then load it.
 func New(configEngine *engine.Dev) (*App, error) {
-	fileParams, fileExist, err := filePath(configEngine)
+	fileParams, fileExist, err := readFileParameters(configEngine)
 	if err != nil {
 		return nil, fmt.Errorf("flagExist: %w", err)
 	}

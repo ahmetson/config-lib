@@ -16,10 +16,10 @@ import (
 // Yaml file operations
 //
 
-// The filePath returns the file path.
+// The readFileParameters returns the file path.
 // First it reads from a flag, then from environment variable.
 // Lastly, read the default file.
-func filePath(configEngine *engine.Dev) (key_value.KeyValue, bool, error) {
+func readFileParameters(configEngine *engine.Dev) (key_value.KeyValue, bool, error) {
 	// default app is empty
 	execPath, err := path.CurrentDir()
 	if err != nil {
