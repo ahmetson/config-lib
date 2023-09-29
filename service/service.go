@@ -3,7 +3,6 @@ package service
 import (
 	"fmt"
 	clientConfig "github.com/ahmetson/client-lib/config"
-	"github.com/ahmetson/config-lib/engine"
 	"github.com/ahmetson/datatype-lib/data_type/key_value"
 	handlerConfig "github.com/ahmetson/handler-lib/config"
 )
@@ -64,28 +63,6 @@ func Empty(id string, url string, serviceType Type) (*Service, error) {
 		Extensions:  make([]*clientConfig.Client, 0),
 		Manager:     managerClient, // connecting to the service from other parents through dev context
 	}, nil
-}
-
-func Read(engine engine.Interface) (*Service, error) {
-	configName := engine.StringValue("SERVICE_CONFIG_NAME")
-	configPath := engine.StringValue("SERVICE_CONFIG_PATH")
-	configExt := "yaml"
-
-	value := key_value.New().Set("name", configName).
-		Set("type", configExt).
-		Set("configPath", configPath)
-
-	file, err := engine.Load(value)
-	if err != nil {
-		return nil, fmt.Errorf("engine.ReadValue(%s/%s.%s): %w", configPath, configName, configExt, err)
-	}
-
-	serv, ok := file.(*Service)
-	if !ok {
-		return nil, fmt.Errorf("'%s/%s.%s' not a valid Service", configPath, configName, configExt)
-	}
-
-	return serv, nil
 }
 
 func (s *Service) PrepareService() error {
