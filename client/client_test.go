@@ -241,6 +241,9 @@ func (test *TestClientSuite) Test_16_Close() {
 	err := test.client.Close()
 	s().NoError(err)
 
+	// Wait a bit for closing
+	time.Sleep(time.Millisecond * 100)
+
 	// Closed already, so the test suite doesn't have to close them.
 	test.handler = nil
 	test.client = nil
