@@ -32,8 +32,6 @@ type Dev struct {
 //
 // Automatically reads the command line arguments.
 // Loads the environment variables.
-//
-// Logger should be a parent
 func NewDev() (*Dev, error) {
 	config := Dev{
 		handleChange: nil,
@@ -234,19 +232,19 @@ func (config *Dev) Exist(name string) bool {
 	return len(value) > 0
 }
 
-// GetString Returns the config request as a string
+// StringValue returns the config request as a string
 func (config *Dev) StringValue(name string) string {
 	value := config.viper.GetString(name)
 	return value
 }
 
-// GetUint64 Returns the config request as an unsigned 64-bit number
+// Uint64Value returns the config request as an unsigned 64-bit number
 func (config *Dev) Uint64Value(name string) uint64 {
 	value := config.viper.GetUint64(name)
 	return value
 }
 
-// GetBool Returns the config request as a boolean
+// BoolValue returns the config request as a boolean
 func (config *Dev) BoolValue(name string) bool {
 	value := config.viper.GetBool(name)
 	return value
