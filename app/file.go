@@ -16,43 +16,43 @@ import (
 // Yaml file operations
 //
 
-// The readFileParameters returns the file path.
+// The ReadFileParameters returns the file path.
 // First it reads from a flag, then from environment variable.
 // Lastly, read the default file.
-func readFileParameters(configEngine *engine.Dev) (key_value.KeyValue, bool, error) {
+func ReadFileParameters(configEngine *engine.Dev) (string, bool, error) {
 	// default app is empty
 	execPath, err := path.CurrentDir()
 	if err != nil {
-		return nil, false, fmt.Errorf("path.CurrentDir: %w", err)
+		return "", false, fmt.Errorf("path.CurrentDir: %w", err)
 	}
 
 	flagFileParams, fileExist, err := flagExist(execPath)
 	if err != nil {
-		return nil, false, fmt.Errorf("flagExist: %w", err)
+		return "", false, fmt.Errorf("flagExist: %w", err)
 	}
 
 	// Load the configuration by flag parameter
 	if fileExist {
-		//if err := makeConfigDir(flagFileParams); err != nil {
-		//	return nil, fmt.Errorf("app.makeConfigDir: %w", err)
+		//if err := MakeConfigDir(flagFileParams); err != nil {
+		//	return nil, fmt.Errorf("app.MakeConfigDir: %w", err)
 		//}
 
-		return flagFileParams, true, nil
+		return fileParamsToPath(flagFileParams), true, nil
 	}
 
 	setDefault(execPath, configEngine)
 	envFileParams, fileExist, err := envExist(configEngine)
 	if err != nil {
-		return nil, true, fmt.Errorf("envExist: %w", err)
+		return "", false, fmt.Errorf("envExist: %w", err)
 	}
 
 	// Load the configuration by environment parameter
 	if fileExist {
-		//if err := makeConfigDir(envFileParams); err != nil {
-		//	return nil, fmt.Errorf("app.makeConfigDir: %w", err)
+		//if err := MakeConfigDir(envFileParams); err != nil {
+		//	return nil, fmt.Errorf("app.MakeConfigDir: %w", err)
 		//}
 
-		return envFileParams, true, nil
+		return fileParamsToPath(envFileParams), true, nil
 	}
 
 	// flag is priority, if not given then
@@ -62,27 +62,22 @@ func readFileParameters(configEngine *engine.Dev) (key_value.KeyValue, bool, err
 	}
 
 	if fileParams == nil {
-		return nil, false, fmt.Errorf("file parameter is nil")
+		return "", false, fmt.Errorf("file parameter is nil")
 	}
 
-	return fileParams, false, nil
+	return fileParamsToPath(fileParams), false, nil
 }
 
-// filePath must be absolute
-func read(filePath string) (*App, error) {
-	var appConfig App
-
+// Read yaml file
+func Read(filePath string, data interface{}) error {
 	info, err := os.Stat(filePath)
 	if err != nil {
-		if err == os.ErrNotExist {
-			return &appConfig, nil
-		}
-		return nil, fmt.Errorf("os.Stat('%s'): %w", filePath, err)
+		return fmt.Errorf("os.Stat('%s'): %w", filePath, err)
 	}
 
 	f, err := os.OpenFile(filePath, os.O_RDONLY, 0600)
 	if err != nil {
-		return nil, fmt.Errorf("os.OpenFile('%s'): %w", filePath, err)
+		return fmt.Errorf("os.OpenFile('%s'): %w", filePath, err)
 	}
 
 	buf := make([]byte, info.Size())
@@ -92,21 +87,20 @@ func read(filePath string) (*App, error) {
 	closeErr := f.Close()
 	if closeErr != nil {
 		if err != nil {
-			return nil, fmt.Errorf("%v: file.Close: %w", err, closeErr)
+			return fmt.Errorf("%v: file.Close: %w", err, closeErr)
 		} else {
-			return nil, fmt.Errorf("file.Close: %w", closeErr)
+			return fmt.Errorf("file.Close: %w", closeErr)
 		}
 	} else if err != nil {
-		return nil, fmt.Errorf("file.Write: %w", err)
+		return fmt.Errorf("file.Write: %w", err)
 	}
 
-	err = yaml.Unmarshal(buf, &appConfig)
+	err = yaml.Unmarshal(buf, data)
 	if err != nil {
-		return nil, fmt.Errorf("yaml.Unmarshal: %w", err)
+		return fmt.Errorf("yaml.Unmarshal: %w", err)
 	}
-	appConfig.setNewField()
 
-	return &appConfig, nil
+	return nil
 }
 
 // flagExist checks is there any configuration flag.
@@ -160,16 +154,13 @@ func setDefault(execPath string, engine *engine.Dev) {
 	engine.SetDefault(EnvConfigPath, execPath)
 }
 
-// makeConfigDir converts fileParams to the full file path.
+// MakeConfigDir converts fileParams to the full file path.
 // if the configuration file is stored in the nested directory, then those directories are created.
-func makeConfigDir(fileParams key_value.KeyValue) error {
-	if fileParams == nil {
-		return fmt.Errorf("fileParams nil")
+func MakeConfigDir(filePath string) error {
+	if len(filePath) == 0 {
+		return fmt.Errorf("filePath argument is empty")
 	}
-	dirPath, err := fileParams.StringValue("configPath")
-	if err != nil {
-		return fmt.Errorf("a.fileParams.StringValue('configPath'): %w", err)
-	}
+	dirPath, _ := path.DirAndFileName(filePath)
 
 	dirExist, err := path.DirExist(dirPath)
 	if err != nil {
@@ -191,10 +182,9 @@ func fileParamsToPath(fileParams key_value.KeyValue) string {
 	return filepath.Join(dirPath, name+".yml")
 }
 
-// Writes the service as the yaml on the given path.
+// Write the service as the yaml on the given path.
 // If the path doesn't contain the file extension, it will through an error
-func write(filePath string, data *App) error {
-	data.setNewField()
+func Write(filePath string, data interface{}) error {
 	appConfig, err := yaml.Marshal(data)
 	if err != nil {
 		return fmt.Errorf("yaml.Marshal: %w", err)

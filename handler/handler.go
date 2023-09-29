@@ -31,9 +31,10 @@ const (
 )
 
 type Handler struct {
-	Engine  *engine.Dev // todo make it private, for now it's used in the tests of other packages
-	app     *app.App
-	handler base.Interface
+	Engine   *engine.Dev // todo make it private, for now it's used in the tests of other packages
+	app      *app.App
+	filePath string
+	handler  base.Interface
 }
 
 // New handler of the config.
@@ -52,11 +53,21 @@ func New() (*Handler, error) {
 	}
 	h.Engine = dev
 
-	allConfig, err := app.New(dev)
+	filePath, fileExist, err := app.ReadFileParameters(dev)
 	if err != nil {
-		return nil, fmt.Errorf("app.New: %w", err)
+		return nil, fmt.Errorf("app.ReadFileParameters: %w", err)
 	}
-	h.app = allConfig
+	h.app = app.New()
+	h.filePath = filePath
+
+	// Load the configuration by flag parameter
+	if fileExist {
+		if err := app.Read(filePath, h.app); err != nil {
+			return nil, fmt.Errorf("read('%s'): %w", filePath, err)
+		}
+	} else if err := h.writeInitialApp(); err != nil {
+		return nil, fmt.Errorf("handler.writeInitialApp: %w", err)
+	}
 
 	h.handler = replier.New()
 	h.handler.SetConfig(SocketConfig())
@@ -68,6 +79,22 @@ func New() (*Handler, error) {
 	}
 
 	return h, nil
+}
+
+func (handler *Handler) writeInitialApp() error {
+	// File doesn't exist, let's write it.
+	// Priority is the flag path.
+	// If the user didn't pass the flags, then use an environment path.
+	// The environment path will not be nil, since it will use the default path.
+	if err := app.MakeConfigDir(handler.filePath); err != nil {
+		return fmt.Errorf("app.MakeConfigDir('%s'): %w", handler.filePath, err)
+	}
+
+	if err := app.Write(handler.filePath, handler.app); err != nil {
+		return fmt.Errorf("app.Write('%s', 'h.app'): %w", handler.filePath, err)
+	}
+
+	return nil
 }
 
 func (handler *Handler) setRoutes() error {
@@ -224,6 +251,10 @@ func (handler *Handler) onSetService(req message.RequestInterface) message.Reply
 	err = handler.app.SetService(&s)
 	if err != nil {
 		return req.Fail(fmt.Sprintf("app.SetService: %v", err))
+	}
+
+	if err := app.Write(handler.filePath, handler.app); err != nil {
+		return req.Fail(fmt.Sprintf("app.Write: %v", err))
 	}
 
 	return req.Ok(key_value.New())

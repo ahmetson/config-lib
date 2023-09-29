@@ -194,32 +194,10 @@ func (test *TestAppSuite) Test_13_read() {
 
 	configParam, _, _ := envExist(test.engine)
 
-	app, err := read(fileParamsToPath(configParam))
+	var app App
+	err := Read(fileParamsToPath(configParam), &app)
 	s().NoError(err)
 	s().NotNil(app)
-	s().Len(app.Services, 1)
-
-	// clean out
-	test.deleteYaml(configPath, configName)
-}
-
-// Test_14_New tests the creation of the app from os environment or flag.
-// It's the collection of all functions we tested earlier
-func (test *TestAppSuite) Test_14_New() {
-	s := test.Require
-
-	// let's add a config file from the environment variable
-	// Create a new default file
-	setDefault(test.execPath, test.engine)
-
-	configPath := test.execPath
-	configName := "app"
-
-	// creating a default file
-	test.createYaml(configPath, configName)
-
-	app, err := New(test.engine)
-	s().NoError(err)
 	s().Len(app.Services, 1)
 
 	// clean out
