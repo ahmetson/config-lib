@@ -224,13 +224,6 @@ func (unit *Rule) ExcludeCommands(commands ...string) *Rule {
 	return unit
 }
 
-func NewProxy(id string, url string) *Proxy {
-	return &Proxy{
-		Id:  id,
-		Url: url,
-	}
-}
-
 func IsEqualRule(first *Rule, second *Rule) bool {
 	return first != nil && second != nil
 }
