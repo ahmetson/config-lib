@@ -103,7 +103,7 @@ func NewHandlerDestination(params ...interface{}) *Rule {
 		ExcludedCommands: make([]string, 0),
 	}
 
-	if len(params) < 1 {
+	if len(params) < 1 || len(params) > 2 {
 		return nil
 	} else if len(params) == 1 {
 		categories := convertParam(params[0])

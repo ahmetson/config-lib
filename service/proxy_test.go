@@ -104,6 +104,65 @@ func (test *TestProxySuite) Test_10_NewDestination() {
 	s().Equal(test.commands[0], destinations.Commands[0])
 }
 
+// Test_11_NewHandlerDestination sets up of the default parameters
+func (test *TestProxySuite) Test_11_NewHandlerDestination() {
+	s := test.Require
+
+	// creating a destination without any parameter must fail
+	destinations := NewHandlerDestination()
+	s().Nil(destinations)
+
+	// creating a destination with more than 2 parameters must fail
+	destinations = NewHandlerDestination("", "", "")
+	s().Nil(destinations)
+
+	// creating a destination with two parameters but invalid data must fail
+	destinations = NewHandlerDestination(1)
+	s().Nil(destinations)
+
+	// creating a destination with two parameters but an invalid data type must fail
+	destinations = NewHandlerDestination([]string{"bla", "bla"}, 2)
+	s().Nil(destinations)
+
+	//
+	// creating a destination with one parameter
+	//
+
+	// all are scalar type
+	destinations = NewHandlerDestination(test.categories[0])
+	s().NotNil(destinations)
+	s().Empty(destinations.Urls)
+	s().Len(destinations.Categories, 1)
+	s().Empty(destinations.Commands)
+	s().Equal(test.categories[0], destinations.Categories[0])
+
+	destinations = NewHandlerDestination(test.categories)
+	s().NotNil(destinations)
+	s().Empty(destinations.Urls)
+	s().Len(destinations.Categories, 2)
+	s().Empty(destinations.Commands)
+	s().EqualValues(test.categories, destinations.Categories)
+
+	//
+	// Testing with two parameters
+	//
+	destinations = NewHandlerDestination(test.urls[0], test.categories[0])
+	s().NotNil(destinations)
+	s().Len(destinations.Urls, 1)
+	s().Len(destinations.Categories, 1)
+	s().Empty(destinations.Commands)
+	s().Equal(test.urls[0], destinations.Urls[0])
+	s().Equal(test.categories[0], destinations.Categories[0])
+
+	destinations = NewHandlerDestination(test.urls, test.categories)
+	s().NotNil(destinations)
+	s().Len(destinations.Urls, 2)
+	s().Len(destinations.Categories, 2)
+	s().Empty(destinations.Commands)
+	s().EqualValues(test.urls, destinations.Urls)
+	s().EqualValues(test.categories, destinations.Categories)
+}
+
 func TestProxy(t *testing.T) {
 	suite.Run(t, new(TestProxySuite))
 }
