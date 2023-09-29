@@ -26,7 +26,9 @@ type Service struct {
 
 type Services []Service
 
-func ManagerClient(_ string, url string) (*clientConfig.Client, error) {
+// NewManager generates a service manager configuration
+func NewManager(_ string, url string) (*clientConfig.Client, error) {
+	// HewHandler allocates a free port.
 	newConfig, err := handlerConfig.NewHandler(handlerConfig.SyncReplierType, ManagerCategory)
 	if err != nil {
 		return nil, fmt.Errorf("handlerConfig.NewHandler: %w", err)
@@ -43,9 +45,9 @@ func ManagerClient(_ string, url string) (*clientConfig.Client, error) {
 }
 
 func Empty(id string, url string, serviceType Type) (*Service, error) {
-	managerClient, err := ManagerClient(id, url)
+	managerClient, err := NewManager(id, url)
 	if err != nil {
-		return nil, fmt.Errorf("ManagerClient('%s', '%s'): %w", id, url, err)
+		return nil, fmt.Errorf("NewManager('%s', '%s'): %w", id, url, err)
 	}
 
 	return &Service{
