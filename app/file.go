@@ -60,16 +60,9 @@ func filePath(configEngine *engine.Dev) (key_value.KeyValue, bool, error) {
 	if flagFileParams == nil {
 		fileParams = envFileParams
 	}
+
 	if fileParams == nil {
 		return nil, false, fmt.Errorf("file parameter is nil")
-	}
-
-	// File doesn't exist, let's write it.
-	// Priority is the flag path.
-	// If the user didn't pass the flags, then use an environment path.
-	// The environment path will not be nil, since it will use the default path.
-	if err := makeConfigDir(fileParams); err != nil {
-		return nil, false, fmt.Errorf("app.makeConfigDir: %w", err)
 	}
 
 	return fileParams, false, nil
