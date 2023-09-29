@@ -33,7 +33,6 @@ type App struct {
 	ProxyChains []*service.ProxyChain `json:"proxy_chains" yaml:"proxy_chains"`
 	fileParams  key_value.KeyValue
 	filePath    string
-	engine      *engine.Dev
 }
 
 // New App configuration.
