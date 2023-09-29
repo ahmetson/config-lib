@@ -194,6 +194,62 @@ func (test *TestProxySuite) Test_12_NewServiceDestination() {
 	s().EqualValues(test.urls, destinations.Urls)
 }
 
+// Test_13_Is tests IsService, IsHandler and IsRoute and IsValid.
+// Tests with a Rule derived from NewDestination.
+// Tests with a Rule derived from NewHandlerDestination.
+// Tests with a Rule derived from NewServiceDestination.
+//
+// Tests IsValid and IsEmpty for different combinations.
+// Tests Is* on the fly.
+func (test *TestProxySuite) Test_13_Is() {
+	s := test.Require
+
+	// handler destination
+	destinations := NewHandlerDestination(test.categories)
+	s().False(destinations.IsService()) // categories given
+	s().False(destinations.IsValid())   // missing urls
+	s().False(destinations.IsEmpty())
+	s().False(destinations.IsHandler()) // missing urls
+	s().False(destinations.IsRoute())   // missing commands
+
+	destinations = NewHandlerDestination(test.urls, test.categories)
+	s().False(destinations.IsService()) // categories exist
+	s().True(destinations.IsHandler())  // valid as urls and categories are given
+	s().True(destinations.IsValid())    // valid since IsHandler is valid
+	s().False(destinations.IsRoute())   // missing commands
+	s().False(destinations.IsEmpty())
+
+	// route destination
+	destinations = NewDestination(test.categories, test.commands)
+	s().False(destinations.IsService()) // categories and commands are given
+	s().False(destinations.IsHandler()) // commands given
+	s().False(destinations.IsRoute())   // missing urls
+	s().False(destinations.IsValid())   // missing urls
+	s().False(destinations.IsEmpty())
+
+	destinations = NewDestination(test.urls, test.categories, test.commands)
+	s().False(destinations.IsService()) // categories and commands given
+	s().False(destinations.IsHandler()) // commands given
+	s().True(destinations.IsRoute())    // valid as urls, categories and commands given
+	s().True(destinations.IsValid())    // valid since IsRoute is valid
+	s().False(destinations.IsEmpty())
+
+	// service destination
+	destinations = NewServiceDestination()
+	s().False(destinations.IsService()) // missing urls
+	s().False(destinations.IsHandler()) // missing categories
+	s().False(destinations.IsRoute())   // missing categories and commands
+	s().False(destinations.IsValid())   // empty route is not valid
+	s().True(destinations.IsEmpty())    // the `NewServiceDestination()` only way to create an empty route by functions
+
+	destinations = NewServiceDestination(test.urls)
+	s().True(destinations.IsService())  // urls given
+	s().False(destinations.IsHandler()) // missing categories
+	s().False(destinations.IsRoute())   // missing categories and commands
+	s().True(destinations.IsValid())    // valid since IsService is valid
+	s().False(destinations.IsEmpty())   // urls given
+}
+
 func TestProxy(t *testing.T) {
 	suite.Run(t, new(TestProxySuite))
 }
