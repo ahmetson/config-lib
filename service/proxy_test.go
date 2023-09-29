@@ -163,6 +163,37 @@ func (test *TestProxySuite) Test_11_NewHandlerDestination() {
 	s().EqualValues(test.categories, destinations.Categories)
 }
 
+// Test_12_NewServiceDestination tests NewServiceDestination
+func (test *TestProxySuite) Test_12_NewServiceDestination() {
+	s := test.Require
+
+	// creating a destination with invalid data must fail
+	destinations := NewServiceDestination()
+	s().NotNil(destinations)
+
+	// creating a destination with invalid data type must fail
+	destinations = NewServiceDestination(1)
+	s().Nil(destinations)
+
+	// creating a destination with more than 1 parameter must fail
+	destinations = NewServiceDestination("", "")
+
+	// all are scalar type
+	destinations = NewServiceDestination(test.urls[0])
+	s().NotNil(destinations)
+	s().Len(destinations.Urls, 1)
+	s().Empty(destinations.Categories)
+	s().Empty(destinations.Commands)
+	s().Equal(test.urls[0], destinations.Urls[0])
+
+	destinations = NewServiceDestination(test.urls)
+	s().NotNil(destinations)
+	s().Len(destinations.Urls, 2)
+	s().Empty(destinations.Categories)
+	s().Empty(destinations.Commands)
+	s().EqualValues(test.urls, destinations.Urls)
+}
+
 func TestProxy(t *testing.T) {
 	suite.Run(t, new(TestProxySuite))
 }

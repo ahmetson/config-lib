@@ -132,6 +132,34 @@ func NewHandlerDestination(params ...interface{}) *Rule {
 }
 
 // NewServiceDestination returns a rule for the service.
+// Returns nil if parameter is invalid.
+//
+// A parameter could be a string or []string.
+// If no parameter is given, returns an empty rule.
+// In that case, set the urls later.
+func NewServiceDestination(params ...interface{}) *Rule {
+	unit := &Rule{
+		Categories:       make([]string, 0),
+		Commands:         make([]string, 0),
+		ExcludedCommands: make([]string, 0),
+	}
+
+	if len(params) == 0 {
+		unit.Urls = make([]string, 0)
+		return unit
+	}
+
+	if len(params) != 1 {
+		return nil
+	}
+
+	unit.Urls = convertParam(params[0])
+	if unit.Urls == nil {
+		return nil
+	}
+
+	return unit
+}
 
 // IsService returns true for the service destination.
 // The rule is a service destination if Urls are given, but not Categories and Commands.
