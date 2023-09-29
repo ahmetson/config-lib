@@ -52,8 +52,10 @@ func convertParam(raw interface{}) []string {
 	return nil
 }
 
-// NewDestination returns a destination rule by route commands.
-// Returns nil, if params length is less than 2.
+// NewDestination returns a destination rule for routes.
+// Returns nil if params are invalid.
+//
+// Any parameter could be a string or []string.
 func NewDestination(params ...interface{}) *Rule {
 	unit := &Rule{
 		Urls:             make([]string, 0),
@@ -94,8 +96,10 @@ func NewDestination(params ...interface{}) *Rule {
 	return unit
 }
 
-// NewHandlerDestination returns a destination unit for the routes in the handler.
-// Returns nil if no params were given.
+// NewHandlerDestination returns a rule for the handler.
+// Returns nil if parameters are invalid.
+//
+// Any parameter could be a string or []string.
 func NewHandlerDestination(params ...interface{}) *Rule {
 	unit := &Rule{
 		Urls:             make([]string, 0),
@@ -127,16 +131,22 @@ func NewHandlerDestination(params ...interface{}) *Rule {
 	return unit
 }
 
-// IsService returns true if the destination is for services
+// NewServiceDestination returns a rule for the service.
+
+// IsService returns true for the service destination.
+// The rule is a service destination if Urls are given, but not Categories and Commands.
 func (unit *Rule) IsService() bool {
 	return len(unit.Categories) == 0 && len(unit.Commands) == 0 && len(unit.Urls) > 0
 }
 
+// IsHandler returns true for the handler destination.
+// The rule is a handler destination if Urls and Categories are given, but not Commands.
 func (unit *Rule) IsHandler() bool {
 	return len(unit.Urls) > 0 && len(unit.Categories) > 0 && len(unit.Commands) == 0
 }
 
-// IsRoute returns true if the destination is for route
+// IsRoute returns true if for the route destination.
+// The rule is a route destination if Urls, Categories and Commands are given
 func (unit *Rule) IsRoute() bool {
 	return len(unit.Urls) > 0 && len(unit.Categories) > 0 && len(unit.Commands) > 0
 }

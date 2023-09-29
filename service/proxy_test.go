@@ -25,7 +25,7 @@ func (test *TestProxySuite) SetupTest() {
 	test.commands = []string{"command_1", "command_2"}
 }
 
-// Test_10_NewDestination sets up of the default parameters
+// Test_10_NewDestination tests NewDestination
 func (test *TestProxySuite) Test_10_NewDestination() {
 	s := test.Require
 
@@ -104,7 +104,7 @@ func (test *TestProxySuite) Test_10_NewDestination() {
 	s().Equal(test.commands[0], destinations.Commands[0])
 }
 
-// Test_11_NewHandlerDestination sets up of the default parameters
+// Test_11_NewHandlerDestination tests NewHandlerDestination
 func (test *TestProxySuite) Test_11_NewHandlerDestination() {
 	s := test.Require
 
@@ -116,7 +116,7 @@ func (test *TestProxySuite) Test_11_NewHandlerDestination() {
 	destinations = NewHandlerDestination("", "", "")
 	s().Nil(destinations)
 
-	// creating a destination with two parameters but invalid data must fail
+	// creating a destination with invalid data type must fail
 	destinations = NewHandlerDestination(1)
 	s().Nil(destinations)
 
