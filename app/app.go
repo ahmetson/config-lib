@@ -62,8 +62,8 @@ func New(configEngine engine.Interface) (*App, error) {
 			return nil, fmt.Errorf("configEngine.Read: %w", err)
 		}
 		app.Services = services
-		if err := app.preparePath(); err != nil {
-			return nil, fmt.Errorf("app.preparePath: %w", err)
+		if err := app.setFilePath(); err != nil {
+			return nil, fmt.Errorf("app.setFilePath: %w", err)
 		}
 
 		return app, nil
@@ -83,8 +83,8 @@ func New(configEngine engine.Interface) (*App, error) {
 			return nil, fmt.Errorf("configEngine.Read: %w", err)
 		}
 		app.Services = services
-		if err := app.preparePath(); err != nil {
-			return nil, fmt.Errorf("app.preparePath: %w", err)
+		if err := app.setFilePath(); err != nil {
+			return nil, fmt.Errorf("app.setFilePath: %w", err)
 		}
 		return app, nil
 	}
@@ -101,8 +101,8 @@ func New(configEngine engine.Interface) (*App, error) {
 		return nil, fmt.Errorf("envPath is nil")
 	}
 
-	if err := app.preparePath(); err != nil {
-		return nil, fmt.Errorf("app.preparePath: %w", err)
+	if err := app.setFilePath(); err != nil {
+		return nil, fmt.Errorf("app.setFilePath: %w", err)
 	}
 	if err := app.write(); err != nil {
 		return nil, fmt.Errorf("app.write: %w", err)
@@ -238,7 +238,8 @@ func (a *App) createYaml() key_value.KeyValue {
 	return kv
 }
 
-func (a *App) preparePath() error {
+// setFilePath converts fileParams to the full file path.
+func (a *App) setFilePath() error {
 	if a.fileParams == nil {
 		return fmt.Errorf("a.fileParams nil")
 	}
