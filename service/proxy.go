@@ -228,7 +228,15 @@ func IsEqualRule(first *Rule, second *Rule) bool {
 	return first != nil && second != nil
 }
 
-func IsProxySet(proxies []*Proxy, id string) bool {
+//
+// Proxy functions and methods
+//
+
+// IsValid returns true if all fields are set
+func (proxy *Proxy) IsValid() bool {
+	return len(proxy.Url) > 0 && len(proxy.Id) > 0 && len(proxy.Category) > 0
+}
+
 	return slices.ContainsFunc(proxies, func(el *Proxy) bool {
 		return el.Id == id
 	})

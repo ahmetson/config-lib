@@ -265,6 +265,27 @@ func (test *TestProxySuite) Test_14_ExcludeCommands() {
 	s().True(destinations.IsEmptyCommands())
 }
 
+// Test_15_Proxy tests Proxy.IsValid function
+func (test *TestProxySuite) Test_15_Proxy() {
+	s := test.Require
+
+	id := "proxy_id"
+	url := "github.com/ahmetson/proxy"
+	category := "category"
+
+	proxy := &Proxy{}
+	s().False(proxy.IsValid())
+
+	proxy.Id = id
+	s().False(proxy.IsValid())
+
+	proxy.Url = url
+	s().False(proxy.IsValid())
+
+	proxy.Category = category
+	s().True(proxy.IsValid())
+}
+
 func TestProxy(t *testing.T) {
 	suite.Run(t, new(TestProxySuite))
 }
