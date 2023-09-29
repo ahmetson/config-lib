@@ -99,6 +99,16 @@ func (a *App) ServiceByUrl(url string) *service.Service {
 	return nil
 }
 
+// setNewField sets the fields to 0, if the field is nil
+func (a *App) setNewField() {
+	if a.Services == nil {
+		a.Services = make([]*service.Service, 0)
+	}
+	if a.ProxyChains == nil {
+		a.ProxyChains = make([]*service.ProxyChain, 0)
+	}
+}
+
 // SetService sets a new service into the configuration.
 // After setting, the app will write it to the file.
 func (a *App) SetService(s *service.Service) error {

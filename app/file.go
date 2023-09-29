@@ -111,12 +111,7 @@ func read(filePath string) (*App, error) {
 	if err != nil {
 		return nil, fmt.Errorf("yaml.Unmarshal: %w", err)
 	}
-	if appConfig.Services == nil {
-		appConfig.Services = make([]*service.Service, 0)
-	}
-	if appConfig.ProxyChains == nil {
-		appConfig.ProxyChains = make([]*service.ProxyChain, 0)
-	}
+	appConfig.setNewField()
 
 	return &appConfig, nil
 }
@@ -205,7 +200,8 @@ func fileParamsToPath(fileParams key_value.KeyValue) string {
 
 // Writes the service as the yaml on the given path.
 // If the path doesn't contain the file extension, it will through an error
-func write(filePath string, data interface{}) error {
+func write(filePath string, data *App) error {
+	data.setNewField()
 	appConfig, err := yaml.Marshal(data)
 	if err != nil {
 		return fmt.Errorf("yaml.Marshal: %w", err)
