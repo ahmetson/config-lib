@@ -30,8 +30,6 @@ type Service struct {
 	Extensions []*clientConfig.Client   `json:"extensions" yaml:"extensions"`
 }
 
-type Services []Service
-
 // ManagerId generates a service manager id
 func ManagerId(serviceId string) string {
 	return serviceId + "_manager"
