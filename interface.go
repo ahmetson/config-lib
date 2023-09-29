@@ -13,10 +13,6 @@ type Interface interface {
 	// The parameters are varied for each config engine.
 	Load(key_value.KeyValue) (interface{}, error)
 
-	// Watch for the changes.
-	// For watching, it requires Load to be collected first.
-	Watch(func(interface{}, error)) error
-
 	SetDefaults(value key_value.KeyValue)
 	SetDefault(string, interface{})
 	Set(string, interface{})
