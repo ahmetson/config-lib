@@ -12,15 +12,22 @@ const (
 	ConfigFlag      = "config"
 )
 
-// Service type defined in the config
+// Service type defined in the config.
+//
+// Fields
+//   - Type is the type of service. For example, ProxyType, IndependentType or ExtensionType
+//   - Url to the service source code
+//   - Id within the application
+//   - Manager parameter of the service
+//   - Handlers that are listed in the service
+//   - Extensions that this service depends on
 type Service struct {
-	Type        Type                     `json:"type" yaml:"type"`
-	Url         string                   `json:"url" yaml:"url"`
-	Id          string                   `json:"id" yaml:"id"`
-	Manager     *clientConfig.Client     `json:"manager" yaml:"manager"`
-	Handlers    []*handlerConfig.Handler `json:"handlers" yaml:"handlers"`
-	ProxyChains []*ProxyChain            `json:"proxy_chains" yaml:"proxy_chains"`
-	Extensions  []*clientConfig.Client   `json:"extensions" yaml:"extensions"`
+	Type       Type                     `json:"type" yaml:"type"`
+	Url        string                   `json:"url" yaml:"url"`
+	Id         string                   `json:"id" yaml:"id"`
+	Manager    *clientConfig.Client     `json:"manager" yaml:"manager"`
+	Handlers   []*handlerConfig.Handler `json:"handlers" yaml:"handlers"`
+	Extensions []*clientConfig.Client   `json:"extensions" yaml:"extensions"`
 }
 
 type Services []Service
@@ -55,13 +62,12 @@ func Empty(id string, url string, serviceType Type) (*Service, error) {
 	}
 
 	return &Service{
-		Type:        serviceType,
-		Id:          id,
-		Url:         url,
-		Handlers:    make([]*handlerConfig.Handler, 0),
-		ProxyChains: make([]*ProxyChain, 0),
-		Extensions:  make([]*clientConfig.Client, 0),
-		Manager:     managerClient, // connecting to the service from other parents through dev context
+		Type:       serviceType,
+		Id:         id,
+		Url:        url,
+		Handlers:   make([]*handlerConfig.Handler, 0),
+		Extensions: make([]*clientConfig.Client, 0),
+		Manager:    managerClient, // connecting to the service from other parents through dev context
 	}, nil
 }
 
@@ -212,8 +218,4 @@ func (s *Service) SetExtension(extension *clientConfig.Client) {
 // SetHandler adds a new handler. If the handler by the same name exists, it will add a new copy.
 func (s *Service) SetHandler(handler *handlerConfig.Handler) {
 	s.Handlers = append(s.Handlers, handler)
-}
-
-func (s *Service) IsProxySet() bool {
-	return len(s.ProxyChains) > 0
 }

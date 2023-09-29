@@ -29,10 +29,11 @@ const (
 //   - Services in the application
 //   - ProxyChains list of proxies that targets to the services
 type App struct {
-	Services   []*service.Service
-	fileParams key_value.KeyValue
-	filePath   string
-	engine     engine.Interface
+	Services    []*service.Service    `json:"services" yaml:"services"`
+	ProxyChains []*service.ProxyChain `json:"proxy_chains" yaml:"proxy_chains"`
+	fileParams  key_value.KeyValue
+	filePath    string
+	engine      engine.Interface
 }
 
 // New App configuration.
@@ -46,8 +47,9 @@ type App struct {
 func New(configEngine engine.Interface) (*App, error) {
 	// default app is empty
 	app := &App{
-		Services: make([]*service.Service, 0),
-		engine:   configEngine,
+		Services:    make([]*service.Service, 0),
+		ProxyChains: make([]*service.ProxyChain, 0),
+		engine:      configEngine,
 	}
 
 	execPath, err := path.CurrentDir()
