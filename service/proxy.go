@@ -8,10 +8,9 @@ import (
 //
 // If two endpoints lint to the same route,
 type Proxy struct {
-	Sources  []string `json:"sources,omitempty" yaml:"sources,omitempty"`
-	Id       string   `json:"id" yaml:"id"`
-	Url      string   `json:"url" yaml:"url"`
-	Category string   `json:"category" yaml:"category"` // proxy category, example authr, valid, convert
+	Id       string `json:"id" yaml:"id"`
+	Url      string `json:"url" yaml:"url"`
+	Category string `json:"category" yaml:"category"` // proxy category, example authr, valid, convert
 }
 
 // The Rule is the pattern matching rule to find the services, handlers and routes as the proxy destination.
