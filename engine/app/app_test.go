@@ -2,7 +2,6 @@ package app
 
 import (
 	"fmt"
-	"github.com/ahmetson/config-lib"
 	"github.com/ahmetson/config-lib/engine"
 	"github.com/ahmetson/config-lib/service"
 	"github.com/ahmetson/log-lib"
@@ -23,7 +22,7 @@ type TestAppSuite struct {
 	suite.Suite
 	envPath   string
 	appConfig *App
-	engine    config.Interface
+	engine    *engine.Dev
 	logger    *log.Logger
 	execPath  string
 }

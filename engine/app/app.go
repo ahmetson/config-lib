@@ -34,7 +34,7 @@ type App struct {
 	ProxyChains []*service.ProxyChain `json:"proxy_chains" yaml:"proxy_chains"`
 	fileParams  key_value.KeyValue
 	filePath    string
-	engine      config.Interface
+	engine      *engine.Dev
 }
 
 // New App configuration.
@@ -45,7 +45,7 @@ type App struct {
 // - if app.yml exists in the root, then load it.
 // - if, environment variable exists, then load it.
 // - if, a flag exists, then load it.
-func New(configEngine config.Interface) (*App, error) {
+func New(configEngine *engine.Dev) (*App, error) {
 	// default app is empty
 	app := &App{
 		Services:    make([]*service.Service, 0),
@@ -171,7 +171,7 @@ func flagExist(execPath string) (key_value.KeyValue, bool, error) {
 // If it exists, checks does it exist in the file system.
 //
 // In case if it doesn't exist, it will try to load the default configuration.
-func envExist(configEngine config.Interface) (key_value.KeyValue, bool, error) {
+func envExist(configEngine *engine.Dev) (key_value.KeyValue, bool, error) {
 	if !configEngine.Exist(EnvConfigName) || !configEngine.Exist(EnvConfigPath) {
 		return nil, false, nil
 	}
@@ -189,7 +189,7 @@ func envExist(configEngine config.Interface) (key_value.KeyValue, bool, error) {
 }
 
 // setDefault paths of the local file to load by default
-func setDefault(execPath string, engine config.Interface) {
+func setDefault(execPath string, engine *engine.Dev) {
 	engine.SetDefault(EnvConfigName, "app")
 	engine.SetDefault(EnvConfigPath, execPath)
 }
