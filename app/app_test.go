@@ -90,8 +90,8 @@ func (test *TestAppSuite) Test_10_setDefault() {
 	setDefault(test.execPath, test.engine)
 
 	// After setting the default, the engine must return the parameters
-	s().Equal(test.engine.GetString(EnvConfigPath), test.execPath)
-	s().Equal(test.engine.GetString(EnvConfigName), "app")
+	s().Equal(test.engine.StringValue(EnvConfigPath), test.execPath)
+	s().Equal(test.engine.StringValue(EnvConfigName), "app")
 }
 
 // Test_11_envExist test the existence of the configuration file from the environment variables
@@ -107,8 +107,8 @@ func (test *TestAppSuite) Test_11_envExist() {
 	// Create a new default file
 	setDefault(test.execPath, test.engine)
 
-	configPath := test.engine.GetString(EnvConfigPath)
-	configName := test.engine.GetString(EnvConfigName)
+	configPath := test.engine.StringValue(EnvConfigPath)
+	configName := test.engine.StringValue(EnvConfigName)
 
 	// creating a default file
 	test.createYaml(configPath, configName)
@@ -186,8 +186,8 @@ func (test *TestAppSuite) Test_13_read() {
 	// Create a new default file
 	setDefault(test.execPath, test.engine)
 
-	configPath := test.engine.GetString(EnvConfigPath)
-	configName := test.engine.GetString(EnvConfigName)
+	configPath := test.engine.StringValue(EnvConfigPath)
+	configName := test.engine.StringValue(EnvConfigName)
 
 	// creating a default file
 	test.createYaml(configPath, configName)

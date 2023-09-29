@@ -67,8 +67,8 @@ func Empty(id string, url string, serviceType Type) (*Service, error) {
 }
 
 func Read(engine engine.Interface) (*Service, error) {
-	configName := engine.GetString("SERVICE_CONFIG_NAME")
-	configPath := engine.GetString("SERVICE_CONFIG_PATH")
+	configName := engine.StringValue("SERVICE_CONFIG_NAME")
+	configPath := engine.StringValue("SERVICE_CONFIG_PATH")
 	configExt := "yaml"
 
 	value := key_value.New().Set("name", configName).

@@ -167,8 +167,8 @@ func envExist(configEngine engine.Interface) (key_value.KeyValue, bool, error) {
 		return nil, false, nil
 	}
 
-	configName := configEngine.GetString(EnvConfigName)
-	configPath := configEngine.GetString(EnvConfigPath)
+	configName := configEngine.StringValue(EnvConfigName)
+	configPath := configEngine.StringValue(EnvConfigPath)
 	absPath := path.AbsDir(configPath, configName+".yml")
 	exists, err := path.FileExist(absPath)
 	if err != nil {
@@ -245,11 +245,11 @@ func (a *App) setFilePath() error {
 	}
 	name, err := a.fileParams.StringValue("name")
 	if err != nil {
-		return fmt.Errorf("a.fileParams.GetString('name'): %w", err)
+		return fmt.Errorf("a.fileParams.StringValue('name'): %w", err)
 	}
 	dirPath, err := a.fileParams.StringValue("configPath")
 	if err != nil {
-		return fmt.Errorf("a.fileParams.GetString('configPath'): %w", err)
+		return fmt.Errorf("a.fileParams.StringValue('configPath'): %w", err)
 	}
 
 	dirExist, err := path.DirExist(dirPath)

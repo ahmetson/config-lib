@@ -67,24 +67,24 @@ func (suite *TestEngineInterfaceSuite) TestRun() {
 
 	confInterface.SetDefaults(defaultConfig)
 	suite.Require().True(confInterface.Exist("TURKISH_KEY"))
-	suite.Require().Equal(confInterface.GetString("TURKISH_KEY"), "salam")
+	suite.Require().Equal(confInterface.StringValue("TURKISH_KEY"), "salam")
 
 	key := "NOT_FOUND"
 	value := "random_text"
 	suite.Require().False(confInterface.Exist(key))
-	suite.Require().Empty(confInterface.GetString(key))
+	suite.Require().Empty(confInterface.StringValue(key))
 	confInterface.SetDefault(key, value)
-	suite.Require().Equal(confInterface.GetString(key), value)
+	suite.Require().Equal(confInterface.StringValue(key), value)
 
 	suite.Require().True(confInterface.Exist("TRUE_KEY"))
-	suite.Require().True(confInterface.GetBool("TRUE_KEY"))
+	suite.Require().True(confInterface.BoolValue("TRUE_KEY"))
 	suite.Require().True(confInterface.Exist("FALSE_KEY"))
-	suite.Require().False(confInterface.GetBool("FALSE_KEY"))
-	suite.Require().Equal(confInterface.GetString("STRING_KEY"), "hello world")
-	suite.Require().Equal(uint64(123), confInterface.GetUint64("NUMBER_KEY"))
+	suite.Require().False(confInterface.BoolValue("FALSE_KEY"))
+	suite.Require().Equal(confInterface.StringValue("STRING_KEY"), "hello world")
+	suite.Require().Equal(uint64(123), confInterface.Uint64Value("NUMBER_KEY"))
 	suite.Require().True(confInterface.Exist("FLOAT_KEY"))
-	suite.Require().Equal(confInterface.GetString("FLOAT_KEY"), "75.321")
-	suite.Require().Empty(confInterface.GetUint64("FLOAT_KEY"))
+	suite.Require().Equal(confInterface.StringValue("FLOAT_KEY"), "75.321")
+	suite.Require().Empty(confInterface.Uint64Value("FLOAT_KEY"))
 
 	err := os.Remove(suite.envPath)
 	suite.Require().NoError(err, "delete the dump file: "+suite.envPath)

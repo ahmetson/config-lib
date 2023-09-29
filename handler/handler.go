@@ -294,7 +294,7 @@ func (handler *Handler) onString(req message.RequestInterface) message.ReplyInte
 		return req.Fail(fmt.Sprintf("req.Parameters.GetString('name'): %v", err))
 	}
 
-	value := handler.Engine.GetString(name)
+	value := handler.Engine.StringValue(name)
 
 	param := key_value.New().Set("value", value)
 	return req.Ok(param)
@@ -307,7 +307,7 @@ func (handler *Handler) onUint64(req message.RequestInterface) message.ReplyInte
 		return req.Fail(fmt.Sprintf("req.Parameters.GetString('name'): %v", err))
 	}
 
-	value := handler.Engine.GetUint64(name)
+	value := handler.Engine.Uint64Value(name)
 
 	param := key_value.New().Set("value", value)
 	return req.Ok(param)
@@ -320,7 +320,7 @@ func (handler *Handler) onBool(req message.RequestInterface) message.ReplyInterf
 		return req.Fail(fmt.Sprintf("req.Parameters.GetString('name'): %v", err))
 	}
 
-	value := handler.Engine.GetBool(name)
+	value := handler.Engine.BoolValue(name)
 
 	param := key_value.New().Set("value", value)
 	return req.Ok(param)

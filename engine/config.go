@@ -235,19 +235,19 @@ func (config *Dev) Exist(name string) bool {
 }
 
 // GetString Returns the config request as a string
-func (config *Dev) GetString(name string) string {
+func (config *Dev) StringValue(name string) string {
 	value := config.viper.GetString(name)
 	return value
 }
 
 // GetUint64 Returns the config request as an unsigned 64-bit number
-func (config *Dev) GetUint64(name string) uint64 {
+func (config *Dev) Uint64Value(name string) uint64 {
 	value := config.viper.GetUint64(name)
 	return value
 }
 
 // GetBool Returns the config request as a boolean
-func (config *Dev) GetBool(name string) bool {
+func (config *Dev) BoolValue(name string) bool {
 	value := config.viper.GetBool(name)
 	return value
 }
