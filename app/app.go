@@ -31,7 +31,6 @@ const (
 type App struct {
 	Services    []*service.Service    `json:"services" yaml:"services"`
 	ProxyChains []*service.ProxyChain `json:"proxy_chains" yaml:"proxy_chains"`
-	fileParams  key_value.KeyValue
 	filePath    string
 }
 
@@ -67,7 +66,6 @@ func New(configEngine *engine.Dev) (*App, error) {
 			return nil, fmt.Errorf("configEngine.Load: %w", err)
 		}
 		app.filePath = filePath
-		app.fileParams = flagFileParams
 
 		return app, nil
 	}
@@ -90,13 +88,11 @@ func New(configEngine *engine.Dev) (*App, error) {
 			return nil, fmt.Errorf("configEngine.Load: %w", err)
 		}
 		app.filePath = filePath
-		app.fileParams = envFileParams
 
 		return app, nil
 	}
 
 	app := &App{
-		fileParams: flagFileParams,
 	}
 
 	// File doesn't exist, let's write it.
