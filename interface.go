@@ -13,10 +13,5 @@ type Interface interface {
 	Load(key_value.KeyValue) (interface{}, error)
 
 	SetDefaults(value key_value.KeyValue)
-	SetDefault(string, interface{})
-	Set(string, interface{})
 	Exist(string) bool
-	StringValue(string) string
-	Uint64Value(string) uint64
-	BoolValue(string) bool
 }

@@ -111,21 +111,3 @@ func (config *Dev) SetDefaults(params key_value.KeyValue) {
 func (config *Dev) Exist(name string) bool {
 	return config.Viper.Get(name) != nil
 }
-
-// StringValue returns the config request as a string
-func (config *Dev) StringValue(name string) string {
-	value := config.Viper.GetString(name)
-	return value
-}
-
-// Uint64Value returns the config request as an unsigned 64-bit number
-func (config *Dev) Uint64Value(name string) uint64 {
-	value := config.Viper.GetUint64(name)
-	return value
-}
-
-// BoolValue returns the config request as a boolean
-func (config *Dev) BoolValue(name string) bool {
-	value := config.Viper.GetBool(name)
-	return value
-}

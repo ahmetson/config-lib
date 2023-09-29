@@ -64,24 +64,24 @@ func (suite *TestEngineSuite) TestRun() {
 		Set("TURKISH_KEY", "salam")
 	suite.appConfig.SetDefaults(defaultConfig)
 	suite.Require().True(suite.appConfig.Exist("TURKISH_KEY"))
-	suite.Require().Equal(suite.appConfig.StringValue("TURKISH_KEY"), "salam")
+	suite.Require().Equal(suite.appConfig.GetString("TURKISH_KEY"), "salam")
 
 	key := "NOT_FOUND"
 	value := "random_text"
 	suite.Require().False(suite.appConfig.Exist(key))
-	suite.Require().Empty(suite.appConfig.StringValue(key))
+	suite.Require().Empty(suite.appConfig.GetString(key))
 	suite.appConfig.SetDefault(key, value)
-	suite.Require().Equal(suite.appConfig.StringValue(key), value)
+	suite.Require().Equal(suite.appConfig.GetString(key), value)
 
 	suite.Require().True(suite.appConfig.Exist("TRUE_KEY"))
-	suite.Require().True(suite.appConfig.BoolValue("TRUE_KEY"))
+	suite.Require().True(suite.appConfig.GetBool("TRUE_KEY"))
 	suite.Require().True(suite.appConfig.Exist("FALSE_KEY"))
-	suite.Require().False(suite.appConfig.BoolValue("FALSE_KEY"))
-	suite.Require().Equal(suite.appConfig.StringValue("STRING_KEY"), "hello world")
-	suite.Require().Equal(uint64(123), suite.appConfig.Uint64Value("NUMBER_KEY"))
+	suite.Require().False(suite.appConfig.GetBool("FALSE_KEY"))
+	suite.Require().Equal(suite.appConfig.GetString("STRING_KEY"), "hello world")
+	suite.Require().Equal(uint64(123), suite.appConfig.GetUint64("NUMBER_KEY"))
 	suite.Require().True(suite.appConfig.Exist("FLOAT_KEY"))
-	suite.Require().Equal(suite.appConfig.StringValue("FLOAT_KEY"), "75.321")
-	suite.Require().Empty(suite.appConfig.Uint64Value("FLOAT_KEY"))
+	suite.Require().Equal(suite.appConfig.GetString("FLOAT_KEY"), "75.321")
+	suite.Require().Empty(suite.appConfig.GetUint64("FLOAT_KEY"))
 
 	err := os.Remove(suite.envPath)
 	suite.Require().NoError(err, "delete the dump file: "+suite.envPath)

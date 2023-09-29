@@ -176,8 +176,8 @@ func envExist(configEngine config.Interface) (key_value.KeyValue, bool, error) {
 		return nil, false, nil
 	}
 
-	configName := configEngine.StringValue(EnvConfigName)
-	configPath := configEngine.StringValue(EnvConfigPath)
+	configName := configEngine.GetString(EnvConfigName)
+	configPath := configEngine.GetString(EnvConfigPath)
 	absPath := path.AbsDir(configPath, configName+".yml")
 	exists, err := path.FileExist(absPath)
 	if err != nil {
