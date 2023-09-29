@@ -121,17 +121,6 @@ func (s *Service) HandlersByCategory(name string) ([]*handlerConfig.Handler, err
 	return handlers, nil
 }
 
-// FirstHandler returns the handler without requiring its name.
-// If the service doesn't have handlers, then it will return an error.
-func (s *Service) FirstHandler() (*handlerConfig.Handler, error) {
-	if len(s.Handlers) == 0 {
-		return nil, fmt.Errorf("service '%s' doesn't have any handlers in yaml file", s.Url)
-	}
-
-	handlers := s.Handlers[0]
-	return handlers, nil
-}
-
 // ExtensionByUrl returns the first occurred extension config by the url.
 // If the extension doesn't exist, then it returns nil
 func (s *Service) ExtensionByUrl(url string) *clientConfig.Client {
