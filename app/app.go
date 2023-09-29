@@ -99,7 +99,7 @@ func (a *App) ServiceByUrl(url string) *service.Service {
 	return nil
 }
 
-// setNewField sets the fields to 0, if the field is nil
+// setNewField sets empty value for nil fields
 func (a *App) setNewField() {
 	if a.Services == nil {
 		a.Services = make([]*service.Service, 0)
