@@ -4,6 +4,8 @@ import (
 	"fmt"
 	clientConfig "github.com/ahmetson/client-lib/config"
 	handlerConfig "github.com/ahmetson/handler-lib/config"
+	"slices"
+	"strings"
 )
 
 const (
@@ -93,30 +95,40 @@ func (s *Service) ValidateTypes() error {
 // HandlerByCategory returns the handler config by the handler category.
 // If the handler doesn't exist, then it returns an error.
 func (s *Service) HandlerByCategory(category string) (*handlerConfig.Handler, error) {
-	for _, c := range s.Handlers {
-		if c.Category == category {
-			return c, nil
-		}
+	if len(category) == 0 {
+		return nil, fmt.Errorf("category argument is empty")
 	}
 
-	return nil, fmt.Errorf("'%s' category of handler was not found in '%s' service's config", category, s.Url)
+	i := slices.IndexFunc(s.Handlers, func(e *handlerConfig.Handler) bool {
+		return strings.Compare(e.Category, category) == 0
+	})
+	if i == -1 {
+		return nil, fmt.Errorf("handler of '%s' category not found", category)
+	}
+
+	return s.Handlers[i], nil
 }
 
 // HandlersByCategory returns the multiple handlers of the given name.
 // If the handlers don't exist, then it returns an error
-func (s *Service) HandlersByCategory(name string) ([]*handlerConfig.Handler, error) {
-	handlers := make([]*handlerConfig.Handler, 0, len(s.Handlers))
-	count := 0
+func (s *Service) HandlersByCategory(category string) ([]*handlerConfig.Handler, error) {
+	if len(category) == 0 {
+		return nil, fmt.Errorf("category argument is empty")
+	}
+
+	handlers := make([]*handlerConfig.Handler, 0)
+	i := 0
 
 	for _, c := range s.Handlers {
-		if c.Category == name {
-			handlers[count] = c
-			count++
+		if strings.Compare(c.Category, category) == 0 {
+			handlers = slices.Grow(handlers, 1)
+			handlers = slices.Insert(handlers, i, c)
+			i++
 		}
 	}
 
 	if len(handlers) == 0 {
-		return nil, fmt.Errorf("no '%s' handlers config", name)
+		return nil, fmt.Errorf("no '%s' handlers config", category)
 	}
 	return handlers, nil
 }
@@ -143,7 +155,26 @@ func (s *Service) SetExtension(extension *clientConfig.Client) {
 	}
 }
 
-// SetHandler adds a new handler. If the handler by the same name exists, it will add a new copy.
+// SetHandler adds a new handler.
+// If the handler by the same id exists, it will over-write that handler.
 func (s *Service) SetHandler(handler *handlerConfig.Handler) {
-	s.Handlers = append(s.Handlers, handler)
+	if s == nil {
+		return
+	}
+
+	if len(s.Handlers) == 0 {
+		s.Handlers = []*handlerConfig.Handler{handler}
+		return
+	}
+
+	i := slices.IndexFunc(s.Handlers, func(h *handlerConfig.Handler) bool {
+		return strings.Compare(h.Id, handler.Id) == 0
+	})
+
+	if i == -1 {
+		s.Handlers = append(s.Handlers, handler)
+		return
+	}
+
+	s.Handlers[i] = handler
 }
