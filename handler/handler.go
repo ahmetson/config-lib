@@ -318,10 +318,12 @@ func (handler *Handler) onGenerateService(req message.RequestInterface) message.
 		return req.Fail(fmt.Sprintf("service.ValidateServiceType('%s'): %v", typeStr, err))
 	}
 
-	generatedService, err := service.Empty(id, url, serviceType)
+	generatedManager, err := service.NewManager(id, url)
 	if err != nil {
-		return req.Fail(fmt.Sprintf("service.Empty('%s', '%s', '%s'): %v", id, url, serviceType, err))
+		return req.Fail(fmt.Sprintf("service.NewManager('%s', '%s'): %v", id, url, err))
 	}
+
+	generatedService := service.New(id, url, serviceType, generatedManager)
 
 	params := key_value.New().Set("service", generatedService)
 	return req.Ok(params)

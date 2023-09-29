@@ -97,8 +97,10 @@ func (test *TestHandlerSuite) TearDownTest() {
 func (test *TestHandlerSuite) createYaml(dir string, name string) {
 	s := test.Require
 
-	sampleService, err := service.Empty(test.serviceId, test.serviceUrl, service.IndependentType)
+	sampleManager, err := service.NewManager(test.serviceId, test.serviceUrl)
 	s().NoError(err)
+
+	sampleService := service.New(test.serviceId, test.serviceUrl, service.IndependentType, sampleManager)
 	kv := key_value.New().Set("services", []interface{}{sampleService})
 
 	serviceConfig, err := yaml.Marshal(kv.Map())
@@ -168,8 +170,13 @@ func (test *TestHandlerSuite) Test_11_ServiceByUrl() {
 func (test *TestHandlerSuite) Test_12_SetService() {
 	s := test.Require
 
-	sampleService, err := service.Empty(test.serviceId+"_2", test.serviceUrl+"_2", service.IndependentType)
+	id := test.serviceId + "_2"
+	url := test.serviceUrl + "_2"
+
+	sampleManager, err := service.NewManager(id, url)
 	s().NoError(err)
+
+	sampleService := service.New(id, url, service.IndependentType, sampleManager)
 
 	// No id parameter was given
 	req := message.Request{Command: SetService, Parameters: key_value.New()}

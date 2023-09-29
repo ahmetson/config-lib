@@ -63,11 +63,13 @@ func NewManager(id string, url string) (*clientConfig.Client, error) {
 	return managerClient, nil
 }
 
-func Empty(id string, url string, serviceType Type) (*Service, error) {
-	managerClient, err := NewManager(id, url)
-	if err != nil {
-		return nil, fmt.Errorf("NewManager('%s', '%s'): %w", id, url, err)
-	}
+// New generates a service configuration.
+// It also generates the manager client
+func New(id string, url string, serviceType Type, managerClient *clientConfig.Client) *Service {
+	//managerClient, err := NewManager(id, url)
+	//if err != nil {
+	//	return nil, fmt.Errorf("NewManager('%s', '%s'): %w", id, url, err)
+	//}
 
 	return &Service{
 		Type:       serviceType,
@@ -76,7 +78,7 @@ func Empty(id string, url string, serviceType Type) (*Service, error) {
 		Handlers:   make([]*handlerConfig.Handler, 0),
 		Extensions: make([]*clientConfig.Client, 0),
 		Manager:    managerClient, // connecting to the service from other parents through dev context
-	}, nil
+	}
 }
 
 func (s *Service) PrepareService() error {
