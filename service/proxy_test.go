@@ -265,7 +265,7 @@ func (test *TestProxySuite) Test_14_ExcludeCommands() {
 	s().True(destinations.IsEmptyCommands())
 }
 
-// Test_15_Proxy tests Proxy.IsValid function
+// Test_15_Proxy tests Proxy.IsValid method
 func (test *TestProxySuite) Test_15_Proxy() {
 	s := test.Require
 

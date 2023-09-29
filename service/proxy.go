@@ -237,11 +237,41 @@ func (proxy *Proxy) IsValid() bool {
 	return len(proxy.Url) > 0 && len(proxy.Id) > 0 && len(proxy.Category) > 0
 }
 
+//
+// ProxyChain functions and methods
+//
+
+func IsProxyExist(proxies []*Proxy, id string) bool {
 	return slices.ContainsFunc(proxies, func(el *Proxy) bool {
 		return el.Id == id
 	})
 }
 
+// IsProxiesValid returns true if the Proxies field has no duplicate elements.
+// Proxies are compared against their ids.
+func (proxyChain *ProxyChain) IsProxiesValid() bool {
+	if proxyChain.Proxies == nil || len(proxyChain.Proxies) == 0 {
+		return false
+	}
+
+	for i, needle := range proxyChain.Proxies {
+		if !needle.IsValid() {
+			return false
+		}
+
+		for j, proxy := range proxyChain.Proxies {
+			if j == i {
+				continue
+			}
+
+			if needle.Id == proxy.Id {
+				return false
+			}
+		}
+	}
+
+	return true
+}
 // Chain returns the proxy chain for the given endpoint.
 func Chain(proxyChains []*ProxyChain, rule *Rule) []*Proxy {
 	for _, proxyChain := range proxyChains {
