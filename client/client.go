@@ -264,7 +264,7 @@ func (c *Client) String(name string) (string, error) {
 
 	value, err := rep.ReplyParameters().StringValue("value")
 	if err != nil {
-		return "", fmt.Errorf("rep.Parameters.GetString('value'): %v", err)
+		return "", fmt.Errorf("rep.Parameters.StringValue('value'): %v", err)
 	}
 
 	return value, nil
@@ -288,7 +288,7 @@ func (c *Client) Uint64(name string) (uint64, error) {
 
 	value, err := rep.ReplyParameters().Uint64Value("value")
 	if err != nil {
-		return 0, fmt.Errorf("rep.Parameters.GetUint64('value'): %v", err)
+		return 0, fmt.Errorf("rep.Parameters.Uint64Value('value'): %v", err)
 	}
 
 	return value, nil

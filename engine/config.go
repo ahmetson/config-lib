@@ -70,15 +70,15 @@ func YamlPathParam(configPath string, configName string) key_value.KeyValue {
 func (config *Dev) Load(value key_value.KeyValue) (interface{}, error) {
 	name, err := value.StringValue("name")
 	if err != nil {
-		return nil, fmt.Errorf("value.GetString(`name`): %w", err)
+		return nil, fmt.Errorf("value.StringValue(`name`): %w", err)
 	}
 	configType, err := value.StringValue("type")
 	if err != nil {
-		return nil, fmt.Errorf("value.GetString(`type`): %w", err)
+		return nil, fmt.Errorf("value.StringValue(`type`): %w", err)
 	}
 	configPath, err := value.StringValue("configPath")
 	if err != nil {
-		return nil, fmt.Errorf("value.GetString(`configPath`): %w", err)
+		return nil, fmt.Errorf("value.StringValue(`configPath`): %w", err)
 	}
 	config.viper.SetConfigName(name)
 	config.viper.SetConfigType(configType)

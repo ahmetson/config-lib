@@ -132,7 +132,7 @@ func (handler *Handler) onServiceExist(req message.RequestInterface) message.Rep
 func (handler *Handler) onService(req message.RequestInterface) message.ReplyInterface {
 	id, err := req.RouteParameters().StringValue("id")
 	if err != nil {
-		return req.Fail(fmt.Sprintf("req.Parameters.GetString('id'): %v", err))
+		return req.Fail(fmt.Sprintf("req.Parameters.StringValue('id'): %v", err))
 	}
 
 	s := handler.app.Service(id)
@@ -148,7 +148,7 @@ func (handler *Handler) onService(req message.RequestInterface) message.ReplyInt
 func (handler *Handler) onServiceByUrl(req message.RequestInterface) message.ReplyInterface {
 	url, err := req.RouteParameters().StringValue("url")
 	if err != nil {
-		return req.Fail(fmt.Sprintf("req.Parameters.GetString('url'): %v", err))
+		return req.Fail(fmt.Sprintf("req.Parameters.StringValue('url'): %v", err))
 	}
 
 	s := handler.app.ServiceByUrl(url)
@@ -169,7 +169,7 @@ func (handler *Handler) onGenerateHandler(req message.RequestInterface) message.
 
 	handlerTypeStr, err := req.RouteParameters().StringValue("handler_type")
 	if err != nil {
-		return req.Fail(fmt.Sprintf("req.Parameters.GetString('handler_type'): %v", err))
+		return req.Fail(fmt.Sprintf("req.Parameters.StringValue('handler_type'): %v", err))
 	}
 
 	handlerType := handlerConfig.HandlerType(handlerTypeStr)
@@ -179,7 +179,7 @@ func (handler *Handler) onGenerateHandler(req message.RequestInterface) message.
 
 	cat, err := req.RouteParameters().StringValue("category")
 	if err != nil {
-		return req.Fail(fmt.Sprintf("req.Parameters.GetString('category'): %v", err))
+		return req.Fail(fmt.Sprintf("req.Parameters.StringValue('category'): %v", err))
 	}
 
 	if len(cat) == 0 {
@@ -224,7 +224,7 @@ func (handler *Handler) onSetService(req message.RequestInterface) message.Reply
 func (handler *Handler) onExist(req message.RequestInterface) message.ReplyInterface {
 	name, err := req.RouteParameters().StringValue("name")
 	if err != nil {
-		return req.Fail(fmt.Sprintf("req.Parameters.GetString('name'): %v", err))
+		return req.Fail(fmt.Sprintf("req.Parameters.StringValue('name'): %v", err))
 	}
 
 	exist := handler.Engine.Exist(name)
@@ -237,7 +237,7 @@ func (handler *Handler) onExist(req message.RequestInterface) message.ReplyInter
 func (handler *Handler) onSetDefault(req message.RequestInterface) message.ReplyInterface {
 	name, err := req.RouteParameters().StringValue("name")
 	if err != nil {
-		return req.Fail(fmt.Sprintf("req.Parameters.GetString('name'): %v", err))
+		return req.Fail(fmt.Sprintf("req.Parameters.StringValue('name'): %v", err))
 	}
 	value, ok := req.RouteParameters()["value"]
 	if !ok {
@@ -256,7 +256,7 @@ func (handler *Handler) onSetDefault(req message.RequestInterface) message.Reply
 func (handler *Handler) onGenerateService(req message.RequestInterface) message.ReplyInterface {
 	id, err := req.RouteParameters().StringValue("id")
 	if err != nil {
-		return req.Fail(fmt.Sprintf("req.Parameters.GetString('id'): %v", err))
+		return req.Fail(fmt.Sprintf("req.Parameters.StringValue('id'): %v", err))
 	}
 
 	if handler.app.Service(id) != nil {
@@ -265,12 +265,12 @@ func (handler *Handler) onGenerateService(req message.RequestInterface) message.
 
 	url, err := req.RouteParameters().StringValue("url")
 	if err != nil {
-		return req.Fail(fmt.Sprintf("req.Parameters.GetString('url'): %v", err))
+		return req.Fail(fmt.Sprintf("req.Parameters.StringValue('url'): %v", err))
 	}
 
 	typeStr, err := req.RouteParameters().StringValue("type")
 	if err != nil {
-		return req.Fail(fmt.Sprintf("req.Parameters.GetString('type'): %v", err))
+		return req.Fail(fmt.Sprintf("req.Parameters.StringValue('type'): %v", err))
 	}
 
 	serviceType := service.Type(typeStr)
@@ -291,7 +291,7 @@ func (handler *Handler) onGenerateService(req message.RequestInterface) message.
 func (handler *Handler) onString(req message.RequestInterface) message.ReplyInterface {
 	name, err := req.RouteParameters().StringValue("name")
 	if err != nil {
-		return req.Fail(fmt.Sprintf("req.Parameters.GetString('name'): %v", err))
+		return req.Fail(fmt.Sprintf("req.Parameters.StringValue('name'): %v", err))
 	}
 
 	value := handler.Engine.StringValue(name)
@@ -304,7 +304,7 @@ func (handler *Handler) onString(req message.RequestInterface) message.ReplyInte
 func (handler *Handler) onUint64(req message.RequestInterface) message.ReplyInterface {
 	name, err := req.RouteParameters().StringValue("name")
 	if err != nil {
-		return req.Fail(fmt.Sprintf("req.Parameters.GetString('name'): %v", err))
+		return req.Fail(fmt.Sprintf("req.Parameters.StringValue('name'): %v", err))
 	}
 
 	value := handler.Engine.Uint64Value(name)
@@ -317,7 +317,7 @@ func (handler *Handler) onUint64(req message.RequestInterface) message.ReplyInte
 func (handler *Handler) onBool(req message.RequestInterface) message.ReplyInterface {
 	name, err := req.RouteParameters().StringValue("name")
 	if err != nil {
-		return req.Fail(fmt.Sprintf("req.Parameters.GetString('name'): %v", err))
+		return req.Fail(fmt.Sprintf("req.Parameters.StringValue('name'): %v", err))
 	}
 
 	value := handler.Engine.BoolValue(name)
