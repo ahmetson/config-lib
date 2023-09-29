@@ -1,14 +1,18 @@
 // Package watch listens for the live update of the data.
 //
 // Todo improve the function call cycle (fileCreated -> fileChange -> fileDelete)
+//
+// Todo since we removed reading from Viper the yaml file, let's load the file from app
 package watch
 
 import (
 	"fmt"
+	"github.com/ahmetson/config-lib/app"
 	"github.com/ahmetson/config-lib/engine"
 	"github.com/ahmetson/datatype-lib/data_type/key_value"
 	"github.com/ahmetson/os-lib/path"
 	"github.com/fsnotify/fsnotify"
+	"github.com/spf13/viper"
 	"path/filepath"
 	"time"
 )
@@ -43,6 +47,34 @@ func Watch(config *engine.Dev, watchHandle func(interface{}, error)) error {
 	return nil
 }
 
+func loadFile(config *engine.Dev) (*app.App, error) {
+	value := getPath(config)
+	name, err := value.StringValue("name")
+	if err != nil {
+		return nil, fmt.Errorf("value.StringValue(`name`): %w", err)
+	}
+	configType, err := value.StringValue("type")
+	if err != nil {
+		return nil, fmt.Errorf("value.StringValue(`type`): %w", err)
+	}
+	configPath, err := value.StringValue("configPath")
+	if err != nil {
+		return nil, fmt.Errorf("value.StringValue(`configPath`): %w", err)
+	}
+	config.SetConfigName(name)
+	config.SetConfigType(configType)
+	config.AddConfigPath(configPath)
+
+	err = config.ReadInConfig()
+	notFound := false
+	_, notFound = err.(viper.ConfigFileNotFoundError)
+	if err != nil && !notFound {
+		return nil, fmt.Errorf("read '%s' failed: %w", config.GetString("SERVICE_CONFIG_NAME"), err)
+	}
+	return nil, nil
+
+}
+
 // If the file not exists, then watch for its appearance.
 func watchFileCreation(config *engine.Dev) {
 	servicePath := getServicePath(config)
@@ -53,7 +85,8 @@ func watchFileCreation(config *engine.Dev) {
 			break
 		}
 		if exists {
-			serviceConfig, err := config.Load(getPath(config))
+
+			serviceConfig, err := loadFile(config)
 			if err != nil {
 				config.HandleChange(nil, fmt.Errorf("watchFileCreation: config.readFile: %w", err))
 				break
@@ -93,7 +126,7 @@ func watchChange(config *engine.Dev) {
 
 	config.Viper.WatchConfig()
 	config.Viper.OnConfigChange(func(e fsnotify.Event) {
-		newConfig, err := config.Load(getPath(config))
+		newConfig, err := loadFile(config)
 		if err != nil {
 			config.HandleChange(nil, fmt.Errorf("watchChange: config.readFile: %w", err))
 		} else {
