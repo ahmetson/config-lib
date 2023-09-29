@@ -66,11 +66,6 @@ func NewManager(id string, url string) (*clientConfig.Client, error) {
 // New generates a service configuration.
 // It also generates the manager client
 func New(id string, url string, serviceType Type, managerClient *clientConfig.Client) *Service {
-	//managerClient, err := NewManager(id, url)
-	//if err != nil {
-	//	return nil, fmt.Errorf("NewManager('%s', '%s'): %w", id, url, err)
-	//}
-
 	return &Service{
 		Type:       serviceType,
 		Id:         id,

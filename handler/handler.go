@@ -248,6 +248,10 @@ func (handler *Handler) onSetService(req message.RequestInterface) message.Reply
 		return req.Fail(fmt.Sprintf("raw.Interface: %v", err))
 	}
 
+	if err := s.ValidateTypes(); err != nil {
+		return req.Fail(fmt.Sprintf("s.ValidateTypes: %v", err))
+	}
+
 	err = handler.app.SetService(&s)
 	if err != nil {
 		return req.Fail(fmt.Sprintf("app.SetService: %v", err))
