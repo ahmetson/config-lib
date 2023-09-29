@@ -49,15 +49,15 @@ func New(configEngine engine.Interface) (*App, error) {
 		return nil, fmt.Errorf("path.CurrentDir: %w", err)
 	}
 
-	flagPath, fileExist, err := flagExist(execPath)
+	flagFileParams, fileExist, err := flagExist(execPath)
 	if err != nil {
 		return nil, fmt.Errorf("flagExist: %w", err)
 	}
 
 	// Load the configuration by flag parameter
 	if fileExist {
-		app.fileParams = flagPath
-		services, err := read(flagPath, configEngine)
+		app.fileParams = flagFileParams
+		services, err := read(flagFileParams, configEngine)
 		if err != nil {
 			return nil, fmt.Errorf("configEngine.Read: %w", err)
 		}
@@ -70,15 +70,15 @@ func New(configEngine engine.Interface) (*App, error) {
 	}
 
 	setDefault(execPath, configEngine)
-	envPath, fileExist, err := envExist(configEngine)
+	envFileParams, fileExist, err := envExist(configEngine)
 	if err != nil {
 		return nil, fmt.Errorf("envExist: %w", err)
 	}
 
 	// Load the configuration by environment parameter
 	if fileExist {
-		app.fileParams = envPath
-		services, err := read(envPath, configEngine)
+		app.fileParams = envFileParams
+		services, err := read(envFileParams, configEngine)
 		if err != nil {
 			return nil, fmt.Errorf("configEngine.Read: %w", err)
 		}
@@ -93,12 +93,12 @@ func New(configEngine engine.Interface) (*App, error) {
 	// Priority is the flag path.
 	// If the user didn't pass the flags, then use an environment path.
 	// The environment path will not be nil, since it will use the default path.
-	app.fileParams = flagPath
-	if flagPath == nil {
-		app.fileParams = envPath
+	app.fileParams = flagFileParams
+	if flagFileParams == nil {
+		app.fileParams = envFileParams
 	}
-	if envPath == nil {
-		return nil, fmt.Errorf("envPath is nil")
+	if envFileParams == nil {
+		return nil, fmt.Errorf("envFileParams is nil")
 	}
 
 	if err := app.setFilePath(); err != nil {
