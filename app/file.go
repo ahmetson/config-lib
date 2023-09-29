@@ -172,14 +172,6 @@ func setDefault(execPath string, engine *engine.Dev) {
 	engine.SetDefault(EnvConfigPath, execPath)
 }
 
-func (a *App) createYaml() key_value.KeyValue {
-	var services = a.Services
-	kv := key_value.New()
-	kv.Set("services", services)
-
-	return kv
-}
-
 // makeConfigDir converts fileParams to the full file path.
 // if the configuration file is stored in the nested directory, then those directories are created.
 func makeConfigDir(fileParams key_value.KeyValue) error {
@@ -214,9 +206,7 @@ func fileParamsToPath(fileParams key_value.KeyValue) string {
 // Writes the service as the yaml on the given path.
 // If the path doesn't contain the file extension, it will through an error
 func (a *App) write() error {
-	kv := a.createYaml()
-
-	appConfig, err := yaml.Marshal(kv.Map())
+	appConfig, err := yaml.Marshal(a)
 	if err != nil {
 		return fmt.Errorf("yaml.Marshal: %w", err)
 	}
