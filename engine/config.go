@@ -60,14 +60,14 @@ func YamlPathParam(configPath string, configName string) key_value.KeyValue {
 		Set("type", "yaml")
 }
 
-// ReadFile reads the config and returns it.
+// Load reads the config and returns it.
 //
 // In order to read it, call the following:
 //
 //	 config.Engine().SetConfigName(configName)
 //		config.Engine().SetConfigType("yaml") // or json
 //		config.Engine().AddConfigPath(configPath)
-func (config *Dev) Read(value key_value.KeyValue) (interface{}, error) {
+func (config *Dev) Load(value key_value.KeyValue) (interface{}, error) {
 	name, err := value.StringValue("name")
 	if err != nil {
 		return nil, fmt.Errorf("value.GetString(`name`): %w", err)
@@ -155,7 +155,7 @@ func (config *Dev) watchFileCreation() {
 			break
 		}
 		if exists {
-			serviceConfig, err := config.Read(config.getPath())
+			serviceConfig, err := config.Load(config.getPath())
 			if err != nil {
 				config.handleChange(nil, fmt.Errorf("watchFileCreation: config.readFile: %w", err))
 				break
@@ -195,7 +195,7 @@ func (config *Dev) watchChange() {
 
 	config.viper.WatchConfig()
 	config.viper.OnConfigChange(func(e fsnotify.Event) {
-		newConfig, err := config.Read(config.getPath())
+		newConfig, err := config.Load(config.getPath())
 		if err != nil {
 			config.handleChange(nil, fmt.Errorf("watchChange: config.readFile: %w", err))
 		} else {

@@ -59,7 +59,7 @@ func New(configEngine engine.Interface) (*App, error) {
 		app.fileParams = flagFileParams
 		services, err := read(flagFileParams, configEngine)
 		if err != nil {
-			return nil, fmt.Errorf("configEngine.Read: %w", err)
+			return nil, fmt.Errorf("configEngine.Load: %w", err)
 		}
 		app.Services = services
 		if err := app.setFilePath(); err != nil {
@@ -80,7 +80,7 @@ func New(configEngine engine.Interface) (*App, error) {
 		app.fileParams = envFileParams
 		services, err := read(envFileParams, configEngine)
 		if err != nil {
-			return nil, fmt.Errorf("configEngine.Read: %w", err)
+			return nil, fmt.Errorf("configEngine.Load: %w", err)
 		}
 		app.Services = services
 		if err := app.setFilePath(); err != nil {
@@ -112,9 +112,9 @@ func New(configEngine engine.Interface) (*App, error) {
 }
 
 func read(configParam key_value.KeyValue, configEngine engine.Interface) ([]*service.Service, error) {
-	raw, err := configEngine.Read(configParam)
+	raw, err := configEngine.Load(configParam)
 	if err != nil {
-		return nil, fmt.Errorf("configEngine.Read: %w", err)
+		return nil, fmt.Errorf("configEngine.Load: %w", err)
 	}
 
 	rawServices, ok := raw.([]interface{})

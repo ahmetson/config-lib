@@ -75,7 +75,7 @@ func Read(engine engine.Interface) (*Service, error) {
 		Set("type", configExt).
 		Set("configPath", configPath)
 
-	file, err := engine.Read(value)
+	file, err := engine.Load(value)
 	if err != nil {
 		return nil, fmt.Errorf("engine.ReadValue(%s/%s.%s): %w", configPath, configName, configExt, err)
 	}
