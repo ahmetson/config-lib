@@ -184,7 +184,8 @@ func (unit *Rule) IsRoute() bool {
 //
 // The empty rule is not a valid rule.
 func (unit *Rule) IsValid() bool {
-	return !unit.IsEmpty() && unit.IsService() || unit.IsHandler() || unit.IsRoute()
+	return !unit.IsEmpty() && !unit.IsEmptyCommands() &&
+		(unit.IsService() || unit.IsHandler() || unit.IsRoute())
 }
 
 // IsEmpty returns true if no fields are given.
@@ -196,6 +197,24 @@ func (unit *Rule) IsEmpty() bool {
 		len(unit.Commands) == 0
 }
 
+// IsEmptyCommands returns true if all Commands are in the ExcludedCommands
+func (unit *Rule) IsEmptyCommands() bool {
+	if len(unit.ExcludedCommands) == 0 || len(unit.Categories) == 0 {
+		return false
+	}
+
+	for _, command := range unit.Commands {
+		if slices.Contains(unit.ExcludedCommands, command) {
+			continue
+		}
+		// the command not in the excluded commands list
+		return false
+	}
+
+	return true
+}
+
+// ExcludeCommands adds the list of commands as an exception for proxies
 func (unit *Rule) ExcludeCommands(commands ...string) *Rule {
 	for _, command := range commands {
 		if slices.Contains(unit.ExcludedCommands, command) {
