@@ -197,7 +197,12 @@ func (unit *Rule) IsEmpty() bool {
 }
 
 func (unit *Rule) ExcludeCommands(commands ...string) *Rule {
-	unit.ExcludedCommands = append(unit.ExcludedCommands, commands...)
+	for _, command := range commands {
+		if slices.Contains(unit.ExcludedCommands, command) {
+			continue
+		}
+		unit.ExcludedCommands = append(unit.ExcludedCommands, command)
+	}
 	return unit
 }
 
