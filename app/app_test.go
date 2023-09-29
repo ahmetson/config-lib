@@ -194,9 +194,10 @@ func (test *TestAppSuite) Test_13_read() {
 
 	configParam, _, _ := envExist(test.engine)
 
-	services, err := read(configParam, test.engine)
+	app, err := read(fileParamsToPath(configParam))
 	s().NoError(err)
-	s().Len(services, 1)
+	s().NotNil(app)
+	s().Len(app.Services, 1)
 
 	// clean out
 	test.deleteYaml(configPath, configName)

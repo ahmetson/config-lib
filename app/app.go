@@ -7,7 +7,6 @@ package app
 
 import (
 	"fmt"
-	"github.com/ahmetson/config-lib"
 	"github.com/ahmetson/config-lib/engine"
 	"github.com/ahmetson/config-lib/service"
 	"github.com/ahmetson/datatype-lib/data_type/key_value"
@@ -47,12 +46,6 @@ type App struct {
 // - if, a flag exists, then load it.
 func New(configEngine *engine.Dev) (*App, error) {
 	// default app is empty
-	app := &App{
-		Services:    make([]*service.Service, 0),
-		ProxyChains: make([]*service.ProxyChain, 0),
-		engine:      configEngine,
-	}
-
 	execPath, err := path.CurrentDir()
 	if err != nil {
 		return nil, fmt.Errorf("path.CurrentDir: %w", err)
@@ -65,15 +58,17 @@ func New(configEngine *engine.Dev) (*App, error) {
 
 	// Load the configuration by flag parameter
 	if fileExist {
-		app.fileParams = flagFileParams
-		services, err := read(flagFileParams, configEngine)
+		if err := makeConfigDir(flagFileParams); err != nil {
+			return nil, fmt.Errorf("app.makeConfigDir: %w", err)
+		}
+
+		filePath := fileParamsToPath(flagFileParams)
+		app, err := read(filePath)
 		if err != nil {
 			return nil, fmt.Errorf("configEngine.Load: %w", err)
 		}
-		app.Services = services
-		if err := app.setFilePath(); err != nil {
-			return nil, fmt.Errorf("app.setFilePath: %w", err)
-		}
+		app.filePath = filePath
+		app.fileParams = flagFileParams
 
 		return app, nil
 	}
@@ -86,23 +81,29 @@ func New(configEngine *engine.Dev) (*App, error) {
 
 	// Load the configuration by environment parameter
 	if fileExist {
-		app.fileParams = envFileParams
-		services, err := read(envFileParams, configEngine)
+		if err := makeConfigDir(envFileParams); err != nil {
+			return nil, fmt.Errorf("app.makeConfigDir: %w", err)
+		}
+		filePath := fileParamsToPath(envFileParams)
+
+		app, err := read(filePath)
 		if err != nil {
 			return nil, fmt.Errorf("configEngine.Load: %w", err)
 		}
-		app.Services = services
-		if err := app.setFilePath(); err != nil {
-			return nil, fmt.Errorf("app.setFilePath: %w", err)
-		}
+		app.filePath = filePath
+		app.fileParams = envFileParams
+
 		return app, nil
+	}
+
+	app := &App{
+		fileParams: flagFileParams,
 	}
 
 	// File doesn't exist, let's write it.
 	// Priority is the flag path.
 	// If the user didn't pass the flags, then use an environment path.
 	// The environment path will not be nil, since it will use the default path.
-	app.fileParams = flagFileParams
 	if flagFileParams == nil {
 		app.fileParams = envFileParams
 	}
@@ -110,9 +111,10 @@ func New(configEngine *engine.Dev) (*App, error) {
 		return nil, fmt.Errorf("envFileParams is nil")
 	}
 
-	if err := app.setFilePath(); err != nil {
-		return nil, fmt.Errorf("app.setFilePath: %w", err)
+	if err := makeConfigDir(flagFileParams); err != nil {
+		return nil, fmt.Errorf("app.makeConfigDir: %w", err)
 	}
+	app.filePath = fileParamsToPath(app.fileParams)
 	if err := app.write(); err != nil {
 		return nil, fmt.Errorf("app.write: %w", err)
 	}
@@ -120,27 +122,50 @@ func New(configEngine *engine.Dev) (*App, error) {
 	return app, nil
 }
 
-func read(configParam key_value.KeyValue, configEngine config.Interface) ([]*service.Service, error) {
-	raw, err := configEngine.Load(configParam)
+// filePath must be absolute
+func read(filePath string) (*App, error) {
+	var appConfig App
+
+	info, err := os.Stat(filePath)
 	if err != nil {
-		return nil, fmt.Errorf("configEngine.Load: %w", err)
-	}
-
-	rawServices, ok := raw.([]interface{})
-	if !ok {
-		return nil, fmt.Errorf("raw is invalid: %v", raw)
-	}
-
-	services := make([]*service.Service, len(rawServices))
-	for i, rawService := range rawServices {
-		unmarshalled, err := service.UnmarshalService(rawService)
-		if err != nil {
-			return nil, fmt.Errorf("config.UnMarshalService(%d): %w", i, err)
+		if err == os.ErrNotExist {
+			return &appConfig, nil
 		}
-		services[i] = unmarshalled
+		return nil, fmt.Errorf("os.Stat('%s'): %w", filePath, err)
 	}
 
-	return services, nil
+	f, err := os.OpenFile(filePath, os.O_RDONLY, 0600)
+	if err != nil {
+		return nil, fmt.Errorf("os.OpenFile('%s'): %w", filePath, err)
+	}
+
+	buf := make([]byte, info.Size())
+	_, err = f.Read(buf)
+	// All this long piece of code is needed
+	// to catch the close error.
+	closeErr := f.Close()
+	if closeErr != nil {
+		if err != nil {
+			return nil, fmt.Errorf("%v: file.Close: %w", err, closeErr)
+		} else {
+			return nil, fmt.Errorf("file.Close: %w", closeErr)
+		}
+	} else if err != nil {
+		return nil, fmt.Errorf("file.Write: %w", err)
+	}
+
+	err = yaml.Unmarshal(buf, &appConfig)
+	if err != nil {
+		return nil, fmt.Errorf("yaml.Unmarshal: %w", err)
+	}
+	if appConfig.Services == nil {
+		appConfig.Services = make([]*service.Service, 0)
+	}
+	if appConfig.ProxyChains == nil {
+		appConfig.ProxyChains = make([]*service.ProxyChain, 0)
+	}
+
+	return &appConfig, nil
 }
 
 // flagExist checks is there any configuration flag.
@@ -247,16 +272,13 @@ func (a *App) createYaml() key_value.KeyValue {
 	return kv
 }
 
-// setFilePath converts fileParams to the full file path.
-func (a *App) setFilePath() error {
-	if a.fileParams == nil {
-		return fmt.Errorf("a.fileParams nil")
+// makeConfigDir converts fileParams to the full file path.
+// if the configuration file is stored in the nested directory, then those directories are created.
+func makeConfigDir(fileParams key_value.KeyValue) error {
+	if fileParams == nil {
+		return fmt.Errorf("fileParams nil")
 	}
-	name, err := a.fileParams.StringValue("name")
-	if err != nil {
-		return fmt.Errorf("a.fileParams.StringValue('name'): %w", err)
-	}
-	dirPath, err := a.fileParams.StringValue("configPath")
+	dirPath, err := fileParams.StringValue("configPath")
 	if err != nil {
 		return fmt.Errorf("a.fileParams.StringValue('configPath'): %w", err)
 	}
@@ -271,9 +293,14 @@ func (a *App) setFilePath() error {
 			return fmt.Errorf("path.MakeDir('%s'): %w", dirPath, err)
 		}
 	}
-	a.filePath = filepath.Join(dirPath, name+".yml")
 
 	return nil
+}
+
+func fileParamsToPath(fileParams key_value.KeyValue) string {
+	name, _ := fileParams.StringValue("name")
+	dirPath, _ := fileParams.StringValue("configPath")
+	return filepath.Join(dirPath, name+".yml")
 }
 
 // Writes the service as the yaml on the given path.
@@ -285,7 +312,6 @@ func (a *App) write() error {
 	if err != nil {
 		return fmt.Errorf("yaml.Marshal: %w", err)
 	}
-	a.engine.Set("services", a.Services)
 
 	f, err := os.OpenFile(a.filePath, os.O_WRONLY|os.O_CREATE, 0600)
 	if err != nil {
