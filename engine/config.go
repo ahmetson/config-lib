@@ -25,7 +25,7 @@ type Dev struct {
 	// Passed as --secure command line arg.
 	// If it's passed, then authentication is switched off.
 	Secure       bool
-	handleChange func(interface{}, error)
+	HandleChange func(interface{}, error)
 }
 
 // NewDev creates a global config for the entire application.
@@ -42,7 +42,7 @@ func NewDev() (*Dev, error) {
 	// replace the values with the ones we fetched from environment variables
 	config := Dev{
 		Viper:        viper.New(),
-		handleChange: nil,
+		HandleChange: nil,
 	}
 	config.AutomaticEnv()
 
@@ -118,7 +118,7 @@ func (config *Dev) getPath() key_value.KeyValue {
 //
 // For production, we could call config.viper.WatchRemoteConfig() for example in etcd.
 func (config *Dev) Watch(watchHandle func(interface{}, error)) error {
-	if config.handleChange != nil {
+	if config.HandleChange != nil {
 		return nil
 	}
 
@@ -130,7 +130,7 @@ func (config *Dev) Watch(watchHandle func(interface{}, error)) error {
 	}
 
 	// set it after checking for errors
-	config.handleChange = watchHandle
+	config.HandleChange = watchHandle
 
 	if !exists {
 		// wait file appearance, then call the watchChange
@@ -148,17 +148,17 @@ func (config *Dev) watchFileCreation() {
 	for {
 		exists, err := path.FileExist(servicePath)
 		if err != nil {
-			config.handleChange(nil, fmt.Errorf("watchFileCreation: FileExist: %w", err))
+			config.HandleChange(nil, fmt.Errorf("watchFileCreation: FileExist: %w", err))
 			break
 		}
 		if exists {
 			serviceConfig, err := config.Load(config.getPath())
 			if err != nil {
-				config.handleChange(nil, fmt.Errorf("watchFileCreation: config.readFile: %w", err))
+				config.HandleChange(nil, fmt.Errorf("watchFileCreation: config.readFile: %w", err))
 				break
 			}
 
-			config.handleChange(serviceConfig, nil)
+			config.HandleChange(serviceConfig, nil)
 
 			config.watchChange()
 			break
@@ -173,11 +173,11 @@ func (config *Dev) watchFileDeletion() {
 	for {
 		exists, err := path.FileExist(servicePath)
 		if err != nil {
-			config.handleChange(nil, fmt.Errorf("watchFileDeletion: FileExist: %w", err))
+			config.HandleChange(nil, fmt.Errorf("watchFileDeletion: FileExist: %w", err))
 			break
 		}
 		if !exists {
-			config.handleChange(nil, nil)
+			config.HandleChange(nil, nil)
 
 			go config.watchFileCreation()
 			break
@@ -194,9 +194,9 @@ func (config *Dev) watchChange() {
 	config.Viper.OnConfigChange(func(e fsnotify.Event) {
 		newConfig, err := config.Load(config.getPath())
 		if err != nil {
-			config.handleChange(nil, fmt.Errorf("watchChange: config.readFile: %w", err))
+			config.HandleChange(nil, fmt.Errorf("watchChange: config.readFile: %w", err))
 		} else {
-			config.handleChange(newConfig, nil)
+			config.HandleChange(newConfig, nil)
 		}
 	})
 }
