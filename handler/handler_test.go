@@ -3,7 +3,7 @@ package handler
 import (
 	"fmt"
 	"github.com/ahmetson/client-lib"
-	"github.com/ahmetson/config-lib/engine/app"
+	"github.com/ahmetson/config-lib/app"
 	"github.com/ahmetson/config-lib/service"
 	"github.com/ahmetson/datatype-lib/message"
 	handlerConfig "github.com/ahmetson/handler-lib/config"

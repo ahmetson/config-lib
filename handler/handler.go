@@ -4,8 +4,8 @@ package handler
 
 import (
 	"fmt"
+	"github.com/ahmetson/config-lib/app"
 	"github.com/ahmetson/config-lib/engine"
-	"github.com/ahmetson/config-lib/engine/app"
 	"github.com/ahmetson/config-lib/service"
 	"github.com/ahmetson/datatype-lib/data_type/key_value"
 	"github.com/ahmetson/datatype-lib/message"
