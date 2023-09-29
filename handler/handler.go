@@ -36,7 +36,8 @@ type Handler struct {
 	handler base.Interface
 }
 
-// New handler of the config
+// New handler of the config.
+// The handler is initialized for use.
 func New() (*Handler, error) {
 	h := &Handler{}
 
@@ -62,41 +63,49 @@ func New() (*Handler, error) {
 	if err := h.handler.SetLogger(logger); err != nil {
 		return nil, fmt.Errorf("handler.SetLogger: %w", err)
 	}
-	if err := h.handler.Route(ServiceById, h.onService); err != nil {
-		return nil, fmt.Errorf("handler.Route(%s): %w", ServiceById, err)
-	}
-	if err := h.handler.Route(ServiceByUrl, h.onServiceByUrl); err != nil {
-		return nil, fmt.Errorf("handler.Route(%s): %w", ServiceByUrl, err)
-	}
-	if err := h.handler.Route(SetService, h.onSetService); err != nil {
-		return nil, fmt.Errorf("handler.Route(%s): %w", SetService, err)
-	}
-	if err := h.handler.Route(ParamExist, h.onExist); err != nil {
-		return nil, fmt.Errorf("handler.Route(%s): %w", ParamExist, err)
-	}
-	if err := h.handler.Route(StringParam, h.onString); err != nil {
-		return nil, fmt.Errorf("handler.Route(%s): %w", StringParam, err)
-	}
-	if err := h.handler.Route(Uint64Param, h.onUint64); err != nil {
-		return nil, fmt.Errorf("handler.Route(%s): %w", Uint64Param, err)
-	}
-	if err := h.handler.Route(BoolParam, h.onBool); err != nil {
-		return nil, fmt.Errorf("handler.Route(%s): %w", BoolParam, err)
-	}
-	if err := h.handler.Route(GenerateHandler, h.onGenerateHandler); err != nil {
-		return nil, fmt.Errorf("handler.Route(%s): %w", GenerateHandler, err)
-	}
-	if err := h.handler.Route(SetDefaultParam, h.onSetDefault); err != nil {
-		return nil, fmt.Errorf("handler.Route(%s): %w", SetDefaultParam, err)
-	}
-	if err := h.handler.Route(ServiceExist, h.onServiceExist); err != nil {
-		return nil, fmt.Errorf("handler.Route(%s): %w", ServiceExist, err)
-	}
-	if err := h.handler.Route(GenerateService, h.onGenerateService); err != nil {
-		return nil, fmt.Errorf("handler.Route(%s): %w", GenerateService, err)
+	if err := h.setRoutes(); err != nil {
+		return nil, fmt.Errorf("handler.setRoutes: %w", err)
 	}
 
 	return h, nil
+}
+
+func (handler *Handler) setRoutes() error {
+	if err := handler.handler.Route(ServiceById, handler.onService); err != nil {
+		return fmt.Errorf("handler.Route(%s): %w", ServiceById, err)
+	}
+	if err := handler.handler.Route(ServiceByUrl, handler.onServiceByUrl); err != nil {
+		return fmt.Errorf("handler.Route(%s): %w", ServiceByUrl, err)
+	}
+	if err := handler.handler.Route(SetService, handler.onSetService); err != nil {
+		return fmt.Errorf("handler.Route(%s): %w", SetService, err)
+	}
+	if err := handler.handler.Route(ParamExist, handler.onExist); err != nil {
+		return fmt.Errorf("handler.Route(%s): %w", ParamExist, err)
+	}
+	if err := handler.handler.Route(StringParam, handler.onString); err != nil {
+		return fmt.Errorf("handler.Route(%s): %w", StringParam, err)
+	}
+	if err := handler.handler.Route(Uint64Param, handler.onUint64); err != nil {
+		return fmt.Errorf("handler.Route(%s): %w", Uint64Param, err)
+	}
+	if err := handler.handler.Route(BoolParam, handler.onBool); err != nil {
+		return fmt.Errorf("handler.Route(%s): %w", BoolParam, err)
+	}
+	if err := handler.handler.Route(GenerateHandler, handler.onGenerateHandler); err != nil {
+		return fmt.Errorf("handler.Route(%s): %w", GenerateHandler, err)
+	}
+	if err := handler.handler.Route(SetDefaultParam, handler.onSetDefault); err != nil {
+		return fmt.Errorf("handler.Route(%s): %w", SetDefaultParam, err)
+	}
+	if err := handler.handler.Route(ServiceExist, handler.onServiceExist); err != nil {
+		return fmt.Errorf("handler.Route(%s): %w", ServiceExist, err)
+	}
+	if err := handler.handler.Route(GenerateService, handler.onGenerateService); err != nil {
+		return fmt.Errorf("handler.Route(%s): %w", GenerateService, err)
+	}
+
+	return nil
 }
 
 // SocketConfig parameter of the handler
