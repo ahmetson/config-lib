@@ -69,7 +69,7 @@ func New(configEngine *engine.Dev) (*App, error) {
 		filePath: fileParamsToPath(fileParams),
 	}
 
-	if err := app.write(); err != nil {
+	if err := write(app.filePath, app); err != nil {
 		return nil, fmt.Errorf("app.write: %w", err)
 	}
 
@@ -114,7 +114,7 @@ func (a *App) SetService(s *service.Service) error {
 		a.Services = append(a.Services, s)
 	}
 
-	if err := a.write(); err != nil {
+	if err := write(a.filePath, a); err != nil {
 		return fmt.Errorf("app.write: %w", err)
 	}
 

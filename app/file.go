@@ -205,15 +205,15 @@ func fileParamsToPath(fileParams key_value.KeyValue) string {
 
 // Writes the service as the yaml on the given path.
 // If the path doesn't contain the file extension, it will through an error
-func (a *App) write() error {
-	appConfig, err := yaml.Marshal(a)
+func write(filePath string, data interface{}) error {
+	appConfig, err := yaml.Marshal(data)
 	if err != nil {
 		return fmt.Errorf("yaml.Marshal: %w", err)
 	}
 
-	f, err := os.OpenFile(a.filePath, os.O_WRONLY|os.O_CREATE, 0600)
+	f, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE, 0600)
 	if err != nil {
-		return fmt.Errorf("os.OpenFile('%s'): %w", a.filePath, err)
+		return fmt.Errorf("os.OpenFile('%s'): %w", filePath, err)
 	}
 
 	_, err = f.Write(appConfig)
