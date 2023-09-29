@@ -3,7 +3,6 @@ package service
 import (
 	"fmt"
 	clientConfig "github.com/ahmetson/client-lib/config"
-	"github.com/ahmetson/datatype-lib/data_type/key_value"
 	handlerConfig "github.com/ahmetson/handler-lib/config"
 )
 
@@ -74,48 +73,6 @@ func New(id string, url string, serviceType Type, managerClient *clientConfig.Cl
 		Extensions: make([]*clientConfig.Client, 0),
 		Manager:    managerClient, // connecting to the service from other parents through dev context
 	}
-}
-
-func (s *Service) PrepareService() error {
-	err := s.ValidateTypes()
-	if err != nil {
-		return fmt.Errorf("service.ValidateTypes: %w", err)
-	}
-	err = s.Lint()
-	if err != nil {
-		return fmt.Errorf("service.Lint: %w", err)
-	}
-
-	return nil
-}
-
-// UnmarshalService decodes the yaml into the config.
-func UnmarshalService(raw interface{}) (*Service, error) {
-	if raw == nil {
-		return nil, nil
-	}
-
-	kv, err := key_value.NewFromInterface(raw)
-	if err != nil {
-		return nil, fmt.Errorf("failed to convert raw config service into map: %w", err)
-	}
-
-	var serviceConfig Service
-	err = kv.Interface(&serviceConfig)
-	if err != nil {
-		return nil, fmt.Errorf("failed to convert raw config service to config.Service: %w", err)
-	}
-	err = serviceConfig.PrepareService()
-	if err != nil {
-		return nil, fmt.Errorf("prepareService: %w", err)
-	}
-
-	return &serviceConfig, nil
-}
-
-// Lint sets the reference to the parent from the child.
-func (s *Service) Lint() error {
-	return nil
 }
 
 // ValidateTypes the parameters of the service
