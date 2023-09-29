@@ -334,8 +334,7 @@ func (proxyChain *ProxyChain) IsValid() bool {
 		IsStringSliceValid(proxyChain.Sources)
 }
 
-// Chain returns the proxy chain for the given endpoint.
-func Chain(proxyChains []*ProxyChain, rule *Rule) []*Proxy {
+func IsUniqueRule(proxyChains []*ProxyChain, rule *Rule) []*Proxy {
 	for _, proxyChain := range proxyChains {
 		if proxyChain.Destination == nil {
 			continue
