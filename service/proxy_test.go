@@ -250,6 +250,21 @@ func (test *TestProxySuite) Test_13_Is() {
 	s().False(destinations.IsEmpty())   // urls given
 }
 
+// Test_14_ExcludeCommands tests excluding commands
+func (test *TestProxySuite) Test_14_ExcludeCommands() {
+	s := test.Require
+
+	destinations := NewDestination(test.urls, test.categories, test.commands)
+	s().True(destinations.IsValid())
+	s().False(destinations.IsEmptyCommands())
+
+	// Excluding already existing commands must fail
+	destinations.ExcludeCommands(test.commands...)
+	s().Equal(test.commands, destinations.ExcludedCommands)
+	s().False(destinations.IsValid()) // IsEmptyCommands failed
+	s().True(destinations.IsEmptyCommands())
+}
+
 func TestProxy(t *testing.T) {
 	suite.Run(t, new(TestProxySuite))
 }
