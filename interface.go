@@ -1,6 +1,7 @@
-package engine
+package config
 
 import (
+	"github.com/ahmetson/config-lib/service"
 	"github.com/ahmetson/datatype-lib/data_type/key_value"
 )
 
@@ -23,4 +24,6 @@ type Interface interface {
 	StringValue(string) string
 	Uint64Value(string) uint64
 	BoolValue(string) bool
+	ServicesValue() ([]*service.Service, error)       // Reads all services. Call it after Load
+	ProxyChainsValue() ([]*service.ProxyChain, error) // Reads all proxy chains. Call it after Load
 }

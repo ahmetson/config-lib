@@ -7,6 +7,7 @@ package app
 
 import (
 	"fmt"
+	"github.com/ahmetson/config-lib"
 	"github.com/ahmetson/config-lib/engine"
 	"github.com/ahmetson/config-lib/service"
 	"github.com/ahmetson/datatype-lib/data_type/key_value"
@@ -33,7 +34,7 @@ type App struct {
 	ProxyChains []*service.ProxyChain `json:"proxy_chains" yaml:"proxy_chains"`
 	fileParams  key_value.KeyValue
 	filePath    string
-	engine      engine.Interface
+	engine      config.Interface
 }
 
 // New App configuration.
@@ -44,7 +45,7 @@ type App struct {
 // - if app.yml exists in the root, then load it.
 // - if, environment variable exists, then load it.
 // - if, a flag exists, then load it.
-func New(configEngine engine.Interface) (*App, error) {
+func New(configEngine config.Interface) (*App, error) {
 	// default app is empty
 	app := &App{
 		Services:    make([]*service.Service, 0),
@@ -119,7 +120,7 @@ func New(configEngine engine.Interface) (*App, error) {
 	return app, nil
 }
 
-func read(configParam key_value.KeyValue, configEngine engine.Interface) ([]*service.Service, error) {
+func read(configParam key_value.KeyValue, configEngine config.Interface) ([]*service.Service, error) {
 	raw, err := configEngine.Load(configParam)
 	if err != nil {
 		return nil, fmt.Errorf("configEngine.Load: %w", err)
@@ -170,7 +171,7 @@ func flagExist(execPath string) (key_value.KeyValue, bool, error) {
 // If it exists, checks does it exist in the file system.
 //
 // In case if it doesn't exist, it will try to load the default configuration.
-func envExist(configEngine engine.Interface) (key_value.KeyValue, bool, error) {
+func envExist(configEngine config.Interface) (key_value.KeyValue, bool, error) {
 	if !configEngine.Exist(EnvConfigName) || !configEngine.Exist(EnvConfigPath) {
 		return nil, false, nil
 	}
@@ -188,7 +189,7 @@ func envExist(configEngine engine.Interface) (key_value.KeyValue, bool, error) {
 }
 
 // setDefault paths of the local file to load by default
-func setDefault(execPath string, engine engine.Interface) {
+func setDefault(execPath string, engine config.Interface) {
 	engine.SetDefault(EnvConfigName, "app")
 	engine.SetDefault(EnvConfigPath, execPath)
 }

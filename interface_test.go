@@ -1,6 +1,7 @@
-package engine
+package config
 
 import (
+	"github.com/ahmetson/config-lib/engine"
 	"github.com/ahmetson/os-lib/path"
 	"os"
 	"path/filepath"
@@ -16,7 +17,7 @@ import (
 type TestEngineInterfaceSuite struct {
 	suite.Suite
 	envPath   string
-	appConfig *Dev
+	appConfig *engine.Dev
 }
 
 // Make sure that Account is set to five
@@ -46,7 +47,7 @@ func (suite *TestEngineInterfaceSuite) SetupTest() {
 	suite.Require().NoError(err, "delete the dump file: "+suite.envPath)
 
 	suite.Require().NoError(err)
-	appConfig, err := NewDev()
+	appConfig, err := engine.NewDev()
 	suite.Require().NoError(err)
 	suite.appConfig = appConfig
 
