@@ -22,6 +22,12 @@ const (
 	EnvConfigPath = "CONFIG_PATH"
 )
 
+// App is the configuration of the entire application.
+// Consists the supported services and proxy chains.
+//
+// Fields
+//   - Services in the application
+//   - ProxyChains list of proxies that targets to the services
 type App struct {
 	Services   []*service.Service
 	fileParams key_value.KeyValue
