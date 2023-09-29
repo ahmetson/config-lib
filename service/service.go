@@ -144,29 +144,6 @@ func (s *Service) ExtensionByUrl(url string) *clientConfig.Client {
 	return nil
 }
 
-//// Proxy returns the proxy by its url.
-//// If it doesn't exist, returns nil
-//func (s *Service) Proxy(id string) *Proxy {
-//	for _, p := range s.Proxies {
-//		if p.Id == id {
-//			return p
-//		}
-//	}
-//
-//	return nil
-//}
-
-//// SetProxy will set a new proxy.
-//// If it exists, it will overwrite it
-//func (s *Service) SetProxy(proxy *Proxy) {
-//	existing := s.Proxy(proxy.Id)
-//	if existing == nil {
-//		s.Proxies = append(s.Proxies, proxy)
-//	} else {
-//		*existing = *proxy
-//	}
-//}
-
 // SetExtension will set a new extension. If it exists, it will overwrite it
 func (s *Service) SetExtension(extension *clientConfig.Client) {
 	existing := s.ExtensionByUrl(extension.ServiceUrl)
