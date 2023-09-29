@@ -20,7 +20,6 @@ type Service struct {
 	Id          string                   `json:"id" yaml:"id"`
 	Manager     *clientConfig.Client     `json:"manager" yaml:"manager"`
 	Handlers    []*handlerConfig.Handler `json:"handlers" yaml:"handlers"`
-	Proxies     []*Proxy                 `json:"proxies" yaml:"proxies"`
 	ProxyChains []*ProxyChain            `json:"proxy_chains" yaml:"proxy_chains"`
 	Extensions  []*clientConfig.Client   `json:"extensions" yaml:"extensions"`
 }
@@ -54,7 +53,6 @@ func Empty(id string, url string, serviceType Type) (*Service, error) {
 		Id:          id,
 		Url:         url,
 		Handlers:    make([]*handlerConfig.Handler, 0),
-		Proxies:     make([]*Proxy, 0),
 		ProxyChains: make([]*ProxyChain, 0),
 		Extensions:  make([]*clientConfig.Client, 0),
 		Manager:     managerClient, // connecting to the service from other parents through dev context
@@ -194,26 +192,28 @@ func (s *Service) ExtensionByUrl(url string) *clientConfig.Client {
 	return nil
 }
 
-// Proxy returns the proxy by its url. If it doesn't exist, returns nil
-func (s *Service) Proxy(id string) *Proxy {
-	for _, p := range s.Proxies {
-		if p.Id == id {
-			return p
-		}
-	}
+//// Proxy returns the proxy by its url.
+//// If it doesn't exist, returns nil
+//func (s *Service) Proxy(id string) *Proxy {
+//	for _, p := range s.Proxies {
+//		if p.Id == id {
+//			return p
+//		}
+//	}
+//
+//	return nil
+//}
 
-	return nil
-}
-
-// SetProxy will set a new proxy. If it exists, it will overwrite it
-func (s *Service) SetProxy(proxy *Proxy) {
-	existing := s.Proxy(proxy.Id)
-	if existing == nil {
-		s.Proxies = append(s.Proxies, proxy)
-	} else {
-		*existing = *proxy
-	}
-}
+//// SetProxy will set a new proxy.
+//// If it exists, it will overwrite it
+//func (s *Service) SetProxy(proxy *Proxy) {
+//	existing := s.Proxy(proxy.Id)
+//	if existing == nil {
+//		s.Proxies = append(s.Proxies, proxy)
+//	} else {
+//		*existing = *proxy
+//	}
+//}
 
 // SetExtension will set a new extension. If it exists, it will overwrite it
 func (s *Service) SetExtension(extension *clientConfig.Client) {
@@ -230,10 +230,6 @@ func (s *Service) SetHandler(handler *handlerConfig.Handler) {
 	s.Handlers = append(s.Handlers, handler)
 }
 
-//func (s *Service) SetPipeline(pipeline *pipeline.Pipeline) {
-//s.Pipelines = append(s.Pipelines, pipeline)
-//}
-
-func (s *Service) HasProxy() bool {
-	return len(s.Proxies) > 0
+func (s *Service) IsProxySet() bool {
+	return len(s.ProxyChains) > 0
 }

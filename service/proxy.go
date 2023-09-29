@@ -1,52 +1,149 @@
 package service
 
-import "fmt"
-
-//
-// Usage in the service:
-//
-// p := serviceConfig.NewProxy("id", "url")
-// end := serviceConfig.NewHandlerEnd("category")
-// p.SetEnd(end)
-//
-// service.SetProxy(p)
-//
-// --- internal
-// The service passes the proxy to the dependency manager.
-// The dependency manager installs the proxy.
-// The installed proxy runs with the configuration file passed from the service.
-// The installed proxy accepts a --destination and --id.
-// From the destination, installed proxy gets the destination service.
-//
-// Proxy requests from destination the next Endpoint.
-
-type EndType string
-
-const (
-	RouteEnd   = EndType("route")
-	HandlerEnd = EndType("handler")
+import (
+	"slices"
 )
 
 // Proxy in the service.
 //
 // If two endpoints lint to the same route,
 type Proxy struct {
-	Id       string    `json:"id" yaml:"id"`
-	Url      string    `json:"url" yaml:"url"`                     // in the beginning, use this to initialize the proxy automatically.
-	Endpoint *Endpoint `json:"end,omitempty" yaml:"end,omitempty"` // only shown for a proxy
+	Sources  []string `json:"sources,omitempty" yaml:"sources,omitempty"`
+	Id       string   `json:"id" yaml:"id"`
+	Url      string   `json:"url" yaml:"url"`
+	Category string   `json:"category" yaml:"category"` // proxy category, example authr, valid, convert
 }
 
-// Endpoint of the proxy pipe
-type Endpoint struct {
-	Type     EndType `json:"type"`              // either RouteEnd or HandlerEnd
-	Url      string  `json:"url"`               // The id of the service
-	Category string  `json:"value"`             // if Type is RouteEnd, this is the command id
-	Command  string  `json:"command,omitempty"` // if provided, then it's a RouteEnd
+// The Rule is the pattern matching rule to find the services, handlers and routes as the proxy destination.
+type Rule struct {
+	Urls             []string `json:"urls" yaml:"urls"`                           // Service url
+	Categories       []string `json:"categories" yaml:"categories"`               // Handler category
+	Commands         []string `json:"commands" yaml:"commands"`                   // Route command
+	ExcludedCommands []string `json:"excluded_commands" yaml:"excluded_commands"` // Exclude this commands from routing
+}
+
+type Unit struct {
+	Url      string `json:"url"`      // Service url
+	Category string `json:"category"` // Handler category
+	Command  string `json:"command"`  // Route command
 }
 
 type ProxyChain struct {
-	Endpoint *Endpoint `json:"endpoint" yaml:"endpoint"`
-	Proxies  []*Proxy  `json:"proxies" yaml:"proxies"`
+	Sources     []string `json:"sources,omitempty" yaml:"sources,omitempty"`
+	Proxies     []*Proxy `json:"proxies" yaml:"proxies"`
+	Destination *Rule    `json:"destination" yaml:"destination"` // only shown for a proxy
+}
+
+// The convertParam function converts the interface to the slice of strings.
+// The parameter could be a string or []string.
+//
+// Returns nil if the raw parameter is not string or []string.
+func convertParam(raw interface{}) []string {
+	str, ok := raw.(string)
+	if ok {
+		return []string{str}
+	}
+
+	params, ok := raw.([]string)
+	if ok {
+		return params
+	}
+
+	return nil
+}
+
+// NewDestination returns a destination rule by route commands.
+// Returns nil, if params length is less than 2.
+func NewDestination(params ...interface{}) *Rule {
+	unit := &Rule{
+		Urls:             make([]string, 0),
+		ExcludedCommands: make([]string, 0),
+	}
+
+	if len(params) < 2 || len(params) > 3 {
+		return nil
+	} else if len(params) == 2 {
+		categories := convertParam(params[0])
+		if categories == nil {
+			return nil
+		}
+		unit.Categories = categories
+		commands := convertParam(params[1])
+		if commands == nil {
+			return nil
+		}
+		unit.Commands = commands
+	} else {
+		urls := convertParam(params[0])
+		if urls == nil {
+			return nil
+		}
+		unit.Urls = urls
+		categories := convertParam(params[1])
+		if categories == nil {
+			return nil
+		}
+		unit.Categories = categories
+		commands := convertParam(params[2])
+		if commands == nil {
+			return nil
+		}
+		unit.Commands = commands
+	}
+
+	return unit
+}
+
+// NewHandlerDestination returns a destination unit for the routes in the handler.
+// Returns nil if no params were given.
+func NewHandlerDestination(params ...interface{}) *Rule {
+	unit := &Rule{
+		Urls:             make([]string, 0),
+		Commands:         make([]string, 0),
+		ExcludedCommands: make([]string, 0),
+	}
+
+	if len(params) < 1 {
+		return nil
+	} else if len(params) == 1 {
+		categories := convertParam(params[0])
+		if categories == nil {
+			return nil
+		}
+		unit.Categories = categories
+	} else {
+		urls := convertParam(params[0])
+		if urls == nil {
+			return nil
+		}
+		unit.Urls = urls
+		categories := convertParam(params[1])
+		if categories == nil {
+			return nil
+		}
+		unit.Categories = categories
+	}
+
+	return unit
+}
+
+// IsService returns true if the destination is for services
+func (unit *Rule) IsService() bool {
+	return len(unit.Categories) == 0 && len(unit.Commands) == 0 && len(unit.Urls) > 0
+}
+
+func (unit *Rule) IsHandler() bool {
+	return len(unit.Urls) > 0 && len(unit.Categories) > 0 && len(unit.Commands) == 0
+}
+
+// IsRoute returns true if the destination is for route
+func (unit *Rule) IsRoute() bool {
+	return len(unit.Urls) > 0 && len(unit.Categories) > 0 && len(unit.Commands) > 0
+}
+
+func (unit *Rule) ExcludeCommands(commands ...string) *Rule {
+	unit.ExcludedCommands = append(unit.ExcludedCommands, commands...)
+	return unit
 }
 
 func NewProxy(id string, url string) *Proxy {
@@ -56,55 +153,24 @@ func NewProxy(id string, url string) *Proxy {
 	}
 }
 
-func NewHandlerEnd(id string, category string) *Endpoint {
-	return &Endpoint{
-		Type:     HandlerEnd,
-		Url:      id,
-		Category: category,
-		Command:  "",
-	}
-}
-
-func NewRouteEnd(id string, category string, command string) *Endpoint {
-	return &Endpoint{
-		Type:     RouteEnd,
-		Url:      id,
-		Category: category,
-		Command:  command,
-	}
-}
-
-func (p *Proxy) SetEnd(end *Endpoint) *Proxy {
-	p.Endpoint = end
-	return p
-}
-
-func IsEqualEnd(first *Endpoint, second *Endpoint) bool {
-	return first != nil && second != nil &&
-		first.Type == second.Type &&
-		first.Url == second.Url &&
-		first.Category == second.Category &&
-		first.Command == second.Command
+func IsEqualRule(first *Rule, second *Rule) bool {
+	return first != nil && second != nil
 }
 
 func IsProxySet(proxies []*Proxy, id string) bool {
-	for _, proxy := range proxies {
-		if proxy.Id == id {
-			return true
-		}
-	}
-
-	return false
+	return slices.ContainsFunc(proxies, func(el *Proxy) bool {
+		return el.Id == id
+	})
 }
 
 // Chain returns the proxy chain for the given endpoint.
-func Chain(proxyChains []*ProxyChain, end *Endpoint) []*Proxy {
+func Chain(proxyChains []*ProxyChain, rule *Rule) []*Proxy {
 	for _, proxyChain := range proxyChains {
-		if proxyChain.Endpoint == nil {
+		if proxyChain.Destination == nil {
 			continue
 		}
 
-		if IsEqualEnd(proxyChain.Endpoint, end) {
+		if IsEqualRule(proxyChain.Destination, rule) {
 			return proxyChain.Proxies
 		}
 	}
@@ -113,26 +179,19 @@ func Chain(proxyChains []*ProxyChain, end *Endpoint) []*Proxy {
 }
 
 // IsHandlerEndExist returns true if there is a proxy that links to the given handler category
-func IsHandlerEndExist(proxies []*Proxy, id string, category string) bool {
-	for _, proxy := range proxies {
-		if proxy.Endpoint != nil &&
-			proxy.Endpoint.Url == id &&
-			proxy.Endpoint.Category == category {
-			return true
-		}
-	}
-
-	return false
+func IsHandlerEndExist(proxyChain *ProxyChain, category string) bool {
+	return proxyChain.Destination != nil &&
+		slices.Contains(proxyChain.Destination.Categories, category)
 }
 
 // IsEndpointExist returns true if the given endpoint exists in the proxy list
-func IsEndpointExist(proxies []*Proxy, endpoint *Endpoint) bool {
+func IsEndpointExist(proxyChains []*ProxyChain, endpoint *Rule) bool {
 	if endpoint == nil {
 		return false
 	}
 
-	for _, proxy := range proxies {
-		if IsEqualEnd(proxy.Endpoint, endpoint) {
+	for _, proxyChain := range proxyChains {
+		if IsEqualRule(proxyChain.Destination, endpoint) {
 			return true
 		}
 	}
@@ -140,37 +199,38 @@ func IsEndpointExist(proxies []*Proxy, endpoint *Endpoint) bool {
 	return false
 }
 
-// ValidProxyChain verifies that endpoints are set correctly.
 //
-// If the proxy type is route, and there is a handler of the same type, then make sure that
-// there is a proxy chain of the end.
-func ValidProxyChain(proxies []*Proxy, proxyChains []*ProxyChain) error {
-	for _, proxy := range proxies {
-		if proxy.Endpoint == nil {
-			return fmt.Errorf("proxy('%s').Endpoint is nil. Call Proxy.SetEnd", proxy.Id)
-		}
-
-		if proxy.Endpoint.Type != RouteEnd {
-			continue
-		}
-
-		id := proxy.Endpoint.Url
-		category := proxy.Endpoint.Category
-		if !IsHandlerEndExist(proxies, id, category) {
-			continue
-		}
-
-		proxyChain := Chain(proxyChains, proxy.Endpoint)
-		if len(proxyChain) == 0 {
-			return fmt.Errorf("proxyChain(id: '%s') is 0. Set it by calling service.SetProxyChain()", proxy.Id)
-		}
-
-		// if proxy-chain has no route, return an error
-		if !IsEndpointExist(proxyChain, proxy.Endpoint) {
-			return fmt.Errorf("IsEndpointExist in the proxy chain doesn't have the route endpoint('%s','%s')",
-				proxy.Endpoint.Category, proxy.Endpoint.Command)
-		}
-	}
-
-	return nil
-}
+//// ValidProxyChain verifies that endpoints are set correctly.
+////
+//// If the proxy type is route, and there is a handler of the same type, then make sure that
+//// there is a proxy chain of the end.
+//func ValidProxyChain(proxies []*Proxy, proxyChains []*ProxyChain) error {
+//	for _, proxy := range proxies {
+//		if proxy.Units == nil {
+//			return fmt.Errorf("proxy('%s').Units is nil. Call Proxy.SetEnd", proxy.Id)
+//		}
+//
+//		if proxy.Units.Type != RouteEnd {
+//			continue
+//		}
+//
+//		id := proxy.Units.Url
+//		category := proxy.Units.Category
+//		if !IsHandlerEndExist(proxies, id, category) {
+//			continue
+//		}
+//
+//		proxyChain := Chain(proxyChains, proxy.Units)
+//		if len(proxyChain) == 0 {
+//			return fmt.Errorf("proxyChain(id: '%s') is 0. Set it by calling service.SetProxyChain()", proxy.Id)
+//		}
+//
+//		// if proxy-chain has no route, return an error
+//		if !IsEndpointExist(proxyChain, proxy.Units) {
+//			return fmt.Errorf("IsEndpointExist in the proxy chain doesn't have the route endpoint('%s','%s')",
+//				proxy.Units.Category, proxy.Units.Command)
+//		}
+//	}
+//
+//	return nil
+//}
