@@ -30,13 +30,20 @@ type Service struct {
 	Extensions []*clientConfig.Client   `json:"extensions" yaml:"extensions"`
 }
 
-// ManagerId generates a service manager id
+// ManagerId generates a service manager id.
+// If no service id, then it will return an error
 func ManagerId(serviceId string) string {
+	if len(serviceId) == 0 {
+		return ""
+	}
 	return serviceId + "_manager"
 }
 
 // NewManager generates a service manager configuration
 func NewManager(id string, url string) (*clientConfig.Client, error) {
+	if len(id) == 0 || len(url) == 0 {
+		return nil, fmt.Errorf("id or url parameter is empty")
+	}
 	// HewHandler allocates a free port.
 	newConfig, err := handlerConfig.NewHandler(handlerConfig.SyncReplierType, ManagerCategory)
 	if err != nil {
@@ -45,12 +52,15 @@ func NewManager(id string, url string) (*clientConfig.Client, error) {
 
 	socketType := handlerConfig.SocketType(handlerConfig.SyncReplierType)
 
-	return &clientConfig.Client{
+	managerClient := &clientConfig.Client{
 		Id:         ManagerId(id),
 		ServiceUrl: url,
 		Port:       newConfig.Port,
 		TargetType: socketType,
-	}, nil
+	}
+
+	managerClient.UrlFunc(clientConfig.Url)
+	return managerClient, nil
 }
 
 func Empty(id string, url string, serviceType Type) (*Service, error) {
