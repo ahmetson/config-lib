@@ -179,6 +179,23 @@ func (unit *Rule) IsRoute() bool {
 	return len(unit.Urls) > 0 && len(unit.Categories) > 0 && len(unit.Commands) > 0
 }
 
+// IsValid returns true for a valid destination.
+// The rule is considered valid if it's for route or handler or service.
+//
+// The empty rule is not a valid rule.
+func (unit *Rule) IsValid() bool {
+	return !unit.IsEmpty() && unit.IsService() || unit.IsHandler() || unit.IsRoute()
+}
+
+// IsEmpty returns true if no fields are given.
+//
+// One way to create an empty parameter is to call NewServiceDestination() without any argument.
+func (unit *Rule) IsEmpty() bool {
+	return len(unit.Urls)+
+		len(unit.Categories)+
+		len(unit.Commands) == 0
+}
+
 func (unit *Rule) ExcludeCommands(commands ...string) *Rule {
 	unit.ExcludedCommands = append(unit.ExcludedCommands, commands...)
 	return unit
