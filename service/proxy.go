@@ -267,6 +267,38 @@ func IsProxyExist(proxies []*Proxy, id string) bool {
 	})
 }
 
+// IsStringSliceValid returns true if all elements are unique.
+// Valid string slice must not be nil and elements must not be empty.
+// The empty slice is considered as valid
+func IsStringSliceValid(haystack []string) bool {
+	if haystack == nil {
+		return false
+	} else if len(haystack) == 0 {
+		return true
+	}
+
+	if len(haystack) > 0 {
+		for i, needle := range haystack {
+			if len(needle) == 0 {
+				return false
+			}
+
+			for j, element := range haystack {
+				if i == j {
+					continue
+				}
+
+				// duplicate
+				if needle == element {
+					return false
+				}
+			}
+		}
+	}
+
+	return true
+}
+
 // IsProxiesValid returns true if the Proxies field has no duplicate elements.
 // Proxies are compared against their ids.
 func (proxyChain *ProxyChain) IsProxiesValid() bool {
@@ -292,6 +324,16 @@ func (proxyChain *ProxyChain) IsProxiesValid() bool {
 
 	return true
 }
+
+// IsValid returns true if the proxy chain is valid.
+// It's counted as valid if it doesn't have a duplicate values.
+// Any nil field makes the proxy chain as invalid
+func (proxyChain *ProxyChain) IsValid() bool {
+	return proxyChain.Destination.IsValid() &&
+		proxyChain.IsProxiesValid() &&
+		IsStringSliceValid(proxyChain.Sources)
+}
+
 // Chain returns the proxy chain for the given endpoint.
 func Chain(proxyChains []*ProxyChain, rule *Rule) []*Proxy {
 	for _, proxyChain := range proxyChains {

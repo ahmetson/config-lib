@@ -15,6 +15,10 @@ type TestProxySuite struct {
 	urls       []string
 	categories []string
 	commands   []string
+
+	validProxy   *Proxy
+	validProxy2  *Proxy
+	invalidProxy *Proxy
 }
 
 // Make sure that Account is set to five
@@ -23,6 +27,22 @@ func (test *TestProxySuite) SetupTest() {
 	test.urls = []string{"url_1", "url_2"}
 	test.categories = []string{"category_1", "category_2"}
 	test.commands = []string{"command_1", "command_2"}
+
+	test.validProxy = &Proxy{
+		Id:       "i",
+		Url:      "u",
+		Category: "cat",
+	}
+	test.validProxy2 = &Proxy{
+		Id:       test.validProxy.Id + "2",
+		Url:      test.validProxy.Url + "2",
+		Category: test.validProxy.Category + "2",
+	}
+	test.invalidProxy = &Proxy{
+		Id:       "",
+		Url:      "u",
+		Category: "c",
+	}
 }
 
 // Test_10_NewDestination tests NewDestination
@@ -265,8 +285,8 @@ func (test *TestProxySuite) Test_14_ExcludeCommands() {
 	s().True(destinations.IsEmptyCommands())
 }
 
-// Test_15_Proxy tests Proxy.IsValid method
-func (test *TestProxySuite) Test_15_Proxy() {
+// Test_15_Proxy_IsValid tests Proxy.IsValid method
+func (test *TestProxySuite) Test_15_Proxy_IsValid() {
 	s := test.Require
 
 	id := "proxy_id"
@@ -284,6 +304,74 @@ func (test *TestProxySuite) Test_15_Proxy() {
 
 	proxy.Category = category
 	s().True(proxy.IsValid())
+}
+
+// Test_16_IsProxiesValid tests ProxyChain.IsProxiesValid
+func (test *TestProxySuite) Test_16_IsProxiesValid() {
+	s := test.Require
+
+	proxyChain := &ProxyChain{}
+	// no proxies must be unique
+	s().False(proxyChain.IsProxiesValid())
+
+	// empty proxies must be unique
+	proxyChain.Proxies = make([]*Proxy, 0)
+	s().False(proxyChain.IsProxiesValid())
+
+	// duplicate proxies must fail
+	proxyChain.Proxies = []*Proxy{test.validProxy, test.validProxy}
+	s().False(proxyChain.IsProxiesValid())
+
+	// proxy is invalid
+	proxyChain.Proxies = []*Proxy{test.invalidProxy}
+	s().False(proxyChain.IsProxiesValid())
+
+	// list of unique, valid proxies must be valid
+	proxyChain.Proxies = []*Proxy{test.validProxy, test.validProxy2}
+	s().True(proxyChain.IsProxiesValid())
+}
+
+// Test_17_ProxyChain_IsValid tests ProxyChain.IsValid
+func (test *TestProxySuite) Test_17_ProxyChain_IsValid() {
+	s := test.Require
+
+	url := "url"
+	url2 := "url_2"
+	validProxies := []*Proxy{test.validProxy, test.validProxy2}
+	validSources := []string{url, url2}
+
+	proxyChain := &ProxyChain{}
+
+	//
+	// First testing against nil values
+	//
+	s().False(proxyChain.IsValid()) // missing Sources, Proxies, and Destination
+
+	proxyChain.Proxies = validProxies
+	s().False(proxyChain.IsValid()) // missing Sources and Destination
+
+	proxyChain.Sources = validSources
+	s().False(proxyChain.IsValid()) // missing Destination
+
+	proxyChain.Destination = NewServiceDestination(url)
+	s().True(proxyChain.IsValid())
+
+	//
+	// testing for invalid fields
+	//
+
+	proxyChain.Proxies = []*Proxy{test.validProxy, test.invalidProxy}
+	s().False(proxyChain.IsValid()) // The Proxies field invalid
+	proxyChain.Proxies = validProxies
+
+	proxyChain.Sources = []string{url, url} // duplicate values
+	s().False(proxyChain.IsValid())         // The Sources field invalid
+	proxyChain.Sources = validSources
+
+	proxyChain.Destination = NewServiceDestination()
+	s().False(proxyChain.IsValid()) // Destination field invalid
+	proxyChain.Destination = NewServiceDestination(url)
+	s().True(proxyChain.IsValid())
 }
 
 func TestProxy(t *testing.T) {
