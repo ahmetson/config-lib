@@ -75,3 +75,9 @@ All front proxies are unknown for the service.
 If there is an extension, then the service has access to the front of the extension.
 Extension maybe behind the proxies. In this case, the service has access to the first proxy.
 Everything after the proxy is unknown.
+
+### Yaml
+The service meta is defined in the `service` package.
+
+The meta is stored as the yaml files.
+The yaml file operations are stored in the `app` package.
