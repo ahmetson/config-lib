@@ -13,6 +13,18 @@ const (
 	ConfigFlag      = "config"
 )
 
+type SourceService struct {
+	*Proxy
+	Manager *clientConfig.Client   `json:"manager" yaml:"manager"`
+	Clients []*clientConfig.Client `json:"clients" yaml:"clients"`
+}
+
+// The Source defines the proxy
+type Source struct {
+	Proxies []*SourceService `json:"proxies" yaml:"proxies"`
+	Rule    *Rule            `json:"rule,omitempty" yaml:"rule,omitempty"`
+}
+
 // Service type defined in the config.
 //
 // Fields
@@ -22,13 +34,15 @@ const (
 //   - Manager parameter of the service
 //   - Handlers that are listed in the service
 //   - Extensions that this service depends on
+//   - Sources that are can access to this service
 type Service struct {
 	Type       Type                     `json:"type" yaml:"type"`
 	Url        string                   `json:"url" yaml:"url"`
 	Id         string                   `json:"id" yaml:"id"`
 	Manager    *clientConfig.Client     `json:"manager" yaml:"manager"`
 	Handlers   []*handlerConfig.Handler `json:"handlers" yaml:"handlers"`
-	Extensions []*clientConfig.Client   `json:"extensions" yaml:"extensions"`
+	Extensions []*clientConfig.Client   `json:"extensions,omitempty" yaml:"extensions,omitempty"`
+	Sources    []*Source                `json:"sources,omitempty" yaml:"sources,omitempty"`
 }
 
 // ManagerId generates a service manager id.
