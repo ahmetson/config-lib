@@ -241,8 +241,44 @@ func (unit *Rule) ExcludeCommands(commands ...string) *Rule {
 	return unit
 }
 
+// IsEqualRule returns true if the fields of both structs match.
 func IsEqualRule(first *Rule, second *Rule) bool {
-	return first != nil && second != nil
+	if first == nil || second == nil {
+		return false
+	}
+
+	if len(first.Urls) != len(second.Urls) ||
+		len(first.Categories) != len(second.Categories) ||
+		len(first.Commands) != len(second.Commands) ||
+		len(first.ExcludedCommands) != len(second.ExcludedCommands) {
+		return false
+	}
+
+	for _, url := range first.Urls {
+		if !slices.Contains(second.Urls, url) {
+			return false
+		}
+	}
+
+	for _, cmd := range first.Commands {
+		if !slices.Contains(second.Commands, cmd) {
+			return false
+		}
+	}
+
+	for _, cat := range first.Categories {
+		if !slices.Contains(second.Categories, cat) {
+			return false
+		}
+	}
+
+	for _, cmd := range first.ExcludedCommands {
+		if !slices.Contains(second.ExcludedCommands, cmd) {
+			return false
+		}
+	}
+
+	return true
 }
 
 //
@@ -334,39 +370,27 @@ func (proxyChain *ProxyChain) IsValid() bool {
 		IsStringSliceValid(proxyChain.Sources)
 }
 
-func IsUniqueRule(proxyChains []*ProxyChain, rule *Rule) []*Proxy {
-	for _, proxyChain := range proxyChains {
-		if proxyChain.Destination == nil {
-			continue
-		}
-
-		if IsEqualRule(proxyChain.Destination, rule) {
-			return proxyChain.Proxies
-		}
-	}
-
-	return []*Proxy{}
+func IsRuleExist(proxyChains []*ProxyChain, rule *Rule) bool {
+	return slices.ContainsFunc(proxyChains, func(proxyChain *ProxyChain) bool {
+		return IsEqualRule(proxyChain.Destination, rule)
+	})
 }
 
-// IsHandlerEndExist returns true if there is a proxy that links to the given handler category
-func IsHandlerEndExist(proxyChain *ProxyChain, category string) bool {
-	return proxyChain.Destination != nil &&
-		slices.Contains(proxyChain.Destination.Categories, category)
-}
-
-// IsEndpointExist returns true if the given endpoint exists in the proxy list
-func IsEndpointExist(proxyChains []*ProxyChain, endpoint *Rule) bool {
-	if endpoint == nil {
-		return false
+// ProxyChainsByRuleUrl returns a list of proxy chains, where rule has the url.
+// Returns empty list if no ulr was found.
+func ProxyChainsByRuleUrl(proxyChains []*ProxyChain, url string) []*ProxyChain {
+	foundProxyChains := make([]*ProxyChain, 0, len(proxyChains))
+	if len(url) == 0 {
+		return foundProxyChains
 	}
 
 	for _, proxyChain := range proxyChains {
-		if IsEqualRule(proxyChain.Destination, endpoint) {
-			return true
+		if slices.Contains(proxyChain.Destination.Urls, url) {
+			foundProxyChains = append(foundProxyChains, proxyChain)
 		}
 	}
 
-	return false
+	return foundProxyChains
 }
 
 //
