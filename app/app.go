@@ -8,6 +8,7 @@ package app
 import (
 	"fmt"
 	"github.com/ahmetson/config-lib/service"
+	"slices"
 )
 
 const (
@@ -24,6 +25,7 @@ const (
 type App struct {
 	Services    []*service.Service    `json:"services" yaml:"services"`
 	ProxyChains []*service.ProxyChain `json:"proxy_chains" yaml:"proxy_chains"`
+	ids         []string              // all service, handler ids must be unique.
 }
 
 // New App configuration.
@@ -35,9 +37,53 @@ type App struct {
 // - if, environment variable exists, then load it.
 // - if, a flag exists, then load it.
 func New() *App {
-	appConfig := &App{}
+	appConfig := &App{
+		ids: make([]string, 0),
+	}
 	appConfig.SetEmptyFields()
 	return appConfig
+}
+
+// IdExist checks is the id unique within the application
+func (a *App) IdExist(id string) bool {
+	return slices.Contains(a.ids, id)
+}
+
+// SetId sets the id in the id list.
+// Returns true if id exists.
+func (a *App) SetId(id string) bool {
+	// if the App was created directly, then ids will be nil
+	if a.ids == nil {
+		a.ids = []string{id}
+		return true
+	}
+
+	if a.IdExist(id) {
+		return false
+	}
+	a.ids = append(a.ids, id)
+	return true
+}
+
+// RegisterId sets all ids of the all services and handlers.
+// If there are duplicate id, then throw an error with detail information.
+func (a *App) RegisterId() error {
+	for _, s := range a.Services {
+		if a.IdExist(s.Id) {
+			return fmt.Errorf("the '%s' id of service is duplicate", s.Id)
+		}
+		a.SetId(s.Id)
+
+		for _, h := range s.Handlers {
+			if a.IdExist(h.Id) {
+				return fmt.Errorf("the '%s' id of handler in '%s' service is duplicate", h.Id, s.Id)
+			}
+
+			a.SetId(s.Id)
+		}
+	}
+
+	return nil
 }
 
 // Service by id returned from the app configuration.
@@ -63,7 +109,8 @@ func (a *App) ServiceByUrl(url string) *service.Service {
 	return nil
 }
 
-// SetEmptyFields sets empty value for nil fields
+// SetEmptyFields sets empty value for nil fields.
+// If the developer crated App directly, some fields might be nil
 func (a *App) SetEmptyFields() {
 	if a.Services == nil {
 		a.Services = make([]*service.Service, 0)

@@ -384,8 +384,8 @@ func IsEndpointExist(proxyChains []*ProxyChain, endpoint *Rule) bool {
 //			continue
 //		}
 //
-//		id := proxy.Units.Url
-//		category := proxy.Units.Category
+//		id := proxy.Units.ServiceId
+//		category := proxy.Units.HandlerId
 //		if !IsHandlerEndExist(proxies, id, category) {
 //			continue
 //		}
@@ -398,7 +398,7 @@ func IsEndpointExist(proxyChains []*ProxyChain, endpoint *Rule) bool {
 //		// if proxy-chain has no route, return an error
 //		if !IsEndpointExist(proxyChain, proxy.Units) {
 //			return fmt.Errorf("IsEndpointExist in the proxy chain doesn't have the route endpoint('%s','%s')",
-//				proxy.Units.Category, proxy.Units.Command)
+//				proxy.Units.HandlerId, proxy.Units.Command)
 //		}
 //	}
 //

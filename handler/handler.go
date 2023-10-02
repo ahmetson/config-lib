@@ -65,6 +65,9 @@ func New() (*Handler, error) {
 		if err := app.Read(filePath, h.app); err != nil {
 			return nil, fmt.Errorf("read('%s'): %w", filePath, err)
 		}
+		if err := h.app.RegisterId(); err != nil {
+			return nil, fmt.Errorf(fmt.Sprintf("app.RegisterId: %v", err))
+		}
 	} else if err := h.writeInitialApp(); err != nil {
 		return nil, fmt.Errorf("handler.writeInitialApp: %w", err)
 	}
@@ -255,6 +258,11 @@ func (handler *Handler) onSetService(req message.RequestInterface) message.Reply
 	err = handler.app.SetService(&s)
 	if err != nil {
 		return req.Fail(fmt.Sprintf("app.SetService: %v", err))
+	}
+
+	_ = handler.app.SetId(s.Id)
+	for _, h := range s.Handlers {
+		_ = handler.app.SetId(h.Id)
 	}
 
 	if err := app.Write(handler.filePath, handler.app); err != nil {
