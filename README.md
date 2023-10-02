@@ -9,7 +9,7 @@ That includes the configurations as well.
 The SDS services created with [service-lib](https://github.com/ahmetson/service-lib), can access the command line arguments only.
 
 Everything else must be retrieved from the configuration.
-Even the environment variables too.
+Including the environment variables too.
 
 The configuration is the key-value database.
 This database is running on a separated thread. 
@@ -29,14 +29,14 @@ The second group is the [service](#service-meta) configuration itself.
 > In the API reference group the routes by custom data and service meta
 
 ## Custom Data
-There is only one way to set the custom parameters to use in the service.
+In the development context, there is only one way to set the custom parameters.
 Only by providing an environment variables or `.env` files.
 
 For example, `PRIVATE_KEY=0xdead` environment variable will be available by `PRIVATE_KEY` key.  
 
 It's possible to pass the group of the environment variables as the `.env` files.
 The `.env` in the same directory as the binary is loaded automatically.
-To pass the other `.env` files pass them as the command line arguments.
+Other `.env` file paths are passed as the command line arguments.
 
 Example of passing environment files
 
@@ -57,7 +57,7 @@ The configuration is also responsible for generation, storage of the service par
 The service parameters include the meta parameters such as a list of the handlers and their exposed port.
 
 The services in the distributed systems must know the other services as well.
-In SDS Framework, the services nearby services parameters only.
+In SDS Framework, the services know nearby services only.
 
 Nearby services are the extensions and proxies.
 
@@ -79,5 +79,5 @@ Everything after the proxy is unknown.
 ### Yaml
 The service meta is defined in the `service` package.
 
-The meta is stored as the yaml files.
+In the developer context, the meta is stored as the yaml files.
 The yaml file operations are stored in the `app` package.
