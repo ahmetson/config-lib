@@ -192,3 +192,50 @@ func (s *Service) SetHandler(handler *handlerConfig.Handler) {
 
 	s.Handlers[i] = handler
 }
+
+// SourceExist returns true if the proxy id exists in the sources
+func (s *Service) SourceExist(id string) bool {
+	if len(s.Sources) == 0 {
+		return false
+	}
+
+	for i := range s.Sources {
+		source := s.Sources[i]
+
+		if len(source.Proxies) == 0 {
+			continue
+		}
+
+		if slices.ContainsFunc(source.Proxies, func(proxy *SourceService) bool {
+			return proxy.Id == id
+		}) {
+			return true
+		}
+	}
+
+	return false
+}
+
+// SourceById returns the manager parameter of the proxy
+func (s *Service) SourceById(id string) *SourceService {
+	if len(s.Sources) == 0 {
+		return nil
+	}
+
+	for i := range s.Sources {
+		source := s.Sources[i]
+
+		if len(source.Proxies) == 0 {
+			continue
+		}
+
+		found := slices.IndexFunc(source.Proxies, func(proxy *SourceService) bool {
+			return proxy.Id == id
+		})
+		if found > -1 {
+			return source.Proxies[found]
+		}
+	}
+
+	return nil
+}
