@@ -393,6 +393,37 @@ func ProxyChainsByRuleUrl(proxyChains []*ProxyChain, url string) []*ProxyChain {
 	return foundProxyChains
 }
 
+// LastProxies returns the list of the proxies from all proxy chains.
+// The identical proxies are compacted
+func LastProxies(proxyChains []*ProxyChain) []*Proxy {
+	proxies := make([]*Proxy, 0, len(proxyChains))
+
+	if len(proxyChains) == 0 {
+		return proxies
+	}
+
+	for i := range proxyChains {
+		if len(proxyChains[i].Proxies) == 0 {
+			continue
+		}
+
+		lastProxy := len(proxyChains[i].Proxies) - 1
+		if lastProxy == -1 {
+			continue
+		}
+
+		last := proxyChains[i].Proxies[lastProxy]
+
+		if IsProxyExist(proxies, last.Id) {
+			continue
+		}
+
+		proxies = append(proxies, last)
+	}
+
+	return proxies
+}
+
 //
 //// ValidProxyChain verifies that endpoints are set correctly.
 ////
