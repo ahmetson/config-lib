@@ -449,39 +449,3 @@ func LastProxies(proxyChains []*ProxyChain) []*Proxy {
 
 	return proxies
 }
-
-//
-//// ValidProxyChain verifies that endpoints are set correctly.
-////
-//// If the proxy type is route, and there is a handler of the same type, then make sure that
-//// there is a proxy chain of the end.
-//func ValidProxyChain(proxies []*Proxy, proxyChains []*ProxyChain) error {
-//	for _, proxy := range proxies {
-//		if proxy.Units == nil {
-//			return fmt.Errorf("proxy('%s').Units is nil. Call Proxy.SetEnd", proxy.Id)
-//		}
-//
-//		if proxy.Units.Type != RouteEnd {
-//			continue
-//		}
-//
-//		id := proxy.Units.ServiceId
-//		category := proxy.Units.HandlerId
-//		if !IsHandlerEndExist(proxies, id, category) {
-//			continue
-//		}
-//
-//		proxyChain := Chain(proxyChains, proxy.Units)
-//		if len(proxyChain) == 0 {
-//			return fmt.Errorf("proxyChain(id: '%s') is 0. Set it by calling service.SetProxyChain()", proxy.Id)
-//		}
-//
-//		// if proxy-chain has no route, return an error
-//		if !IsEndpointExist(proxyChain, proxy.Units) {
-//			return fmt.Errorf("IsEndpointExist in the proxy chain doesn't have the route endpoint('%s','%s')",
-//				proxy.Units.HandlerId, proxy.Units.Command)
-//		}
-//	}
-//
-//	return nil
-//}
