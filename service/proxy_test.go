@@ -231,6 +231,13 @@ func (test *TestProxySuite) Test_12_NewServiceDestination() {
 func (test *TestProxySuite) Test_13_Is() {
 	s := test.Require
 
+	var rule *Rule = nil
+	s().False(rule.IsService())
+	s().False(rule.IsHandler())
+	s().False(rule.IsRoute())
+	s().False(rule.IsEmptyCommands())
+	s().Nil(rule.ExcludeCommands("items"))
+
 	// handler destination
 	destinations := NewHandlerDestination(test.categories)
 	s().False(destinations.IsService()) // categories given
@@ -310,7 +317,10 @@ func (test *TestProxySuite) Test_15_Proxy_IsValid() {
 	url := "github.com/ahmetson/proxy"
 	category := "category"
 
-	proxy := &Proxy{}
+	var proxy *Proxy = nil
+	s().False(proxy.IsValid())
+
+	proxy = &Proxy{}
 	s().False(proxy.IsValid())
 
 	proxy.Id = id
@@ -357,11 +367,13 @@ func (test *TestProxySuite) Test_17_ProxyChain_IsValid() {
 	validProxies := []*Proxy{test.validProxy, test.validProxy2}
 	validSources := []string{url, url2}
 
-	proxyChain := &ProxyChain{}
-
 	//
 	// First testing against nil values
 	//
+	var proxyChain *ProxyChain
+	s().False(proxyChain.IsValid()) // missing Sources, Proxies, and Destination
+
+	proxyChain = &ProxyChain{}
 	s().False(proxyChain.IsValid()) // missing Sources, Proxies, and Destination
 
 	proxyChain.Proxies = validProxies
