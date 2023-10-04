@@ -257,8 +257,8 @@ func (test *TestServiceSuite) Test_15_Service_Extension() {
 	s().Equal(newId, ext.Id)
 }
 
-// Test_16_IsSourceExist tests the IsSourceExist
-func (test *TestServiceSuite) Test_16_Service_SetSource() {
+// Test_16_Service_SetServiceSource tests the Service.SetServiceSource
+func (test *TestServiceSuite) Test_16_Service_SetServiceSource() {
 	s := test.Require
 
 	rule := NewServiceDestination(test.urls[0])
@@ -342,6 +342,74 @@ func (test *TestServiceSuite) Test_16_Service_SetSource() {
 	s().Len(test.service.Sources[1].Proxies, 1)
 }
 
+// Test_17_Service_SourceById tests the Service.SourceById
+func (test *TestServiceSuite) Test_17_Service_SourceById() {
+	s := test.Require
+
+	rule := NewServiceDestination(test.urls[0])
+	proxy1Url := "u"
+	proxy1 := &Proxy{
+		Id:       "i",
+		Url:      proxy1Url,
+		Category: "c",
+	}
+	proxy2 := &Proxy{
+		Id:       "i2",
+		Url:      "u2",
+		Category: "c2",
+	}
+	managerClient := clientConfig.New(proxy1Url, proxy1.Id, 0, zmq4.REP)
+	client1 := clientConfig.New(proxy1Url, proxy1.Id, 0, zmq4.REP)
+	client2 := clientConfig.New(proxy1Url, proxy1.Id, 0, zmq4.REP)
+
+	sourceService1 := &SourceService{
+		Proxy:   proxy1,
+		Manager: managerClient,
+		Clients: []*clientConfig.Client{client1, client2},
+	}
+	sourceService2 := &SourceService{
+		Proxy:   proxy2,
+		Manager: managerClient,
+		Clients: []*clientConfig.Client{client1, client2},
+	}
+
+	// by default no sources
+	s().Len(test.service.Sources, 0)
+
+	// trying to get something when there is no sources must fail
+	foundService := test.service.SourceById(proxy1.Id)
+	s().Nil(foundService)
+
+	// the malformed Source without proxies
+	test.service.Sources = []*Source{&Source{Rule: rule}}
+	foundService = test.service.SourceById(proxy1.Id)
+	s().Nil(foundService)
+	test.service.Sources[0].Proxies = []*SourceService{}
+	foundService = test.service.SourceById(proxy1.Id)
+	s().Nil(foundService)
+	test.service.Sources = nil
+
+	// setting a fresh source
+	updated := test.service.SetServiceSource(rule, sourceService1)
+	s().True(updated)
+	updated = test.service.SetServiceSource(rule, sourceService2)
+	s().True(updated)
+
+	// setting the second rule must succeed
+	foundService = test.service.SourceById(proxy1.Id)
+	s().NotNil(foundService)
+	foundService = test.service.SourceById(proxy2.Id)
+	s().NotNil(foundService)
+
+	// non existing source
+	foundService = test.service.SourceById("non_existing")
+	s().Nil(foundService)
+
+}
+
+// Usage:
+// go test ./service  -v --coverprofile ./service-test-cover.txt
+// go tool cover -html="./service-test-cover.txt"
 func TestService(t *testing.T) {
 	suite.Run(t, new(TestServiceSuite))
 }
