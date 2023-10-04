@@ -471,6 +471,170 @@ func (test *TestProxySuite) Test_18_IsEqualRule() {
 	s().False(IsEqualRule(first, second))
 }
 
+// Test_19_IsEqualProxy test IsEqualProxy
+func (test *TestProxySuite) Test_19_IsEqualProxy() {
+	s := test.Require
+
+	id := "id"
+	url := "url"
+	category := "category"
+
+	first := &Proxy{id, url, category}
+	second := &Proxy{id, url, category}
+
+	// identical
+	s().True(IsEqualProxy(first, second))
+
+	// The nil values must return false
+	s().False(IsEqualProxy(nil, second))
+	s().False(IsEqualProxy(first, nil))
+	s().False(IsEqualProxy(nil, nil))
+
+	// Invalid id
+	second.Id = ""
+	s().False(IsEqualProxy(first, second))
+	second.Id = id
+
+	// Url
+	second.Url = "url_2"
+	s().False(IsEqualProxy(first, second))
+	second.Url = url
+
+	// Category
+	second.Category = "2"
+	s().False(IsEqualProxy(first, second))
+}
+
+// Test_20_IsProxyExist test IsProxyExist
+func (test *TestProxySuite) Test_20_IsProxyExist() {
+	s := test.Require
+
+	invalidId := "non_existing"
+	proxies := []*Proxy{test.validProxy, test.validProxy2}
+
+	// not exists
+	s().False(IsProxyExist(nil, invalidId))
+	s().False(IsProxyExist(proxies, invalidId))
+	s().True(IsProxyExist(proxies, test.validProxy.Id))
+}
+
+// Test_21_ProxyChainByRule test ProxyChainByRule and ProxyChainsByRuleUrl
+func (test *TestProxySuite) Test_21_ProxyChainByRule() {
+	s := test.Require
+
+	invalidUrl := "non_existing"
+
+	invalidRule := NewServiceDestination(invalidUrl)
+	validRule := NewServiceDestination(test.urls[0])
+
+	proxies := []*Proxy{test.validProxy, test.validProxy2}
+	proxyChain1 := &ProxyChain{
+		Sources:     []string{},
+		Proxies:     proxies,
+		Destination: NewServiceDestination(test.urls[0]),
+	}
+	proxyChain2 := &ProxyChain{
+		Sources:     []string{},
+		Proxies:     proxies,
+		Destination: NewServiceDestination(test.urls[1]),
+	}
+	proxyChains := []*ProxyChain{proxyChain1, proxyChain2}
+
+	// the rule must be valid
+	invalidRule = NewServiceDestination() // empty rule is not valid
+	s().Nil(ProxyChainByRule(proxyChains, invalidRule))
+
+	// the rule that is not in the proxy chains
+	invalidRule = NewServiceDestination(invalidUrl)
+	s().Nil(ProxyChainByRule(proxyChains, invalidRule))
+
+	// the proxy chain exists
+	s().NotNil(ProxyChainByRule(proxyChains, validRule))
+
+	// the nil proxy chain must be false
+	s().Nil(ProxyChainByRule(nil, validRule))
+}
+
+// Test_22_LastProxies test LastProxies
+func (test *TestProxySuite) Test_22_LastProxies() {
+	s := test.Require
+
+	proxies := []*Proxy{test.validProxy, test.validProxy2}
+	proxyChain1 := &ProxyChain{
+		Sources:     []string{},
+		Proxies:     proxies,
+		Destination: NewServiceDestination(test.urls[0]),
+	}
+	proxyChain2 := &ProxyChain{
+		Sources:     []string{},
+		Proxies:     proxies,
+		Destination: NewServiceDestination(test.urls[1]),
+	}
+	proxyChains := []*ProxyChain{proxyChain1, proxyChain2}
+
+	// last proxies for a nil must return empty result
+	lastProxies := LastProxies(nil)
+	s().Len(lastProxies, 0)
+	lastProxies = LastProxies([]*ProxyChain{})
+	s().Len(lastProxies, 0)
+
+	// must return one proxy since they are identical
+	lastProxies = LastProxies(proxyChains)
+	s().Len(lastProxies, 1)
+
+	// if the proxies are empty, then this proxy chain is skipped
+	proxyChains[0].Proxies = nil
+	proxyChains[1].Proxies = nil
+	lastProxies = LastProxies(proxyChains)
+	s().Len(lastProxies, 0)
+
+	// each proxy chain has a unique proxy
+	proxyChains[0].Proxies = proxies
+	proxyChains[1].Proxies = []*Proxy{test.validProxy2, test.validProxy}
+	lastProxies = LastProxies(proxyChains)
+	s().Len(lastProxies, 2)
+}
+
+// Test_23_IsRuleExist test IsRuleExist
+func (test *TestProxySuite) Test_23_IsRuleExist() {
+	s := test.Require
+
+	invalidUrl := "non_existing"
+
+	invalidRule := NewServiceDestination(invalidUrl)
+	validRule := NewServiceDestination(test.urls[0])
+
+	proxies := []*Proxy{test.validProxy, test.validProxy2}
+	proxyChain1 := &ProxyChain{
+		Sources:     []string{},
+		Proxies:     proxies,
+		Destination: NewServiceDestination(test.urls[0]),
+	}
+	proxyChain2 := &ProxyChain{
+		Sources:     []string{},
+		Proxies:     proxies,
+		Destination: NewServiceDestination(test.urls[1]),
+	}
+	proxyChains := []*ProxyChain{proxyChain1, proxyChain2}
+
+	// valid
+	exist := IsRuleExist(proxyChains, validRule)
+	s().True(exist)
+
+	// the rule doesn't exist
+	exist = IsRuleExist(proxyChains, invalidRule)
+	s().False(exist)
+
+	// nil values must return false
+	exist = IsRuleExist(nil, invalidRule)
+	s().False(exist)
+	exist = IsRuleExist(proxyChains, nil)
+	s().False(exist)
+	exist = IsRuleExist(nil, nil)
+	s().False(exist)
+
+}
+
 func TestProxy(t *testing.T) {
 	suite.Run(t, new(TestProxySuite))
 }
