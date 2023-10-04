@@ -57,40 +57,44 @@ func anyToStringSlice(raw interface{}) []string {
 // Any parameter could be a string or []string.
 func NewDestination(params ...interface{}) *Rule {
 	unit := &Rule{
-		Urls:             make([]string, 0),
-		ExcludedCommands: make([]string, 0),
+		Urls:             []string{},
+		ExcludedCommands: []string{},
 	}
 
 	if len(params) < 2 || len(params) > 3 {
 		return nil
-	} else if len(params) == 2 {
-		categories := anyToStringSlice(params[0])
-		if categories == nil {
-			return nil
-		}
-		unit.Categories = categories
-		commands := anyToStringSlice(params[1])
-		if commands == nil {
-			return nil
-		}
-		unit.Commands = commands
-	} else {
+	}
+	if len(params) == 3 {
 		urls := anyToStringSlice(params[0])
 		if urls == nil {
 			return nil
 		}
-		unit.Urls = urls
-		categories := anyToStringSlice(params[1])
-		if categories == nil {
-			return nil
-		}
-		unit.Categories = categories
-		commands := anyToStringSlice(params[2])
-		if commands == nil {
-			return nil
-		}
-		unit.Commands = commands
+		urls = slices.Compact(urls)
+		unit.Urls = make([]string, 0, len(urls))
+		unit.Urls = append(unit.Urls, urls...)
 	}
+
+	index := len(params) - 2
+
+	categories := anyToStringSlice(params[index])
+	if categories == nil {
+		return nil
+	}
+
+	categories = slices.Compact(categories)
+	unit.Categories = make([]string, 0, len(categories))
+	unit.Categories = append(unit.Categories, categories...)
+
+	index++
+
+	commands := anyToStringSlice(params[index])
+	if commands == nil {
+		return nil
+	}
+
+	commands = slices.Compact(commands)
+	unit.Commands = make([]string, 0, len(commands))
+	unit.Commands = append(unit.Commands, commands...)
 
 	return unit
 }
@@ -100,34 +104,38 @@ func NewDestination(params ...interface{}) *Rule {
 //
 // Any parameter could be a string or []string.
 func NewHandlerDestination(params ...interface{}) *Rule {
-	unit := &Rule{
-		Urls:             make([]string, 0),
-		Commands:         make([]string, 0),
-		ExcludedCommands: make([]string, 0),
+	unit := Rule{
+		Urls:             []string{},
+		Commands:         []string{},
+		ExcludedCommands: []string{},
 	}
 
 	if len(params) < 1 || len(params) > 2 {
 		return nil
-	} else if len(params) == 1 {
-		categories := anyToStringSlice(params[0])
-		if categories == nil {
-			return nil
-		}
-		unit.Categories = categories
-	} else {
+	}
+
+	if len(params) == 2 {
 		urls := anyToStringSlice(params[0])
 		if urls == nil {
 			return nil
 		}
-		unit.Urls = urls
-		categories := anyToStringSlice(params[1])
-		if categories == nil {
-			return nil
-		}
-		unit.Categories = categories
+		urls = slices.Compact(urls)
+		unit.Urls = make([]string, 0, len(urls))
+		unit.Urls = append(unit.Urls, urls...)
 	}
 
-	return unit
+	index := len(params) - 1
+
+	categories := anyToStringSlice(params[index])
+	if categories == nil {
+		return nil
+	}
+
+	categories = slices.Compact(categories)
+	unit.Categories = make([]string, 0, len(categories))
+	unit.Categories = append(unit.Categories, categories...)
+
+	return &unit
 }
 
 // NewServiceDestination returns a rule for the service.
@@ -138,13 +146,13 @@ func NewHandlerDestination(params ...interface{}) *Rule {
 // In that case, set the urls later.
 func NewServiceDestination(params ...interface{}) *Rule {
 	unit := &Rule{
-		Categories:       make([]string, 0),
-		Commands:         make([]string, 0),
-		ExcludedCommands: make([]string, 0),
+		Urls:             make([]string, 0, len(params)),
+		Categories:       []string{},
+		Commands:         []string{},
+		ExcludedCommands: []string{},
 	}
 
 	if len(params) == 0 {
-		unit.Urls = make([]string, 0)
 		return unit
 	}
 
@@ -152,10 +160,12 @@ func NewServiceDestination(params ...interface{}) *Rule {
 		return nil
 	}
 
-	unit.Urls = anyToStringSlice(params[0])
-	if unit.Urls == nil {
+	urls := anyToStringSlice(params[0])
+	if urls == nil {
 		return nil
 	}
+	urls = slices.Compact(urls)
+	unit.Urls = append(unit.Urls, urls...)
 
 	return unit
 }
