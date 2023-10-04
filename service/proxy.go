@@ -33,11 +33,11 @@ type ProxyChain struct {
 	Destination *Rule    `json:"destination" yaml:"destination"` // only shown for a proxy
 }
 
-// The convertParam function converts the interface to the slice of strings.
+// The anyToStringSlice function converts the interface to the slice of strings.
 // The parameter could be a string or []string.
 //
 // Returns nil if the raw parameter is not string or []string.
-func convertParam(raw interface{}) []string {
+func anyToStringSlice(raw interface{}) []string {
 	str, ok := raw.(string)
 	if ok {
 		return []string{str}
@@ -64,28 +64,28 @@ func NewDestination(params ...interface{}) *Rule {
 	if len(params) < 2 || len(params) > 3 {
 		return nil
 	} else if len(params) == 2 {
-		categories := convertParam(params[0])
+		categories := anyToStringSlice(params[0])
 		if categories == nil {
 			return nil
 		}
 		unit.Categories = categories
-		commands := convertParam(params[1])
+		commands := anyToStringSlice(params[1])
 		if commands == nil {
 			return nil
 		}
 		unit.Commands = commands
 	} else {
-		urls := convertParam(params[0])
+		urls := anyToStringSlice(params[0])
 		if urls == nil {
 			return nil
 		}
 		unit.Urls = urls
-		categories := convertParam(params[1])
+		categories := anyToStringSlice(params[1])
 		if categories == nil {
 			return nil
 		}
 		unit.Categories = categories
-		commands := convertParam(params[2])
+		commands := anyToStringSlice(params[2])
 		if commands == nil {
 			return nil
 		}
@@ -109,18 +109,18 @@ func NewHandlerDestination(params ...interface{}) *Rule {
 	if len(params) < 1 || len(params) > 2 {
 		return nil
 	} else if len(params) == 1 {
-		categories := convertParam(params[0])
+		categories := anyToStringSlice(params[0])
 		if categories == nil {
 			return nil
 		}
 		unit.Categories = categories
 	} else {
-		urls := convertParam(params[0])
+		urls := anyToStringSlice(params[0])
 		if urls == nil {
 			return nil
 		}
 		unit.Urls = urls
-		categories := convertParam(params[1])
+		categories := anyToStringSlice(params[1])
 		if categories == nil {
 			return nil
 		}
@@ -152,7 +152,7 @@ func NewServiceDestination(params ...interface{}) *Rule {
 		return nil
 	}
 
-	unit.Urls = convertParam(params[0])
+	unit.Urls = anyToStringSlice(params[0])
 	if unit.Urls == nil {
 		return nil
 	}
