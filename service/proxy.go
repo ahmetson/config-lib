@@ -385,8 +385,25 @@ func IsRuleExist(proxyChains []*ProxyChain, rule *Rule) bool {
 	})
 }
 
+// ProxyChainByRule returns a proxy chain that has the rule
+func ProxyChainByRule(proxyChains []*ProxyChain, rule *Rule) *ProxyChain {
+	if !rule.IsValid() {
+		return nil
+	}
+
+	for _, proxyChain := range proxyChains {
+		if IsEqualRule(proxyChain.Destination, rule) {
+			return proxyChain
+		}
+	}
+
+	return nil
+}
+
 // ProxyChainsByRuleUrl returns a list of proxy chains, where rule has the url.
 // Returns empty list if no ulr was found.
+//
+// todo, it must be only one
 func ProxyChainsByRuleUrl(proxyChains []*ProxyChain, url string) []*ProxyChain {
 	foundProxyChains := make([]*ProxyChain, 0, len(proxyChains))
 	if len(url) == 0 {

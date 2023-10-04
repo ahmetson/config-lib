@@ -91,6 +91,52 @@ func New(id string, url string, serviceType Type, managerClient *clientConfig.Cl
 	}
 }
 
+// IsSourceExist returns true if the sources contains the rule
+func IsSourceExist(sources []*Source, rule *Rule) bool {
+	return slices.ContainsFunc(sources, func(s *Source) bool {
+		return IsEqualRule(s.Rule, rule)
+	})
+}
+
+// IsEqualSourceService returns true if the fields of both structs match.
+func IsEqualSourceService(first *SourceService, second *SourceService) bool {
+	if first == nil || second == nil {
+		return false
+	}
+
+	if len(first.Clients) != len(second.Clients) {
+		return false
+	}
+
+	if !IsEqualProxy(first.Proxy, second.Proxy) {
+		return false
+	}
+
+	if !clientConfig.IsEqual(first.Manager, second.Manager) {
+		return false
+	}
+
+	for i := range first.Clients {
+		if !slices.ContainsFunc(second.Clients, func(c *clientConfig.Client) bool {
+			return clientConfig.IsEqual(first.Clients[i], c)
+		}) {
+			return false
+		}
+	}
+
+	return true
+}
+
+func IsSourceServiceExist(proxies []*SourceService, id string) bool {
+	return SourceServiceIndex(proxies, id) > -1
+}
+
+func SourceServiceIndex(proxies []*SourceService, id string) int {
+	return slices.IndexFunc(proxies, func(el *SourceService) bool {
+		return el.Id == id
+	})
+}
+
 // ValidateTypes the parameters of the service
 func (s *Service) ValidateTypes() error {
 	if err := ValidateServiceType(s.Type); err != nil {
@@ -104,6 +150,36 @@ func (s *Service) ValidateTypes() error {
 	}
 
 	return nil
+}
+
+// SetServiceSource updates the source.
+// Returns true if the Service was updated.
+func (s *Service) SetServiceSource(rule *Rule, source *SourceService) bool {
+	if !IsSourceExist(s.Sources, rule) {
+		source := Source{
+			Proxies: []*SourceService{source},
+			Rule:    rule,
+		}
+
+		s.Sources = append(s.Sources, &source)
+	}
+
+	i := slices.IndexFunc(s.Sources, func(s *Source) bool {
+		return IsEqualRule(s.Rule, rule)
+	})
+
+	if !IsSourceServiceExist(s.Sources[i].Proxies, source.Id) {
+		s.Sources[i].Proxies = append(s.Sources[i].Proxies, source)
+		return true
+	}
+
+	proxyIndex := SourceServiceIndex(s.Sources[i].Proxies, source.Id)
+	if IsEqualSourceService(s.Sources[i].Proxies[proxyIndex], source) {
+		return true
+	}
+
+	s.Sources[i].Proxies[proxyIndex] = source
+	return true
 }
 
 // HandlerByCategory returns the handler config by the handler category.
