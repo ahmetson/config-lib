@@ -411,25 +411,6 @@ func ProxyChainByRule(proxyChains []*ProxyChain, rule *Rule) *ProxyChain {
 	return nil
 }
 
-// ProxyChainsByRuleUrl returns a list of proxy chains, where rule has the url.
-// Returns empty list if no ulr was found.
-//
-// todo, it must be only one
-func ProxyChainsByRuleUrl(proxyChains []*ProxyChain, url string) []*ProxyChain {
-	foundProxyChains := make([]*ProxyChain, 0, len(proxyChains))
-	if len(url) == 0 {
-		return foundProxyChains
-	}
-
-	for _, proxyChain := range proxyChains {
-		if slices.Contains(proxyChain.Destination.Urls, url) {
-			foundProxyChains = append(foundProxyChains, proxyChain)
-		}
-	}
-
-	return foundProxyChains
-}
-
 // LastProxies returns the list of the proxies from all proxy chains.
 // The identical proxies are compacted
 func LastProxies(proxyChains []*ProxyChain) []*Proxy {
