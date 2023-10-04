@@ -155,6 +155,10 @@ func (s *Service) ValidateTypes() error {
 // SetServiceSource updates the source.
 // Returns true if the Service was updated.
 func (s *Service) SetServiceSource(rule *Rule, source *SourceService) bool {
+	if s == nil || rule == nil || source == nil {
+		return false
+	}
+
 	if !IsSourceExist(s.Sources, rule) {
 		source := Source{
 			Proxies: []*SourceService{source},
@@ -162,6 +166,7 @@ func (s *Service) SetServiceSource(rule *Rule, source *SourceService) bool {
 		}
 
 		s.Sources = append(s.Sources, &source)
+		return true
 	}
 
 	i := slices.IndexFunc(s.Sources, func(s *Source) bool {
@@ -174,8 +179,9 @@ func (s *Service) SetServiceSource(rule *Rule, source *SourceService) bool {
 	}
 
 	proxyIndex := SourceServiceIndex(s.Sources[i].Proxies, source.Id)
+
 	if IsEqualSourceService(s.Sources[i].Proxies[proxyIndex], source) {
-		return true
+		return false
 	}
 
 	s.Sources[i].Proxies[proxyIndex] = source

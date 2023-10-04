@@ -257,6 +257,91 @@ func (test *TestServiceSuite) Test_15_Service_Extension() {
 	s().Equal(newId, ext.Id)
 }
 
+// Test_16_IsSourceExist tests the IsSourceExist
+func (test *TestServiceSuite) Test_16_Service_SetSource() {
+	s := test.Require
+
+	rule := NewServiceDestination(test.urls[0])
+	proxy1Url := "u"
+	proxy1 := &Proxy{
+		Id:       "i",
+		Url:      proxy1Url,
+		Category: "c",
+	}
+	proxy2 := &Proxy{
+		Id:       "i2",
+		Url:      "u2",
+		Category: "c2",
+	}
+	managerClient := clientConfig.New(proxy1Url, proxy1.Id, 0, zmq4.REP)
+	client1 := clientConfig.New(proxy1Url, proxy1.Id, 0, zmq4.REP)
+	client2 := clientConfig.New(proxy1Url, proxy1.Id, 0, zmq4.REP)
+
+	sourceService1 := &SourceService{
+		Proxy:   proxy1,
+		Manager: managerClient,
+		Clients: []*clientConfig.Client{client1, client2},
+	}
+	sourceService2 := &SourceService{
+		Proxy:   proxy2,
+		Manager: managerClient,
+		Clients: []*clientConfig.Client{client1, client2},
+	}
+
+	// by default no sources
+	s().Len(test.service.Sources, 0)
+
+	// trying to set the defaults must fail
+	updated := test.service.SetServiceSource(nil, nil)
+	s().False(updated)
+
+	updated = test.service.SetServiceSource(rule, nil)
+	s().False(updated)
+
+	updated = test.service.SetServiceSource(nil, sourceService1)
+	s().False(updated)
+
+	// setting a fresh source
+	updated = test.service.SetServiceSource(rule, sourceService1)
+	s().True(updated)
+	s().Len(test.service.Sources, 1)
+	s().Len(test.service.Sources[0].Proxies, 1)
+
+	// adding a duplicate must fail
+	updated = test.service.SetServiceSource(rule, sourceService1)
+	s().False(updated)
+
+	// setting the second rule must succeed
+	updated = test.service.SetServiceSource(rule, sourceService2)
+	s().True(updated)
+	s().Len(test.service.Sources, 1)
+	s().Len(test.service.Sources[0].Proxies, 2)
+
+	// non equal source services must be set
+	proxy1Updated := &Proxy{
+		Id:       "i",
+		Url:      "u2",
+		Category: "c2",
+	}
+	sourceService1Updated := &SourceService{
+		Proxy:   proxy1Updated,
+		Manager: managerClient,
+		Clients: []*clientConfig.Client{client1, client2},
+	}
+	updated = test.service.SetServiceSource(rule, sourceService1Updated)
+	s().True(updated)
+	s().Len(test.service.Sources, 1)
+	s().Len(test.service.Sources[0].Proxies, 2)
+
+	// adding a new rule must succeed
+	secondRule := NewHandlerDestination(test.urls[0], "category")
+	updated = test.service.SetServiceSource(secondRule, sourceService1Updated)
+	s().True(updated)
+	s().Len(test.service.Sources, 2)
+	s().Len(test.service.Sources[0].Proxies, 2)
+	s().Len(test.service.Sources[1].Proxies, 1)
+}
+
 func TestService(t *testing.T) {
 	suite.Run(t, new(TestServiceSuite))
 }
