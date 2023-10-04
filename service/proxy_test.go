@@ -57,11 +57,17 @@ func (test *TestProxySuite) Test_10_NewDestination() {
 	destinations = NewDestination("", "", "", "")
 	s().Nil(destinations)
 
+	//
 	// creating a destination with two parameters but invalid data must fail
+	//
+
 	destinations = NewDestination(1, "")
 	s().Nil(destinations)
+	destinations = NewDestination("", 1)
+	s().Nil(destinations)
+	s().Nil(NewDestination(1, "", ""))
+	s().Nil(NewDestination("", 1, ""))
 
-	// creating a destination with three parameters but an invalid data type must fail
 	destinations = NewDestination("hello", []string{"yes", "data"}, 2)
 	s().Nil(destinations)
 
@@ -139,6 +145,7 @@ func (test *TestProxySuite) Test_11_NewHandlerDestination() {
 	// creating a destination with invalid data type must fail
 	destinations = NewHandlerDestination(1)
 	s().Nil(destinations)
+	s().Nil(NewHandlerDestination(1, "category"))
 
 	// creating a destination with two parameters but an invalid data type must fail
 	destinations = NewHandlerDestination([]string{"bla", "bla"}, 2)
