@@ -389,6 +389,7 @@ func (proxyChain *ProxyChain) IsValid() bool {
 		IsStringSliceValid(proxyChain.Sources)
 }
 
+// IsRuleExist returns true if there is a proxy chain that matches to the rule
 func IsRuleExist(proxyChains []*ProxyChain, rule *Rule) bool {
 	return slices.ContainsFunc(proxyChains, func(proxyChain *ProxyChain) bool {
 		return IsEqualRule(proxyChain.Destination, rule)
@@ -444,9 +445,6 @@ func LastProxies(proxyChains []*ProxyChain) []*Proxy {
 		}
 
 		lastProxy := len(proxyChains[i].Proxies) - 1
-		if lastProxy == -1 {
-			continue
-		}
 
 		last := proxyChains[i].Proxies[lastProxy]
 
