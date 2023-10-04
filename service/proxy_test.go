@@ -416,6 +416,59 @@ func (test *TestProxySuite) Test_17_ProxyChain_IsValid() {
 	proxyChain.Sources = []string{url, ""}
 	s().False(proxyChain.IsValid())
 }
+
+// Test_18_IsEqualRule test IsEqualRule
+func (test *TestProxySuite) Test_18_IsEqualRule() {
+	s := test.Require
+
+	first := NewServiceDestination(test.urls[0])
+	second := NewServiceDestination(test.urls[1])
+
+	// The nil values must return false
+	s().False(IsEqualRule(nil, second))
+	s().False(IsEqualRule(first, nil))
+	s().False(IsEqualRule(nil, nil))
+
+	// The length of categories mismatch
+	second = NewHandlerDestination(test.urls, test.categories)
+	s().False(IsEqualRule(first, second))
+
+	// The both are valid
+	second = NewServiceDestination(test.urls[0])
+	s().True(IsEqualRule(first, second))
+
+	// Testing with invalid service rule
+	second = NewServiceDestination(test.urls[1])
+	s().False(IsEqualRule(first, second))
+
+	// Testing the handler rule
+	first = NewHandlerDestination(test.urls, test.categories)
+	second = NewHandlerDestination(test.urls, test.categories)
+	s().True(IsEqualRule(first, second))
+
+	// Testing the invalid handler rule
+	second.Categories[0] = "non_existing"
+	s().False(IsEqualRule(first, second))
+
+	// Testing the route rule
+	first = NewDestination(test.urls, test.categories, test.commands)
+	second = NewDestination(test.urls, test.categories, test.commands)
+	s().True(IsEqualRule(first, second))
+
+	// Testing the invalid command
+	second.Commands[0] = "non_existing"
+	s().False(IsEqualRule(first, second))
+
+	// Testing with excluded commands
+	first = NewHandlerDestination(test.urls, test.categories)
+	second = NewHandlerDestination(test.urls, test.categories)
+	first.ExcludeCommands(test.commands[0])
+	second.ExcludeCommands(test.commands[0])
+	s().True(IsEqualRule(first, second))
+
+	// Testing with different excluding commands
+	second.ExcludedCommands[0] = "non_existing"
+	s().False(IsEqualRule(first, second))
 }
 
 func TestProxy(t *testing.T) {
