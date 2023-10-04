@@ -294,7 +294,7 @@ func (s *Service) SourceExist(id string) bool {
 
 // SourceById returns the manager parameter of the proxy
 func (s *Service) SourceById(id string) *SourceService {
-	if len(s.Sources) == 0 {
+	if s == nil || len(s.Sources) == 0 {
 		return nil
 	}
 
@@ -306,7 +306,7 @@ func (s *Service) SourceById(id string) *SourceService {
 		}
 
 		found := slices.IndexFunc(source.Proxies, func(proxy *SourceService) bool {
-			return proxy.Id == id
+			return proxy != nil && proxy.Id == id
 		})
 		if found > -1 {
 			return source.Proxies[found]

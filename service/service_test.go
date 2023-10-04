@@ -182,7 +182,12 @@ func (test *TestServiceSuite) Test_14_Service_SetHandler() {
 	// in the beginning, the handlers are empty
 	s().Len(test.service.Handlers, 0)
 
+	// Setting a handler to a nil must be skipped
+	var serviceConfig *Service
+	serviceConfig.SetHandler(test.handlerOfCategory)
+
 	// setting the handler must be valid
+	s().Len(test.service.Handlers, 0)
 	test.service.SetHandler(test.handlerOfCategory)
 	s().Len(test.service.Handlers, 1)
 	s().Equal(test.categories[0], test.service.Handlers[0].Category)
