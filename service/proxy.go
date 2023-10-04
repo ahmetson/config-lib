@@ -281,6 +281,15 @@ func IsEqualRule(first *Rule, second *Rule) bool {
 	return true
 }
 
+// IsEqualProxy returns true if the proxies match.
+func IsEqualProxy(first *Proxy, second *Proxy) bool {
+	if first == nil || second == nil {
+		return false
+	}
+
+	return first.Id == second.Id && first.Url == second.Url && first.Category == second.Category
+}
+
 //
 // Proxy functions and methods
 //
