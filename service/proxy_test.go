@@ -358,7 +358,7 @@ func (test *TestProxySuite) Test_16_IsProxiesValid() {
 	s().True(proxyChain.IsProxiesValid())
 }
 
-// Test_17_ProxyChain_IsValid tests ProxyChain.IsValid
+// Test_17_ProxyChain_IsValid tests ProxyChain.IsValid and IsStringSliceValid
 func (test *TestProxySuite) Test_17_ProxyChain_IsValid() {
 	s := test.Require
 
@@ -401,6 +401,21 @@ func (test *TestProxySuite) Test_17_ProxyChain_IsValid() {
 	s().False(proxyChain.IsValid()) // Destination field invalid
 	proxyChain.Destination = NewServiceDestination(url)
 	s().True(proxyChain.IsValid())
+
+	//
+	// Testing IsStringSliceValid
+	//
+	proxyChain.Sources = nil
+	s().False(proxyChain.IsValid())
+
+	// empty sources must return true
+	proxyChain.Sources = []string{}
+	s().True(proxyChain.IsValid())
+
+	// empty source element must be not valid
+	proxyChain.Sources = []string{url, ""}
+	s().False(proxyChain.IsValid())
+}
 }
 
 func TestProxy(t *testing.T) {
