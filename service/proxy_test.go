@@ -290,6 +290,16 @@ func (test *TestProxySuite) Test_14_ExcludeCommands() {
 	s().Equal(test.commands, destinations.ExcludedCommands)
 	s().False(destinations.IsValid()) // IsEmptyCommands failed
 	s().True(destinations.IsEmptyCommands())
+
+	// Only one command is excluded, it must return empty
+	destinations.ExcludedCommands = []string{test.commands[0]}
+	s().True(destinations.IsValid())
+	s().False(destinations.IsEmptyCommands())
+
+	// We set manually test.commands[0] as the excluded command
+	// Trying to exclude already existing command must be skipped
+	destinations.ExcludeCommands(test.commands[0])
+	s().Len(destinations.ExcludedCommands, 1)
 }
 
 // Test_15_Proxy_IsValid tests Proxy.IsValid method
