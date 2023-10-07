@@ -4,10 +4,18 @@ import (
 	"slices"
 )
 
+// The Local keeps the parameters of the service in the local field.
+// These parameters are optional.
+type Local struct {
+	LocalSrc string `json:"local_src,omitempty" yaml:"local_src,omitempty"`
+	LocalBin string `json:"local_bin,omitempty" yaml:"local_bin,omitempty"`
+}
+
 // Proxy in the service.
 //
 // If two endpoints lint to the same route,
 type Proxy struct {
+	*Local
 	Id       string `json:"id" yaml:"id"`
 	Url      string `json:"url" yaml:"url"`
 	Category string `json:"category" yaml:"category"` // proxy category, example authr, valid, convert
