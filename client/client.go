@@ -53,6 +53,10 @@ func New() (*Client, error) {
 
 // Close the config handler and client.
 func (c *Client) Close() error {
+	if c == nil || c.socket == nil {
+		return fmt.Errorf("nil or closed")
+	}
+
 	managerClient, err := manager_client.New(handler.SocketConfig())
 	if err != nil {
 		return fmt.Errorf("manager_client.New: %w", err)
@@ -63,22 +67,35 @@ func (c *Client) Close() error {
 	}
 
 	// the internal engine is closing too soon.
-	if c.socket != nil {
-		return c.socket.Close()
+	err = c.socket.Close()
+	if err != nil {
+		return fmt.Errorf("internal socket.Close: %w", err)
 	}
+
+	c.socket = nil
 
 	return nil
 }
 
 func (c *Client) Timeout(duration time.Duration) {
+	if c == nil || c.socket == nil {
+		return
+	}
 	c.socket.Timeout(duration)
 }
 
 func (c *Client) Attempt(attempt uint8) {
+	if c == nil || c.socket == nil {
+		return
+	}
 	c.socket.Attempt(attempt)
 }
 
 func (c *Client) Service(id string) (*service.Service, error) {
+	if c == nil || c.socket == nil {
+		return nil, fmt.Errorf("nil or closed")
+	}
+
 	req := message.Request{
 		Command:    handler.ServiceById,
 		Parameters: key_value.New().Set("id", id),
@@ -108,6 +125,10 @@ func (c *Client) Service(id string) (*service.Service, error) {
 }
 
 func (c *Client) ServiceByUrl(url string) (*service.Service, error) {
+	if c == nil || c.socket == nil {
+		return nil, fmt.Errorf("nil or closed")
+	}
+
 	req := message.Request{
 		Command:    handler.ServiceByUrl,
 		Parameters: key_value.New().Set("url", url),
@@ -139,6 +160,10 @@ func (c *Client) ServiceByUrl(url string) (*service.Service, error) {
 // SetService writes the service configuration into the app configuration.
 // todo update the yaml file
 func (c *Client) SetService(s *service.Service) error {
+	if c == nil || c.socket == nil {
+		return fmt.Errorf("nil or closed")
+	}
+
 	req := message.Request{
 		Command:    handler.SetService,
 		Parameters: key_value.New().Set("service", s),
@@ -158,6 +183,10 @@ func (c *Client) SetService(s *service.Service) error {
 
 // GenerateHandler creates a configuration that could be added into the service
 func (c *Client) GenerateHandler(handlerType handlerConfig.HandlerType, category string, internal bool) (*handlerConfig.Handler, error) {
+	if c == nil || c.socket == nil {
+		return nil, fmt.Errorf("nil or closed")
+	}
+
 	req := message.Request{
 		Command: handler.GenerateHandler,
 		Parameters: key_value.New().
@@ -191,6 +220,10 @@ func (c *Client) GenerateHandler(handlerType handlerConfig.HandlerType, category
 
 // GenerateService creates a configuration of a service
 func (c *Client) GenerateService(id string, url string, serviceType service.Type) (*service.Service, error) {
+	if c == nil || c.socket == nil {
+		return nil, fmt.Errorf("nil or closed")
+	}
+
 	req := message.Request{
 		Command: handler.GenerateService,
 		Parameters: key_value.New().
@@ -224,6 +257,10 @@ func (c *Client) GenerateService(id string, url string, serviceType service.Type
 
 // Exist checks whether the given parameter exists in the config
 func (c *Client) Exist(name string) (bool, error) {
+	if c == nil || c.socket == nil {
+		return false, fmt.Errorf("nil or closed")
+	}
+
 	req := message.Request{
 		Command:    handler.ParamExist,
 		Parameters: key_value.New().Set("name", name),
@@ -248,6 +285,10 @@ func (c *Client) Exist(name string) (bool, error) {
 
 // String parameter from config engine
 func (c *Client) String(name string) (string, error) {
+	if c == nil || c.socket == nil {
+		return "", fmt.Errorf("nil or closed")
+	}
+
 	req := message.Request{
 		Command:    handler.StringParam,
 		Parameters: key_value.New().Set("name", name),
@@ -272,6 +313,10 @@ func (c *Client) String(name string) (string, error) {
 
 // Uint64 parameter from config engine
 func (c *Client) Uint64(name string) (uint64, error) {
+	if c == nil || c.socket == nil {
+		return 0, fmt.Errorf("nil or closed")
+	}
+
 	req := message.Request{
 		Command:    handler.Uint64Param,
 		Parameters: key_value.New().Set("name", name),
@@ -296,6 +341,10 @@ func (c *Client) Uint64(name string) (uint64, error) {
 
 // Bool parameter from config engine
 func (c *Client) Bool(name string) (bool, error) {
+	if c == nil || c.socket == nil {
+		return false, fmt.Errorf("nil or closed")
+	}
+
 	req := message.Request{
 		Command:    handler.BoolParam,
 		Parameters: key_value.New().Set("name", name),
@@ -320,6 +369,10 @@ func (c *Client) Bool(name string) (bool, error) {
 
 // SetDefault sets the default value
 func (c *Client) SetDefault(name string, value interface{}) error {
+	if c == nil || c.socket == nil {
+		return fmt.Errorf("nil or closed")
+	}
+
 	req := message.Request{
 		Command:    handler.SetDefaultParam,
 		Parameters: key_value.New().Set("name", name).Set("value", value),
@@ -345,6 +398,10 @@ func (c *Client) ServiceExistByUrl(url string) (bool, error) {
 
 // ServiceExist checks whether the service exists or not by the parameter
 func (c *Client) serviceExist(name string, value string) (bool, error) {
+	if c == nil || c.socket == nil {
+		return false, fmt.Errorf("nil or closed")
+	}
+
 	req := message.Request{
 		Command:    handler.ServiceExist,
 		Parameters: key_value.New().Set(name, value),
