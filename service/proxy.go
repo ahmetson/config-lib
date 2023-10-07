@@ -317,6 +317,9 @@ func (proxy *Proxy) IsValid() bool {
 	if proxy == nil {
 		return false
 	}
+	if proxy.Local == nil {
+		return false
+	}
 	return len(proxy.Url) > 0 && len(proxy.Id) > 0 && len(proxy.Category) > 0
 }
 

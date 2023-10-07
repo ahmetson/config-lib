@@ -29,11 +29,13 @@ func (test *TestProxySuite) SetupTest() {
 	test.commands = []string{"command_1", "command_2"}
 
 	test.validProxy = &Proxy{
+		Local:    &Local{},
 		Id:       "i",
 		Url:      "u",
 		Category: "cat",
 	}
 	test.validProxy2 = &Proxy{
+		Local:    &Local{},
 		Id:       test.validProxy.Id + "2",
 		Url:      test.validProxy.Url + "2",
 		Category: test.validProxy.Category + "2",
@@ -330,6 +332,9 @@ func (test *TestProxySuite) Test_15_Proxy_IsValid() {
 	s().False(proxy.IsValid())
 
 	proxy.Category = category
+	s().False(proxy.IsValid())
+
+	proxy.Local = &Local{}
 	s().True(proxy.IsValid())
 }
 
@@ -479,8 +484,10 @@ func (test *TestProxySuite) Test_19_IsEqualProxy() {
 	url := "url"
 	category := "category"
 
-	first := &Proxy{id, url, category}
-	second := &Proxy{id, url, category}
+	local1 := &Local{}
+	local2 := &Local{}
+	first := &Proxy{local1, id, url, category}
+	second := &Proxy{local2, id, url, category}
 
 	// identical
 	s().True(IsEqualProxy(first, second))
