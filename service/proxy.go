@@ -346,6 +346,8 @@ func NewProxyChain(params ...interface{}) (*ProxyChain, error) {
 				sources = sourceUrls
 			}
 		}
+	} else {
+		sources = []string{}
 	}
 
 	i := len(params) - 2
