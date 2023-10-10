@@ -319,7 +319,7 @@ func (proxy *Proxy) IsValid() bool {
 		return false
 	}
 	if proxy.Local == nil {
-		return false
+		proxy.Local = &Local{}
 	}
 	return len(proxy.Url) > 0 && len(proxy.Id) > 0 && len(proxy.Category) > 0
 }
