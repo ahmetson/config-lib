@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"slices"
 )
 
@@ -326,6 +327,62 @@ func (proxy *Proxy) IsValid() bool {
 //
 // ProxyChain functions and methods
 //
+
+// NewProxyChain creates a proxy chain for the service url
+func NewProxyChain(params ...interface{}) (*ProxyChain, error) {
+	if len(params) < 2 || len(params) > 3 {
+		return nil, fmt.Errorf("argument amount is invalid, either two or three arguments must be set")
+	}
+	var sources []string
+	if len(params) == 3 {
+		src, ok := params[0].(string)
+		if ok {
+			sources = []string{src}
+		} else {
+			sourceUrls, ok := params[0].([]string)
+			if !ok {
+				return nil, fmt.Errorf("first argument must be string or []string")
+			} else {
+				sources = sourceUrls
+			}
+		}
+	}
+
+	i := len(params) - 2
+	var proxies []*Proxy
+	proxy, ok := params[i].(*Proxy)
+	if ok {
+		proxies = []*Proxy{proxy}
+	} else {
+		requiredProxies, ok := params[i].([]*Proxy)
+		if !ok {
+			return nil, fmt.Errorf("the second argument must be service.Proxy or []service.Proxy")
+		}
+		if len(requiredProxies) == 0 {
+			return nil, fmt.Errorf("proxy argument []service.Proxy has no element")
+		}
+		proxies = requiredProxies
+	}
+
+	i++
+	var rule *Rule
+	requiredRule, ok := params[i].(*Rule)
+	if !ok {
+		return nil, fmt.Errorf("the third argument must be service.Rule")
+	}
+	rule = requiredRule
+
+	proxyChain := &ProxyChain{
+		Sources:     sources,
+		Proxies:     proxies,
+		Destination: rule,
+	}
+	if !proxyChain.IsProxiesValid() {
+		return nil, fmt.Errorf("proxies are not valid")
+	}
+
+	return proxyChain, nil
+}
 
 func IsProxyExist(proxies []*Proxy, id string) bool {
 	return slices.ContainsFunc(proxies, func(el *Proxy) bool {
